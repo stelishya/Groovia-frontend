@@ -317,7 +317,7 @@ export default function AuthSignup({
                 <option value="dancer" data-oid="aqnstg3">
                   Dancer
                 </option>
-                <option value="user" data-oid="us84i64">
+                <option value="client" data-oid="us84i64">
                   Client
                 </option>
               </select>

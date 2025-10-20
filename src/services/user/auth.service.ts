@@ -2,6 +2,8 @@
 import toast from "react-hot-toast";
 import AuthAxios from "../../api/auth.axios";
 import type { SignupForm, VerificationData } from "../../types/auth.type";
+import type { AppDispatch } from "../../redux/store";
+import { loginUser } from "../../redux/slices/user.slice";
 
 const getErrorMessage = (error: any): string => {
   if (error.response?.data?.message) {
@@ -142,18 +144,21 @@ export const signup = async(data:SignupForm | VerificationData)=>{
 //   }
 // }
 
-export const userLogin = async(data: { email: string; password: string; role?: string })=>{
+export const userLogin = async(data: { email: string; password: string; role?: string },dispatch:AppDispatch)=>{
   try {
     const response = await AuthAxios.post('/login', data);
 
+    const {user,token} = response.data;
 
     // Store user data if needed
-    if (response.data.token) {
-      localStorage.setItem('userToken', response.data.token);
-    }
-    if (response.data.user) {
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-    }
+    // if (response.data.token) {
+    //   localStorage.setItem('userToken', response.data.token);
+    // }
+    // if (response.data.user) {
+    //   localStorage.setItem('user', JSON.stringify(response.data.user));
+    // }
+
+    dispatch(loginUser({user,token}))
 
     return response.data;
   } catch (error) {
@@ -169,7 +174,7 @@ export const logoutUser = async () => {
   });
 
   try {
-    const response = await AuthAxios.post('/logout');
+    const response = await AuthAxios.delete('../logout');
 
     // Clear local storage
     localStorage.removeItem('userToken');

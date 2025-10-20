@@ -20,6 +20,9 @@ export const PublicRoute: React.FC<PublicRouteProps> = ({
         userData: state.user.userData
     }));
 
+    const adminAuth = useSelector((state: RootState) => ({
+        adminData: state.admin.adminData
+    }));
 
     const checkAuthentication = () => {
         switch (userType) {
@@ -27,9 +30,10 @@ export const PublicRoute: React.FC<PublicRouteProps> = ({
                 return userAuth.isAuthenticated && userAuth.userData;
             case 'client':
                 return userAuth.isAuthenticated && userAuth.userData;
-            // case 'admin':
-            //     return adminAuth.adminData !== null;
-            //     default:
+            case 'admin':
+              // return false;
+                return adminAuth.adminData !== null;
+            default:
             return false;
         }
     };
@@ -41,7 +45,7 @@ export const PublicRoute: React.FC<PublicRouteProps> = ({
     
     switch (userType) {
       case 'dancer':
-        return from || '/dancer/home';
+        return from || '/home';
       case 'client':
         return from || '/client/dashboard';
       case 'admin':

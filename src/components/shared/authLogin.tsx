@@ -5,44 +5,110 @@ import toast from "react-hot-toast";
 import { useState } from "react";
 // import { userLogin } from "../../services/user/auth.service";
 import type { LoginForm } from "../../types/auth.type";
+import { AlertCircle } from "lucide-react";
 
 
 export interface AuthLoginProps {
   signupRoute: string
   onSubmit: (data: LoginForm) => Promise<void>
-  // title: string
-  // subtitle?: string
+  title: string
+//   subtitle?: string
+  role: "user" | "admin"
 }
 
 export default function AuthLogin({
     signupRoute,
-    onSubmit
+    onSubmit,
+    title,
+    // subtitle,
+    role
 }:AuthLoginProps){
-    const [credentials, setCredentials] = useState<{email:string;password:string}>({ email: '', password: '' });
+    const [credentials, setCredentials] = useState<{email:string;password:string,role:string}>({ email: '', password: '',role });
+    const [showPassword, setShowPassword] = useState(false);
+    const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
+    const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setCredentials(prev => ({ ...prev, [name]: value }));
+
+        //clear errors when user starts typing
+        if (errors[name as keyof typeof errors]) {
+      setErrors({ ...errors, [name]: undefined });
+    }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!credentials.email || !credentials.password) {
-            toast.error('Please enter both email and password.');
-            return;
-        }
+         const newErrors: { email?: string; password?: string } = {};
+
+    // Validation
+    if (!credentials.email) {
+      newErrors.email = 'Email is required';
+    } else if (!validateEmail(credentials.email)) {
+      newErrors.email = 'Please enter a valid email';
+    }
+
+    if (!credentials.password) {
+      newErrors.password = 'Password is required';
+    } else if (credentials.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+        // if (!credentials.email || !credentials.password) {
+        //     toast.error('Please enter both email and password.');
+        //     return;
+        // }
+        if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      // Show error toast for validation errors
+      toast.error('Please fix the form errors before submitting', {
+        position: 'top-right',
+        duration: 4000,
+        style: {
+          background: '#FEE2E2',
+          color: '#DC2626',
+          border: '1px solid #FECACA',
+        },
+        icon: '⚠️',
+      });
+      return;
+    }
 
         setIsLoading(true);
+        const loadingToast = toast.loading('Signing you in...', {
+      position: 'top-right',
+      style: {
+        background: '#EFF6FF',
+        color: '#1D4ED8',
+        border: '1px solid #DBEAFE',
+      },
+    });
         try {
             await onSubmit(credentials);
             // await userLogin(credentials)
         } catch (error) {
             // Error toast is handled by the service
             console.error('Login failed:', error);
+            
+
+      // toast.error(error as string, {
+      //   position: 'top-right',
+      //   duration: 5000,
+      //   style: {
+      //     background: '#FEE2E2',
+      //     color: '#DC2626',
+      //     border: '1px solid #FECACA',
+      //   },
+      //   icon: '❌',
+      // });
         } finally {
             setIsLoading(false);
+            toast.dismiss(loadingToast)
         }
     };
 
@@ -57,18 +123,24 @@ export default function AuthLogin({
                         </svg>
                     </button>
 
-                    <h2 className="text-4xl font-bold text-white mb-8 mt-10">Login</h2>
+                    <h2 className="text-4xl font-bold text-white mb-8 mt-10">{title}</h2>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
                             <input
-                                type="email"
+                                // type="email"
                                 name="email"
                                 placeholder="Email"
                                 value={credentials.email}
                                 onChange={handleInputChange}
                                 className="w-full px-4 py-3 bg-purple-200/50 border-none rounded-lg text-white placeholder-purple-100/70 focus:outline-none focus:ring-2 focus:ring-purple-300"
                             />
+                            {errors.email && (
+                <p className="mt-1 text-sm text-red-600 flex items-center">
+                  <AlertCircle className="w-4 h-4 mr-1" />
+                  {errors.email}
+                </p>
+              )}
                         </div>
                         <div>
                             <input
@@ -79,9 +151,17 @@ export default function AuthLogin({
                                 onChange={handleInputChange}
                                 className="w-full px-4 py-3 bg-purple-200/50 border-none rounded-lg text-white placeholder-purple-100/70 focus:outline-none focus:ring-2 focus:ring-purple-300"
                             />
+                            {errors.password && (
+                <p className="mt-1 text-sm text-red-600 flex items-center">
+                  <AlertCircle className="w-4 h-4 mr-1" />
+                  {errors.password}
+                </p>
+              )}
+                          {(role==='user' && 
                             <div className="text-right mt-2">
                                 <a href="/forgot-password" className="text-sm text-purple-200 hover:text-white transition-colors">Forgot Password?</a>
                             </div>
+                          )}
                         </div>
 
                         <button
@@ -93,21 +173,22 @@ export default function AuthLogin({
                         </button>
                     </form>
 
+                    {/* {(role==='user' &&
                     <div className="mt-6 text-center">
                         <button className="w-full py-3 bg-white/90 hover:bg-white text-purple-800 font-semibold rounded-lg transition-colors shadow-md">
                             Continue with Google
                         </button>
                     </div>
+                    )} */}
 
+                    {(role==='user' &&
                     <p className="text-center text-sm text-purple-200 mt-6">
                         New to Groovia?{' '}
                         <Link to={signupRoute}>
                         Sign up now.
                         </Link>
-                        {/* <button onClick={() => navigate('/signup')} className="font-semibold text-white hover:underline">
-                            Sign up now.
-                        </button> */}
                     </p>
+                    )}
                 </div>
 
                 {/* Right Side: Image */}

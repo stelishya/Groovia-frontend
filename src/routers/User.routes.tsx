@@ -5,6 +5,12 @@ import VerifyOtp from "../pages/dancer/VerifyOtp";
 import Login from "../pages/dancer/Login";
 import ForgotPasswordForm from "../components/shared/forgotPasswordForm";
 import ResetPasswordForm from "../components/shared/resetPasswordForm";
+import Home from "../pages/dancer/Home";
+import HomePage from "../pages/Home";
+import { PrivateRoute } from "../protected/PrivateRoute";
+import Profile from "../pages/dancer/DancerProfile";
+// import { PrivateRoute } from "../protected/PrivateRoute";
+// import HomePage from "../pages/Home";
 const UserRoutes = () => {
     return (
         <Routes>
@@ -35,6 +41,25 @@ const UserRoutes = () => {
                 </PublicRoute>
             }
             />
+            <Route path="/home" element={
+                <PrivateRoute userType="user" >
+                    <HomePage />
+                </PrivateRoute>
+            }
+            />
+            <Route path="/dancer/profile" element={
+                <PrivateRoute userType="user" >
+                    <Profile />
+                </PrivateRoute>
+            }
+            />
+            {/* <Route path="/home" element={
+                <PublicRoute userType="dancer">
+                    <Home />
+                </PublicRoute>
+            }
+            /> */}
+            <Route path='/logout' element={<Login />} />
         </Routes>
     )
 }

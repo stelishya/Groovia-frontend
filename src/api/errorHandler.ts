@@ -21,6 +21,10 @@ export const handleAxiosError = (error: AxiosError) => {
     toast.error(message);
     return Promise.reject(error);
   }
+  // if(status === 401 && message === 'user is blocked'){
+  //   toast.error(message);
+  //   return Promise.reject(error);
+  // }
 
   // Skip toasting for errors handled by token refresh logic
   if (

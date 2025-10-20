@@ -5,6 +5,10 @@ interface UserData{
     id:string;
     username:string;
     email:string;
+    role:string[];
+    profileImage?:string;
+    phone?:string;
+    isVerified?:boolean;
 }
 interface UserState{
     userData:UserData | null;
