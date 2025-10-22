@@ -2,9 +2,11 @@
 import axios from "axios";
 import { ClientAxios } from '../../api/user.axios'; // Authenticated instance";
 
-const getAllDancers = async ({params}: {params: any},page: number = 1, pageSize: number = 10) => {
+const getAllDancers = async (params:URLSearchParams,page: number = 1, pageSize: number = 10) => {
     try {
-        const response = await ClientAxios.get(`/dancers?page=${page}&limit=${pageSize}`);
+        params.append('page', page.toString());
+ params.append('limit', pageSize.toString());
+        const response = await ClientAxios.get(`/?${params.toString()}`);
         if (response.status !== 200) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -22,6 +24,25 @@ const getAllDancers = async ({params}: {params: any},page: number = 1, pageSize:
 }
 
 export default getAllDancers
+
+export const sendRequestToDancers = async (dancerId: string, requestData: any) => {
+    try {
+        const response = await ClientAxios.post('/event-requests', {
+            dancerId,
+            ...requestData
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Failed to send request:', error);
+        if (axios.isAxiosError(error)) {
+            const message = error.response?.data?.message || "Failed to send request.";
+            console.error(message);
+            throw new Error(message);
+        } else {
+            throw new Error("An unexpected error occurred.");
+        }
+    }
+};
 
 
 // const handleLike = async (dancerId: string) => {

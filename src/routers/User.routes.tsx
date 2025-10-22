@@ -8,6 +8,8 @@ import ForgotPasswordForm from "../components/shared/forgotPasswordForm";
 import ResetPasswordForm from "../components/shared/resetPasswordForm";
 import HomePage from "../pages/authorization/Home";
 import ProfilePage from "../pages/authorization/Profile";
+import BookingsPage from "../pages/authorization/Bookings";
+// import BookingsPage from "../pages/dancer/Bookings-Dancer";
 
 // import Home from "../pages/dancer/Home";
 // import Profile from "../pages/dancer/DancerProfile";
@@ -53,6 +55,12 @@ const UserRoutes = () => {
             <Route path="/profile" element={
                 <PrivateRoute userType="user" >
                     <ProfilePage />
+                </PrivateRoute>
+            }
+            />
+            <Route path="/bookings" element={
+                <PrivateRoute userType="user" >
+                    <BookingsPage />
                 </PrivateRoute>
             }
             />

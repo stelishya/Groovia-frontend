@@ -5,8 +5,10 @@ import { logoutUser } from "../../redux/slices/user.slice";
 import { type RootState } from "../../redux/store";
 import Sidebar from "../../components/shared/Sidebar";
 import DancerCard from "../../components/ui/Card";
+import FormModal from "../../components/ui/FormModal";
+import { GitPullRequest } from "lucide-react";
 import { useEffect, useState } from "react";
-import getAllDancers from "../../services/client/browseDancers.service";
+import getAllDancers, { sendRequestToDancers } from "../../services/client/browseDancers.service";
 
 
 const Header = () => (
@@ -46,7 +48,14 @@ const Dashboard = ({ userData }: { userData: any }) => {
     const [filters, setFilters] = useState({ search: '', style: '', city: '' });
     const [loading, setLoading] = useState(true)
     const [dancers, setDancers] = useState<Dancer[]>([])
-    const [selectedUser, setSelectedUser] = useState<Dancer | null>(null)
+    const [selectedDancer, setSelectedDancer] = useState<Dancer | null>(null)
+    const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+    const [requestData, setRequestData] = useState({
+        event: '',
+        date: '',
+        venue: '',
+        budget: '',
+    });
 
 
     useEffect(() => {
@@ -80,20 +89,46 @@ const Dashboard = ({ userData }: { userData: any }) => {
             //     console.error('Failed to fetch dancers - Invalid response structure:', response.message);
             // }
 
-             const params = new URLSearchParams();
- if (filters.search) params.append('search', filters.search);
- if (filters.style) params.append('danceStyle', filters.style);
- if (filters.city) params.append('location', filters.city);
- console.log("params", params)
+            const params = new URLSearchParams();
+            if (filters.search) params.append('search', filters.search);
+            if (filters.style) params.append('danceStyle', filters.style);
+            if (filters.city) params.append('location', filters.city);
+            console.log("params", params)
 
-//  const response = await ClientAxios.get(`/dancers?${params.toString()}`);
-const response = await getAllDancers({params});
- setDancers(response.data.dancers || []);
+            //  const response = await ClientAxios.get(`/dancers?${params.toString()}`);
+            const response = await getAllDancers(params);
+            console.log("response in fetchDancers in ClientHome.tsx", response)
+            setDancers(response.dancers || []);
         } catch (error) {
-            console.log("error in fetchDancers in UserDetails.tsx", error)
+            console.log("error in fetchDancers in ClientHome.tsx", error)
             setDancers([]);
         }
     }
+
+    const handleOpenRequestModal = (dancer: Dancer) => {
+        setSelectedDancer(dancer);
+        setIsRequestModalOpen(true);
+    };
+
+    const handleCloseRequestModal = () => {
+        setIsRequestModalOpen(false);
+        setSelectedDancer(null);
+    };
+
+    const handleConfirmSend = async () => {
+        try {
+            if (!selectedDancer) return;
+    
+            console.log(`Sending request to ${selectedDancer.username} with data:`, requestData);
+            // API call
+            const response = await sendRequestToDancers(selectedDancer._id, requestData);
+            console.log("response of sendRequestToDancers in ClientHome.tsx",response)
+            handleCloseRequestModal();
+            
+        } catch (error) {
+            console.error("Send request failed", error);
+        }
+    };
 
     // const handleFilter = () => {
     //     const params = new URLSearchParams();
@@ -181,7 +216,7 @@ const response = await getAllDancers({params});
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {dancers.length > 0 ? (
                         dancers.map((dancer) => (
-                            <DancerCard key={dancer._id} dancer={dancer} />
+                            <DancerCard key={dancer._id} dancer={dancer} onSendRequest={handleOpenRequestModal} />
                         ))
                     ) : (
                         <p className="text-center col-span-full text-gray-500">
@@ -190,6 +225,58 @@ const response = await getAllDancers({params});
                     )}
                 </div>
             </div>
+
+            {selectedDancer && (
+                <FormModal
+                    isOpen={isRequestModalOpen}
+                    onClose={handleCloseRequestModal}
+                    title={`Send Request to ${selectedDancer.username}`}
+                    icon={<GitPullRequest className="text-purple-300" size={32} />}
+                    onSubmit={handleConfirmSend}
+                    submitText="Send Request"
+                    submitButtonClass="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                >
+                    <div>
+                        <label className="block text-white font-medium mb-2">Event</label>
+                        <input
+                            type="text"
+                            value={requestData.event}
+                            onChange={(e) => setRequestData({ ...requestData, event: e.target.value })}
+                            className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            placeholder="Event Name"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-white font-medium mb-2">Date</label>
+                        <input
+                            type="date"
+                            value={requestData.date}
+                            onChange={(e) => setRequestData({ ...requestData, date: e.target.value })}
+                            className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-white font-medium mb-2">Venue</label>
+                        <input
+                            type="text"
+                            value={requestData.venue}
+                            onChange={(e) => setRequestData({ ...requestData, venue: e.target.value })}
+                            className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            placeholder="Event Venue"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-white font-medium mb-2">Budget</label>
+                        <input
+                            type="text"
+                            value={requestData.budget}
+                            onChange={(e) => setRequestData({ ...requestData, budget: e.target.value })}
+                            className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            placeholder="e.g., $500 - $1000"
+                        />
+                    </div>
+                </FormModal>
+            )}
 
         </main>
     )

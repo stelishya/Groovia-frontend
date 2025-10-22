@@ -30,7 +30,7 @@ const Sidebar: React.FC<SidebarProps> = ({activeMenu = 'Home'}) => {
     const navItems = [
         { icon: <House />, name: 'Home' ,action:()=>navigate('/home')},
         { icon: <MessageSquare />, name: 'Messages' },
-        { icon: <Calendar />, name: 'Bookings' },
+        { icon: <Calendar />, name: 'Bookings' ,action:()=>navigate('/bookings')},
         { icon: <Briefcase />, name: 'Workshops' },
         { icon: <Trophy />, name: 'Competitions' },
         { icon: <CreditCard />, name: 'Payments' },
