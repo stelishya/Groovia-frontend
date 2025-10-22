@@ -3,6 +3,8 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logoutUser as logoutUserAction} from "../../redux/slices/user.slice";
 import { logoutUser as logoutUserService} from "../../services/user/auth.service";
+import { useState } from "react";
+import ConfirmationModal from "../ui/ConfirmationModal";
 
 interface SidebarProps {
  activeMenu?: string;
@@ -10,6 +12,8 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({activeMenu = 'Home'}) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const [showLogoutModal, setShowLogoutModal] = useState(false);
+
     const handleLogout = async()=>{
         console.log("handleLogout in dancer home")
         try {
@@ -20,8 +24,9 @@ const Sidebar: React.FC<SidebarProps> = ({activeMenu = 'Home'}) => {
         }finally{
             dispatch(logoutUserAction())
             navigate('/login')
+            setShowLogoutModal(false)
         }
-        }
+    }
     const navItems = [
         { icon: <House />, name: 'Home' ,action:()=>navigate('/home')},
         { icon: <MessageSquare />, name: 'Messages' },
@@ -32,8 +37,8 @@ const Sidebar: React.FC<SidebarProps> = ({activeMenu = 'Home'}) => {
     ];
 
     const bottomItems = [
-        { icon: <User />, name: 'Profile' ,action:()=>navigate('/dancer/profile')},
-        { icon: <LogOut />, name: 'Log Out', action: handleLogout },
+        { icon: <User />, name: 'Profile' ,action:()=>navigate('/profile')},
+        { icon: <LogOut />, name: 'Log Out', action: ()=> setShowLogoutModal(true) },
         { icon: <Settings />, name: 'Settings' },
     ];
 
@@ -66,6 +71,17 @@ const Sidebar: React.FC<SidebarProps> = ({activeMenu = 'Home'}) => {
                     ))}
                 </ul>
             </nav>
+            {/* Logout Confirmation Modal */}
+ <ConfirmationModal
+ show={showLogoutModal}
+ onClose={() => setShowLogoutModal(false)}
+ onConfirm={handleLogout}
+ title="Confirm Logout"
+ message="Are you sure you want to logout? You will need to login again to access your account."
+ confirmText="Logout"
+ cancelText="Cancel"
+ variant="warning"
+ />
         </aside>
     );
 };

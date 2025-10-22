@@ -1,8 +1,10 @@
 // import React from 'react';
 // import { FiHome, FiMessageSquare, FiCalendar, FiBriefcase, FiTrophy, FiCreditCard, FiUser, FiLogOut, FiSettings, FiSearch, FiBell } from 'react-icons/fi';
 // import {Search, Bell } from "lucide-react"
+import { useSelector } from "react-redux";
 import Sidebar from "../../components/shared/Sidebar";
 import UserNavbar from "../../components/shared/userNavbar";
+import type { RootState } from "../../redux/store";
 
 // const Sidebar = () => {
 //     const dispatch = useDispatch();
@@ -72,8 +74,8 @@ import UserNavbar from "../../components/shared/userNavbar";
 //     </header>
 // );
 
-const Dashboard = () => (
-    <main className="flex-grow p-8 bg-gray-900 text-white overflow-y-auto">
+const Dashboard = ({userData}:{userData:any}) => (
+    <main className="flex-grow p-8 bg-deep-purple text-white overflow-y-auto">
     <UserNavbar/>
         {/* <Header /> */}
         <div className="mt-8">
@@ -87,7 +89,7 @@ const Dashboard = () => (
                 <img src="https://i.pravatar.cc/80?img=32" alt="Elena Petrova" className="w-16 h-16 rounded-full border-2 border-purple-400" />
                 <div className="ml-4">
                     <div className="flex items-center">
-                        <h3 className="text-xl font-bold">Elena Petrova</h3>
+                        <h3 className="text-xl font-bold">{userData?.username?.charAt(0).toUpperCase() + userData?.username?.slice(1)}</h3>
                         <span className="ml-3 text-xs bg-blue-500 rounded-full px-2 py-0.5">Dancer</span>
                     </div>
                     <p className="text-sm text-gray-300">Contemporary & Hip-Hop Dance</p>
@@ -126,10 +128,11 @@ const Dashboard = () => (
 );
 
 export default function Home() {
+    const {userData} = useSelector((state: RootState)=> state.user)
     return (
         <div className="flex h-screen bg-gray-900">
             <Sidebar activeMenu="Home"/>
-            <Dashboard />
+            <Dashboard userData={userData}/>
         </div>
     );
 }

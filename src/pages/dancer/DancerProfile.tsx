@@ -1,35 +1,53 @@
-import { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { type RootState } from '../../redux/store';
-import { User, Settings, ArrowLeft, Crown } from 'lucide-react';
+import { User, Settings, ArrowLeft, Crown, Edit2, Heart, Instagram, Linkedin, Facebook, LinkIcon, Youtube, Twitter } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { UserAxios } from '../../api/auth.axios';
 import Sidebar from '../../components/shared/Sidebar';
 import UserNavbar from '../../components/shared/userNavbar';
+import FormModal from '../../components/ui/FormModal';
+import UpgradeRoleModal from '../../components/shared/UpgradeRoleModal';
+import { DancerAxios } from '../../api/user.axios';
+import { loginUser } from '../../redux/slices/user.slice';
 
 const Profile = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const { userData } = useSelector((state: RootState) => state.user);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-    const [isRefreshing, setIsRefreshing] = useState(false);
-    const [upgradeFormData, setUpgradeFormData] = useState({
-        danceStyles: [] as string[],
-        experienceYears: '',
-        bio: '',
-        portfolioLinks: '',
-        certificate: null as File | null,
-        availableForWorkshops: false,
-        preferredLocation: '',
-        additionalMessage: ''
+    const [showEditModal, setShowEditModal] = useState(false);
+    // const [isRefreshing, setIsRefreshing] = useState(false);
+    // const [isEditingProfile, setIsEditingProfile] = useState(false);
+    const [profileData, setProfileData] = useState({
+        username: userData?.username || '',
+        email: userData?.email || '',
+        phone: userData?.phone || '',
+        bio: userData?.bio || '',
+        experienceYears: userData?.experienceYears || 0,
+        portfolioLinks: userData?.portfolioLinks || [],
+        danceStyles: userData?.danceStyles || [],
+        // preferredLocation: userData?.preferredLocation || '',
+        availableForPrograms: userData?.availableForPrograms || false
     });
+    // const [upgradeFormData, setUpgradeFormData] = useState({
+    //     danceStyles: [] as string[],
+    //     experienceYears: '',
+    //     bio: '',
+    //     portfolioLinks: '',
+    //     certificate: null as File | null,
+    //     // availableForWorkshops: false,
+    //     preferredLocation: '',
+    //     additionalMessage: ''
+    // });
     const danceStyleOptions = [
         'Bharatanatyam', 'Kathak', 'Odissi', 'Kuchipudi', 'Mohiniyattam',
-        'Hip Hop', 'Contemporary', 'Ballet', 'Jazz', 'Salsa',
-        'Bollywood', 'Folk', 'Freestyle', 'Breaking', 'Other'
+        'Hip-Hop', 'Contemporary', 'Ballet', 'Jazz', 'Salsa',
+        'Bollywood', 'Folk', 'Freestyle', 'Ballroom', 'Tap', 'Breakdance', 'Other'
     ];
     const handleDanceStyleToggle = (style: string) => {
-        setUpgradeFormData(prev => ({
+        setProfileData(prev => ({
             ...prev,
             danceStyles: prev.danceStyles.includes(style)
                 ? prev.danceStyles.filter(s => s !== style)
@@ -38,85 +56,76 @@ const Profile = () => {
     };
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
-            setUpgradeFormData(prev => ({ ...prev, certificate: e.target.files![0] }));
+            setProfileData(prev => ({ ...prev, certificate: e.target.files![0] }));
         }
     };
-    const handleUpgradeRole = async () => {
-        try {
-            // TODO: Implement upgrade role API call
-            // Validation
-            if (upgradeFormData.danceStyles.length === 0) {
-                toast.error('Please select at least one dance style');
-                return;
-            }
-            if (!upgradeFormData.experienceYears || parseInt(upgradeFormData.experienceYears) < 0) {
-                toast.error('Please enter valid years of experience');
-                return;
-            }
-            if (!upgradeFormData.bio.trim()) {
-                toast.error('Please provide a bio');
-                return;
-                // toast.success('Upgrade request submitted! We will review and get back to you.', {
-                //     duration: 5000,
-                //     style: {
-                //         background: '#D1FAE5',
-                //         color: '#059669',
-                //         border: '1px solid #34D399'
-                //     }
-                // });
-                // setShowUpgradeModal(false);
-            }
-            if (!userData?.email) {
-                toast.error('User email not found. Please log in again.');
-                return;
-            }
-            const formData = new FormData();
-            formData.append('danceStyles', JSON.stringify(upgradeFormData.danceStyles));
-            formData.append('experienceYears', upgradeFormData.experienceYears);
-            formData.append('bio', upgradeFormData.bio);
-            formData.append('portfolioLinks', upgradeFormData.portfolioLinks);
-            formData.append('availableForWorkshops', String(upgradeFormData.availableForWorkshops));
-            formData.append('preferredLocation', upgradeFormData.preferredLocation);
-            formData.append('additionalMessage', upgradeFormData.additionalMessage);
-            formData.append('email', userData.email)
-            if (upgradeFormData.certificate) {
-                formData.append('certificate', upgradeFormData.certificate);
-            }
-            console.log('Upgrade request data:', upgradeFormData);
-            console.log('User email:', userData.email);
-            console.log('FormData contents:');
-            for (const [key, value] of formData.entries()) {
-                console.log(` ${key}:`, value);
-            }
-            const response = await UserAxios.post('/upgrade-role', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
 
-            if (response.status === 201 || response.status === 200) {
-                toast.success('Upgrade request submitted! We will review and get back to you.', {
-                    duration: 5000,
-                    style: {
-                        background: '#D1FAE5',
-                        color: '#059669',
-                        border: '1px solid #34D399',
-                    },
-                });
-                setShowUpgradeModal(false);
-            }
-        } catch (error: any) {
-            // toast.error('Failed to submit upgrade request');
-            const errorMessage = error.response?.data?.message || 'Failed to submit upgrade request';
-            toast.error(errorMessage);
-            console.error('Upgrade role error:', error.response?.data);
-        }
-    };
 
     const currentRoles = userData?.role || [];
     const hasInstructorRole = currentRoles.includes('instructor');
     console.log(userData);
+    const isDancer = currentRoles.includes('dancer') || hasInstructorRole;
+    useEffect(() => {
+        if (userData) {
+            setProfileData({
+                username: userData.username || '',
+                email: userData.email || '',
+                phone: userData.phone || '',
+                bio: userData.bio || '',
+                experienceYears: userData.experienceYears || 0,
+                portfolioLinks: userData.portfolioLinks || [],
+                danceStyles: userData.danceStyles || [],
+                availableForPrograms: userData.availableForPrograms || false,
+            });
+        }
+    }, [userData]);
 
+
+    const handleProfileUpdate = async () => {
+        try {
+            console.log("profileData : ", profileData)
+            const response = await DancerAxios.patch('/profile', profileData);
+            if (response.status === 200) {
+                toast.success('Profile updated successfully!');
+                //             setIsEditingProfile(false);
+                //         }
+                //     } catch (error: any) {
+                //         // toast.error('Failed to update profile');
+                //         const errorMessage = error.response?.data?.message || 'Failed to update profile';
+                //         toast.error(errorMessage);
+                //         console.error('Profile update error:', error);
+                //     }
+                // }
+                const { user } = response.data;
+                dispatch(loginUser({ user, token: localStorage.getItem('token') || '' }));
+                setShowEditModal(false);
+                // Optionally refresh user data from backend
+                // window.location.reload(); // Temporary - should update Redux store instead
+            }
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.message || 'Failed to update profile';
+            toast.error(errorMessage);
+            console.error('Profile update error:', error);
+        }
+    };
+    const handleDanceStyleToggleInEdit = (style: string) => {
+        setProfileData(prev => ({
+            ...prev,
+            danceStyles: prev.danceStyles.includes(style)
+                ? prev.danceStyles.filter(s => s !== style)
+                : [...prev.danceStyles, style]
+        }));
+    };
+    const handleLike = async () => {
+        try {
+            const response = await UserAxios.post(`/dancers/${userData?._id}/like`);
+            if (response.status === 200) {
+                toast.success('Liked!');
+            }
+        } catch (error: any) {
+            toast.error('Failed to like');
+        }
+    };
     return (
         <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-pink-600">
             {/* Header */}
@@ -135,7 +144,7 @@ const Profile = () => {
                 <Sidebar activeMenu='Profile' />
                 {/* Main Content */}
                 {/* <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8"> */}
-                <main className="flex-1 overflow-y-auto bg-gray-900">
+                <main className="flex-1 overflow-y-auto bg-deep-purple">
                     <UserNavbar />
                     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                         {/* Profile Card */}
@@ -174,11 +183,124 @@ const Profile = () => {
                                     </div>
 
                                     {/* Settings Button */}
-                                    <button className="mt-4 sm:mt-0 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center transition-colors">
+                                    {/* <button className="mt-4 sm:mt-0 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center transition-colors">
                                         <Settings size={18} className="mr-2" />
                                         Edit Profile
-                                    </button>
+                                    </button> */}
+                                    {/* Action Buttons */}
+                                    {/* <div className="mt-4 sm:mt-0 flex gap-2">
+ {isDancer && (
+ <button
+ onClick={handleLike}
+ className="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg flex items-center transition-colors"
+ >
+ <Heart size={18} className="mr-2" />
+ {userData?.likes || 0}
+ </button>
+ )}
+ <button
+ onClick={() => setShowEditModal(true)}
+ className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center transition-colors"
+ >
+ <Edit2 size={18} className="mr-2" />
+ Edit Profile
+ </button>
+ </div> */}
+
+                                    {/* Like Button */}
+                                    {isDancer && (
+                                        <button
+                                            onClick={handleLike}
+                                            className="mt-4 sm:mt-0 px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg flex items-center transition-colors"
+                                        >
+                                            <Heart size={18} className="mr-2" />
+                                            {userData?.likes || 0}
+                                        </button>
+                                    )}
                                 </div>
+                            </div>
+                        </div>
+                        {/* User Details */}
+                        <div className="mt-6 bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-purple-500/30">
+                            {/* <h2 className="text-2xl font-bold text-white mb-4">Account Details</h2> */}
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-2xl font-bold text-white">Account Details</h2>
+                                <button
+                                    onClick={() => setShowEditModal(true)}
+                                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center transition-colors"
+                                >
+                                    <Edit2 size={18} className="mr-2" />
+                                    Edit Profile
+                                </button>
+                            </div>
+                            {/* <div className="space-y-4"> */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="text-purple-200 text-sm">Username</label>
+                                    <p className="text-white text-lg">{userData?.username}</p>
+                                </div>
+                                <div>
+                                    <label className="text-purple-200 text-sm">Bio</label>
+                                    <p className="text-white text-lg">{userData?.bio || 'Not provided'}</p>
+                                </div>
+                                <div>
+                                    <label className="text-purple-200 text-sm">Email</label>
+                                    <p className="text-white text-lg">{userData?.email}</p>
+                                </div>
+                                <div>
+                                    <label className="text-purple-200 text-sm">Dance Styles</label>
+                                    <p className="text-white text-lg">{userData?.danceStyles?.join(', ') || 'Not provided'}</p>
+                                </div>
+                                <div>
+                                    <label className="text-purple-200 text-sm">Phone</label>
+                                    <p className="text-white text-lg">{userData?.phone || 'Not provided'}</p>
+                                </div>
+                                <div>
+                                    <label className="text-purple-200 text-sm">Experience Years</label>
+                                    <p className="text-white text-lg">{userData?.experienceYears || 'Not provided'}</p>
+                                </div>
+                                <div>
+                                    <label className="text-purple-200 text-sm">Social Media</label>
+                                    {/* <p className="text-white text-lg">{userData?.portfolioLinks?.join(', ') || 'Not provided'}</p> */}
+                                    <div className="flex items-center space-x-4 mt-2">
+                                        {userData?.portfolioLinks && userData.portfolioLinks.length > 0 ? (
+                                            userData.portfolioLinks.map((link, index) => {
+                                                const getSocialIcon = (url: string) => {
+                                                    try {
+                                                        const hostname = new URL(url).hostname.toLowerCase();
+                                                        if (hostname.includes('instagram.com')) return <Instagram className="text-white hover:text-pink-500 transition-colors" />;
+                                                        if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) return <Youtube className="text-white hover:text-red-500 transition-colors" />;
+                                                        if (hostname.includes('linkedin.com')) return <Linkedin className="text-white hover:text-blue-500 transition-colors" />;
+                                                        if (hostname.includes('twitter.com') || hostname.includes('x.com')) return <Twitter className="text-white hover:text-sky-400 transition-colors" />;
+                                                        if (hostname.includes('facebook.com')) return <Facebook className="text-white hover:text-blue-600 transition-colors" />;
+                                                    } catch (e) { /* Invalid URL */ }
+                                                    return <LinkIcon className="text-white hover:text-purple-300 transition-colors" />;
+                                                };
+                                                return (
+                                                    <a key={index} href={link} target="_blank" rel="noopener noreferrer">
+                                                        {getSocialIcon(link)}
+                                                    </a>
+                                                );
+                                            })
+                                        ) : (
+                                            <p className="text-white text-lg">Not provided</p>
+                                        )}
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="text-purple-200 text-sm">Available for Programs</label>
+                                    <p className="text-white text-lg">{userData?.availableForPrograms ? 'Yes' : 'No'}</p>
+                                </div>
+                                {/* <div>
+                                    <label className="text-purple-200 text-sm">Account Status</label>
+                                    <p className="text-white text-lg">
+                                        {userData?.isVerified ? (
+                                            <span className="text-green-400">✓ Verified</span>
+                                        ) : (
+                                            <span className="text-yellow-400">⚠ Not Verified</span>
+                                        )}
+                                    </p>
+                                </div> */}
                             </div>
                         </div>
 
@@ -212,180 +334,133 @@ const Profile = () => {
                             </div>
                         )}
 
-                        {/* User Details */}
-                        <div className="mt-6 bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-purple-500/30">
-                            <h2 className="text-2xl font-bold text-white mb-4">Account Details</h2>
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="text-purple-200 text-sm">Username</label>
-                                    <p className="text-white text-lg">{userData?.username}</p>
-                                </div>
-                                <div>
-                                    <label className="text-purple-200 text-sm">Email</label>
-                                    <p className="text-white text-lg">{userData?.email}</p>
-                                </div>
-                                <div>
-                                    <label className="text-purple-200 text-sm">Phone</label>
-                                    <p className="text-white text-lg">{userData?.phone || 'Not provided'}</p>
-                                </div>
-                                {/* <div>
-                                    <label className="text-purple-200 text-sm">Account Status</label>
-                                    <p className="text-white text-lg">
-                                        {userData?.isVerified ? (
-                                            <span className="text-green-400">✓ Verified</span>
-                                        ) : (
-                                            <span className="text-yellow-400">⚠ Not Verified</span>
-                                        )}
-                                    </p>
-                                </div> */}
-                            </div>
-                        </div>
                     </div>
                 </main>
             </div>
-            {/* Upgrade Modal */}
-            {showUpgradeModal && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
-                    <div className="bg-purple-900 rounded-2xl p-6 max-w-2xl w-full border border-purple-500 my-8">
-                        <div className="flex items-center justify-between mb-6">
-                            <div className="flex items-center">
-                                <Crown className="text-yellow-400 mr-3" size={32} />
-                                <h3 className="text-2xl font-bold text-white">Upgrade to Instructor</h3>
-                            </div>
-                            <button onClick={() => setShowUpgradeModal(false)} className="text-white hover:text-gray-300 text-2xl">
-                                ×
-                            </button>
-                        </div>
-                        <form className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
-                            {/* Dance Styles */}
-                            <div>
-                                <label className="block text-white font-medium mb-2">Dance Styles *</label>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                                    {danceStyleOptions.map(style => (
-                                        <button
-                                            key={style}
-                                            type="button"
-                                            onClick={() => handleDanceStyleToggle(style)}
-                                            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${upgradeFormData.danceStyles.includes(style)
-                                                ? 'bg-yellow-500 text-white'
-                                                : 'bg-purple-700 text-purple-200 hover:bg-purple-600'
-                                                }`}
-                                        >
-                                            {style}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                            {/* Experience Years */}
-
-                            {/* <div>
- <label className="block text-white font-medium mb-2">Years of Experience *</label>
- <input type="number" min="0" max="50" value={upgradeFormData.experienceYears} onChange={(e) => handleExperienceYearsChange(e.target.value)} className="w-full bg-purple-700 text-white rounded-lg py-2 px-4 focus:outline-none" />
- </div>
- </form>
- </div>
- </div> */}
-                            <div>
-                                <label className="block text-white font-medium mb-2">Years of Experience *</label>
-                                <input
-                                    type="number"
-                                    min="0"
-                                    value={upgradeFormData.experienceYears}
-                                    onChange={(e) => setUpgradeFormData(prev => ({ ...prev, experienceYears: e.target.value }))}
-                                    className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                                    placeholder="e.g., 5"
-                                />
-                            </div>
-                            {/* Bio */}
-                            <div>
-                                <label className="block text-white font-medium mb-2">Bio *</label>
-                                <textarea
-                                    value={upgradeFormData.bio}
-                                    onChange={(e) => setUpgradeFormData(prev => ({ ...prev, bio: e.target.value }))}
-                                    className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 h-24"
-                                    placeholder="Tell us about your dance journey and teaching goals..."
-                                />
-                            </div>
-                            {/* Portfolio Links */}
-                            <div>
-                                <label className="block text-white font-medium mb-2">Portfolio Links (Optional)</label>
-                                <input
-                                    type="text"
-                                    value={upgradeFormData.portfolioLinks}
-                                    onChange={(e) => setUpgradeFormData(prev => ({ ...prev, portfolioLinks: e.target.value }))}
-                                    className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                                    placeholder="Instagram, YouTube, etc. (comma separated)"
-                                />
-                            </div>
-                            {/* Certificate Upload */}
-                            <div>
-                                <label className="block text-white font-medium mb-2">Certificate (Optional)</label>
-                                <input
-                                    type="file"
-                                    accept=".pdf,.jpg,.jpeg,.png"
-                                    onChange={handleFileChange}
-                                    className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-yellow-500 file:text-white file:cursor-pointer"
-                                />
-                                {upgradeFormData.certificate && (
-                                    <p className="text-sm text-green-400 mt-1">✓ {upgradeFormData.certificate.name}</p>
-                                )}
-                            </div>
-                            {/* Available for Workshops */}
-                            <div className="flex items-center">
-                                <input
-                                    type="checkbox"
-                                    id="availableForWorkshops"
-                                    checked={upgradeFormData.availableForWorkshops}
-                                    onChange={(e) => setUpgradeFormData(prev => ({ ...prev, availableForWorkshops: e.target.checked }))}
-                                    className="w-5 h-5 text-yellow-500 bg-purple-800 border-purple-600 rounded focus:ring-yellow-500"
-                                />
-                                <label htmlFor="availableForWorkshops" className="ml-2 text-white font-medium">
-                                    Available to conduct workshops
-                                </label>
-                            </div>
-                            {/* Preferred Location */}
-                            <div>
-                                <label className="block text-white font-medium mb-2">Preferred Location</label>
-                                <input
-                                    type="text"
-                                    value={upgradeFormData.preferredLocation}
-                                    onChange={(e) => setUpgradeFormData(prev => ({ ...prev, preferredLocation: e.target.value }))}
-                                    className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                                    placeholder="City / Region"
-                                />
-                            </div>
-                            {/* Additional Message */}
-                            <div>
-                                <label className="block text-white font-medium mb-2">Additional Message (Optional)</label>
-                                <textarea
-                                    value={upgradeFormData.additionalMessage}
-                                    onChange={(e) => setUpgradeFormData(prev => ({ ...prev, additionalMessage: e.target.value }))}
-                                    className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 h-20"
-                                    placeholder="Any note for the admin..."
-                                />
-                            </div>
-                        </form>
-                        <div className="flex gap-3 mt-6">
+            <FormModal
+                isOpen={showEditModal}
+                onClose={() => setShowEditModal(false)}
+                title="Edit Dancer Profile"
+                icon={<Edit2 className="text-purple-300" size={32} />}
+                onSubmit={handleProfileUpdate}
+                submitText="Save Changes"
+                submitButtonClass="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+            >
+                {/* Username */}
+                <div>
+                    <label className="block text-white font-medium mb-2">Username</label>
+                    <input
+                        type="text"
+                        value={profileData.username}
+                        onChange={(e) => setProfileData({ ...profileData, username: e.target.value })}
+                        className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        placeholder="Your username"
+                    />
+                </div>
+                {/* Email */}
+                <div>
+                    <label className="block text-white font-medium mb-2">Email</label>
+                    <input
+                        type="email"
+                        value={profileData.email}
+                        onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
+                        className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        placeholder="your.email@example.com"
+                    />
+                </div>
+                {/* Phone */}
+                <div>
+                    <label className="block text-white font-medium mb-2">Phone</label>
+                    <input
+                        type="tel"
+                        value={profileData.phone}
+                        onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
+                        className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        placeholder="+1234567890"
+                    />
+                </div>
+                {/* Bio */}
+                <div>
+                    <label className="block text-white font-medium mb-2">Bio</label>
+                    <textarea
+                        value={profileData.bio}
+                        onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
+                        className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        rows={4}
+                        placeholder="Tell us about your dance journey..."
+                    />
+                </div>
+                {/* Experience Years */}
+                <div>
+                    <label className="block text-white font-medium mb-2">Years of Experience</label>
+                    <input
+                        type="number"
+                        min="0"
+                        value={profileData.experienceYears}
+                        onChange={(e) => setProfileData({ ...profileData, experienceYears: parseInt(e.target.value) || 0 })}
+                        className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        placeholder="e.g., 5"
+                    />
+                </div>
+                {/* Dance Styles */}
+                <div>
+                    <label className="block text-white font-medium mb-2">Dance Styles</label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        {danceStyleOptions.map(style => (
                             <button
-                                onClick={() => setShowUpgradeModal(false)}
-                                className="flex-1 px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors"
+                                key={style}
+                                type="button"
+                                onClick={() => handleDanceStyleToggleInEdit(style)}
+                                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${profileData.danceStyles.includes(style)
+                                    ? 'bg-purple-500 text-white'
+                                    : 'bg-purple-800 text-purple-200 hover:bg-purple-700'
+                                    }`}
                             >
-                                Cancel
+                                {style}
                             </button>
-                            <button
-                                onClick={handleUpgradeRole}
-                                className="flex-1 px-4 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white rounded-lg font-bold transition-all"
-                            >
-                                Submit Request
-                            </button>
-                        </div>
+                        ))}
                     </div>
                 </div>
-            )}
+                {/* Portfolio Links */}
+                <div>
+                    <label className="block text-white font-medium mb-2">Social Media Links</label>
+                    <input
+                        type="text"
+                        value={profileData.portfolioLinks.join(', ')}
+                        onChange={(e) => setProfileData({ ...profileData, portfolioLinks: e.target.value.split(',').map(l => l.trim()).filter(l => l) })}
+                        className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        placeholder="Instagram, YouTube, etc. (comma separated)"
+                    />
+                    <p className="text-purple-300 text-sm mt-1">Separate multiple links with commas</p>
+                </div>
+                {/* Available for Programs */}
+                <div className="flex items-center">
+                    <input
+                        type="checkbox"
+                        id="availableForProgramsEdit"
+                        checked={profileData.availableForPrograms}
+                        onChange={(e) => setProfileData({ ...profileData, availableForPrograms: e.target.checked })}
+                        className="w-5 h-5 text-purple-500 bg-purple-800 border-purple-600 rounded focus:ring-purple-500"
+                    />
+                    <label htmlFor="availableForProgramsEdit" className="ml-2 text-white font-medium">
+                        Available for programs
+                    </label>
+                </div>
+            </FormModal>
+
+
+            <UpgradeRoleModal
+                show={showUpgradeModal}
+                onClose={() => setShowUpgradeModal(false)}
+                // onSubmit={handleUpgradeRole}
+                upgradeType="instructor"
+                userData={profileData}
+            />
 
 
         </div>
     );
+
 };
 
 export default Profile;

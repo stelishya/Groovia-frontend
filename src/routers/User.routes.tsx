@@ -1,16 +1,19 @@
 import { Route, Routes } from "react-router-dom"
 import { PublicRoute } from "../protected/PublicRoute";
+import { PrivateRoute } from "../protected/PrivateRoute";
 import Signup from "../pages/dancer/Signup";
 import VerifyOtp from "../pages/dancer/VerifyOtp";
 import Login from "../pages/dancer/Login";
 import ForgotPasswordForm from "../components/shared/forgotPasswordForm";
 import ResetPasswordForm from "../components/shared/resetPasswordForm";
-import Home from "../pages/dancer/Home";
-import HomePage from "../pages/Home";
-import { PrivateRoute } from "../protected/PrivateRoute";
-import Profile from "../pages/dancer/DancerProfile";
+import HomePage from "../pages/authorization/Home";
+import ProfilePage from "../pages/authorization/Profile";
+
+// import Home from "../pages/dancer/Home";
+// import Profile from "../pages/dancer/DancerProfile";
 // import { PrivateRoute } from "../protected/PrivateRoute";
 // import HomePage from "../pages/Home";
+
 const UserRoutes = () => {
     return (
         <Routes>
@@ -47,9 +50,9 @@ const UserRoutes = () => {
                 </PrivateRoute>
             }
             />
-            <Route path="/dancer/profile" element={
+            <Route path="/profile" element={
                 <PrivateRoute userType="user" >
-                    <Profile />
+                    <ProfilePage />
                 </PrivateRoute>
             }
             />

@@ -40,6 +40,7 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ onSearch }) => {
  try {
  setLoadingNotifications(true);
  const response = await UserAxios.get(`/notifications/user/${userData?._id}`);
+ console.log("response in fetchNotifications : ",response)
  setNotifications(response.data);
  } catch (error) {
  console.error('Failed to fetch notifications:', error);

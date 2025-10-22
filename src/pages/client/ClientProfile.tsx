@@ -115,7 +115,7 @@ const Profile = () => {
                 <Sidebar activeMenu='Profile' />
                 {/* Main Content */}
                 {/* <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8"> */}
-                <main className="flex-1 overflow-y-auto bg-gray-900">
+                <main className="flex-1 overflow-y-auto bg-deep-purple">
                     <UserNavbar />
                     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                         {/* Profile Card */}
@@ -162,35 +162,6 @@ const Profile = () => {
                             </div>
                         </div>
 
-                        {/* Upgrade Role Section */}
-                        {!hasOrganizerRole && (
-                            <div className="mt-6 bg-gradient-to-r from-yellow-400/20 to-orange-500/20 backdrop-blur-lg rounded-2xl p-6 border border-yellow-500/30">
-                                <div className="flex items-start">
-                                    <div className="flex-shrink-0">
-                                        <Crown className="text-yellow-400" size={32} />
-                                    </div>
-                                    <div className="ml-4 flex-1">
-                                        <h3 className="text-xl font-bold text-white mb-2">Upgrade to Organizer Role</h3>
-                                        <p className="text-purple-100 mb-4">
-                                            Unlock additional features by upgrading to a Organizer role. As a Organizer, you can:
-                                        </p>
-                                        <ul className="list-disc list-inside text-purple-100 space-y-1 mb-4">
-                                            <li>Create and host workshops</li>
-                                            <li>Teach dance classes and courses</li>
-                                            <li>Earn from your expertise</li>
-                                            <li>Build your student community</li>
-                                            <li>Access instructor-only features</li>
-                                        </ul>
-                                        <button
-                                            onClick={() => setShowUpgradeModal(true)}
-                                            className="px-6 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold rounded-lg hover:from-yellow-500 hover:to-orange-600 transition-all shadow-lg"
-                                        >
-                                            Request Upgrade
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
 
                         {/* User Details */}
                         <div className="mt-6 bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-purple-500/30">
@@ -220,6 +191,35 @@ const Profile = () => {
                                 </div> */}
                             </div>
                         </div>
+                                            {/* Upgrade Role Section */}
+                                            {!hasOrganizerRole && (
+                                                <div className="mt-6 bg-gradient-to-r from-yellow-400/20 to-orange-500/20 backdrop-blur-lg rounded-2xl p-6 border border-yellow-500/30">
+                                                    <div className="flex items-start">
+                                                        <div className="flex-shrink-0">
+                                                            <Crown className="text-yellow-400" size={32} />
+                                                        </div>
+                                                        <div className="ml-4 flex-1">
+                                                            <h3 className="text-xl font-bold text-white mb-2">Upgrade to Organizer Role</h3>
+                                                            <p className="text-purple-100 mb-4">
+                                                                Unlock additional features by upgrading to a Organizer role. As a Organizer, you can:
+                                                            </p>
+                                                            <ul className="list-disc list-inside text-purple-100 space-y-1 mb-4">
+                                                                <li>Create and conduct competitions</li>
+                                                                <li>Teach dance classes and courses</li>
+                                                                <li>Earn from your expertise</li>
+                                                                <li>Build your student community</li>
+                                                                <li>Access instructor-only features</li>
+                                                            </ul>
+                                                            <button
+                                                                onClick={() => setShowUpgradeModal(true)}
+                                                                className="px-6 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold rounded-lg hover:from-yellow-500 hover:to-orange-600 transition-all shadow-lg"
+                                                            >
+                                                                Request Upgrade
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
                     </div>
                 </main>
             </div>

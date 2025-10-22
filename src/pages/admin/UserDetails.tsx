@@ -12,6 +12,7 @@ import toast from "react-hot-toast";
 import { Button } from "../../components/ui/Button";
 import { Pagination } from "../../components/ui/Pagination";
 import Navbar from "../../components/admin/Navbar";
+import ConfirmationModal from "../../components/ui/ConfirmationModal";
 
 interface User {
   _id: string;
@@ -36,6 +37,8 @@ const UserDetails: React.FC = () => {
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [updateLoading, setUpdateLoading] = useState<string | null>(null)
+   const [showBlockModal, setShowBlockModal] = useState(false)
+ const [selectedUser, setSelectedUser] = useState<User | null>(null)
 
     // const dispatch = useDispatch()
     useEffect(() => {
@@ -74,7 +77,12 @@ const UserDetails: React.FC = () => {
   }
 };
 
-const handleToggleUserStatus = async (userId: string, currentStatus: boolean): Promise<void> => {
+// const handleToggleUserStatus = async (userId: string, currentStatus: boolean): Promise<void> => {
+const handleToggleUserStatus = async (): Promise<void> => {
+ if (!selectedUser) return;
+ const userId = selectedUser._id;
+ const currentStatus = selectedUser.isActive;
+
     if (!userId || typeof userId !== 'string' || userId.trim() === '') {
       console.error('Invalid user ID:', userId);
       toast.error('Invalid user ID. Please try again.', {
@@ -86,6 +94,7 @@ const handleToggleUserStatus = async (userId: string, currentStatus: boolean): P
           border: '1px solid #F87171'
         }
       });
+      setShowBlockModal(false);
       return;
     }
     setUpdateLoading(userId);
@@ -135,9 +144,14 @@ const handleToggleUserStatus = async (userId: string, currentStatus: boolean): P
       });
     } finally {
       setUpdateLoading(null);
+       setShowBlockModal(false);
+ setSelectedUser(null);
     }
   };
-
+const openBlockModal = (user: User) => {
+ setSelectedUser(user);
+ setShowBlockModal(true);
+}
 const filteredAndSortedData = useMemo(() => {
     const filtered = users.filter(
       (user) =>
@@ -300,7 +314,7 @@ const filteredAndSortedData = useMemo(() => {
       render: (_value: unknown, record: User) => (
         <Switch
           checked={record.isActive}
-          onCheckedChange={() => handleToggleUserStatus(record._id, record.isActive)}
+          onCheckedChange={() => openBlockModal(record)}
           disabled={updateLoading === record._id}
           className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-red-600"
         />
@@ -502,6 +516,23 @@ const filteredAndSortedData = useMemo(() => {
       {/* <div className="md:ml-64">
         <Footer />
       </div> */}
+      <ConfirmationModal
+    show={showBlockModal}
+    onClose={() => {
+        setShowBlockModal(false);
+        setSelectedUser(null);
+    }}
+    onConfirm={handleToggleUserStatus}
+    title={selectedUser?.isActive ? "Block User" : "Unblock User"}
+    message={
+        selectedUser?.isActive
+            ? `Are you sure you want to block ${selectedUser?.username}?...`
+            : `Are you sure you want to unblock ${selectedUser?.username}?...`
+    }
+    confirmText={selectedUser?.isActive ? "Block User" : "Unblock User"}
+    variant={selectedUser?.isActive ? "danger" : "info"}
+    isLoading={updateLoading === selectedUser?._id}
+/>
     </div>
     )
 }

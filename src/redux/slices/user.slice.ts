@@ -1,27 +1,35 @@
-import {createSlice, type PayloadAction} from '@reduxjs/toolkit';
+import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
-interface UserData{
-    _id:string;
-    id:string;
-    username:string;
-    email:string;
-    role:string[];
-    profileImage?:string;
-    phone?:string;
-    isVerified?:boolean;
+interface UserData {
+  _id: string;
+  id: string;
+  username: string;
+  email: string;
+  role: string[];
+  profileImage?: string;
+  phone?: string;
+  isVerified?: boolean;
+  // Dancer Profile Fields
+  bio?: string;
+  experienceYears?: number;
+  portfolioLinks?: string[];
+  danceStyles?: string[];
+  likes?: number;
+  preferredLocation?: string;
+  availableForPrograms?: boolean;
 }
-interface UserState{
-    userData:UserData | null;
-    token:string | null;
-    isAuthenticated:boolean;
-    isLoading:boolean;
+interface UserState {
+  userData: UserData | null;
+  token: string | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
 }
 
 const getInitialState = (): UserState => {
   try {
     const storedUserData = localStorage.getItem('userDatas');
     const storedToken = localStorage.getItem('userToken');
-    
+
     return {
       userData: storedUserData ? JSON.parse(storedUserData) : null,
       token: storedToken,
@@ -41,7 +49,7 @@ const getInitialState = (): UserState => {
     };
   }
 }
-  const initialState: UserState = getInitialState();
+const initialState: UserState = getInitialState();
 
 const userSlice = createSlice({
   name: 'user',
@@ -52,28 +60,28 @@ const userSlice = createSlice({
       state.token = action.payload.token;
       state.isAuthenticated = true;
       state.isLoading = false;
-      
+
       // sync with localStorage
       localStorage.setItem('userDatas', JSON.stringify(action.payload.user));
       localStorage.setItem('userToken', action.payload.token);
     },
-    
+
     logoutUser: (state) => {
       state.userData = null;
       state.token = null;
       state.isAuthenticated = false;
       state.isLoading = false;
-      
+
       // clear localStorage
       localStorage.removeItem('userDatas');
       localStorage.removeItem('userToken');
     },
-    }
+  }
 })
 
 
-export const { 
-  loginUser, 
+export const {
+  loginUser,
   logoutUser
 } = userSlice.actions;
 

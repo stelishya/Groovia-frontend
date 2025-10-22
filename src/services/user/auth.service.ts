@@ -148,17 +148,17 @@ export const userLogin = async(data: { email: string; password: string; role?: s
   try {
     const response = await AuthAxios.post('/login', data);
 
-    const {user,token} = response.data;
+    const {user,accessToken} = response.data;
 
     // Store user data if needed
-    // if (response.data.token) {
-    //   localStorage.setItem('userToken', response.data.token);
-    // }
+    if (accessToken) {
+      localStorage.setItem('token', accessToken);
+    }
     // if (response.data.user) {
     //   localStorage.setItem('user', JSON.stringify(response.data.user));
     // }
 
-    dispatch(loginUser({user,token}))
+    dispatch(loginUser({user,token:accessToken}))
 
     return response.data;
   } catch (error) {
