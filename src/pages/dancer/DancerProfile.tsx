@@ -126,6 +126,10 @@ const Profile = () => {
             toast.error('Failed to like');
         }
     };
+    const likeCount =
+        Array.isArray(userData?.likes) ? userData.likes.length
+            : typeof userData?.likes === 'number' ? userData.likes
+            : 0;
     return (
         <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-pink-600">
             {/* Header */}
@@ -214,7 +218,7 @@ const Profile = () => {
                                             className="mt-4 sm:mt-0 px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg flex items-center transition-colors"
                                         >
                                             <Heart size={18} className="mr-2" />
-                                            {userData?.likes || 0}
+                                            {likeCount}
                                         </button>
                                     )}
                                 </div>

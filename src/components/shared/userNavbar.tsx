@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Bell, ChevronDown, X, User, Settings, LogOut } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -29,51 +29,51 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ onSearch }) => {
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [notificationTab, setNotificationTab] = useState<'all' | 'unread' | 'read'>('all');
     const [notifications, setNotifications] = useState<Notification[]>([]);
- const [loadingNotifications, setLoadingNotifications] = useState(false);
- // Fetch notifications when component mounts
- useEffect(() => {
- if (userData?._id) {
- fetchNotifications();
- }
- }, [userData?._id]);
- const fetchNotifications = async () => {
- try {
- setLoadingNotifications(true);
- const response = await UserAxios.get(`/notifications/user/${userData?._id}`);
- console.log("response in fetchNotifications : ",response)
- setNotifications(response.data);
- } catch (error) {
- console.error('Failed to fetch notifications:', error);
- } finally {
- setLoadingNotifications(false);
- }
-};
-const markAsRead = async (notificationId: string) => {
- try {
- await UserAxios.patch(`/notifications/${notificationId}/read`);
- // Update local state
- setNotifications(prev =>
- prev.map(notif =>
- notif._id === notificationId ? { ...notif, isRead: true } : notif
- )
- );
- } catch (error) {
- console.error('Failed to mark notification as read:', error);
- }
-};
-const markAllAsRead = async () => {
- try {
- await UserAxios.patch(`/notifications/user/${userData?._id}/read-all`);
- // Update local state
- setNotifications(prev =>
- prev.map(notif =>
- notif.userId === userData?._id ? { ...notif, isRead: true } : notif
- )
- );
- } catch (error) {
- console.error('Failed to mark all notifications as read:', error);
- }
-};
+    const [loadingNotifications, setLoadingNotifications] = useState(false);
+    // Fetch notifications when component mounts
+    // useEffect(() => {
+    //     if (userData?._id) {
+    //         fetchNotifications();
+    //     }
+    // }, [userData?._id]);
+    const fetchNotifications = async () => {
+        try {
+            setLoadingNotifications(true);
+            const response = await UserAxios.get(`/notifications/user/${userData?._id}`);
+            console.log("response in fetchNotifications : ", response)
+            setNotifications(response.data);
+        } catch (error) {
+            console.error('Failed to fetch notifications:', error);
+        } finally {
+            setLoadingNotifications(false);
+        }
+    };
+    const markAsRead = async (notificationId: string) => {
+        try {
+            await UserAxios.patch(`/notifications/${notificationId}/read`);
+            // Update local state
+            setNotifications(prev =>
+                prev.map(notif =>
+                    notif._id === notificationId ? { ...notif, isRead: true } : notif
+                )
+            );
+        } catch (error) {
+            console.error('Failed to mark notification as read:', error);
+        }
+    };
+    const markAllAsRead = async () => {
+        try {
+            await UserAxios.patch(`/notifications/user/${userData?._id}/read-all`);
+            // Update local state
+            setNotifications(prev =>
+                prev.map(notif =>
+                    notif.userId === userData?._id ? { ...notif, isRead: true } : notif
+                )
+            );
+        } catch (error) {
+            console.error('Failed to mark all notifications as read:', error);
+        }
+    };
     // Mock notifications - Replace with actual API call later
     // const [notifications] = useState<Notification[]>([
     //     {
@@ -160,7 +160,7 @@ const markAllAsRead = async () => {
                 {/* Notification Bell */}
                 <div className="relative mr-6">
                     <button
-                        onClick={() => setShowNotifications(!showNotifications)}
+                        // onClick={() => setShowNotifications(!showNotifications)}
                         className="relative text-white text-2xl cursor-pointer hover:text-purple-300 transition-colors"
                     >
                         <Bell className="w-6 h-6" />
@@ -236,7 +236,7 @@ const markAllAsRead = async () => {
                         <div className="flex items-center justify-between mb-3">
                             <h3 className="text-lg font-bold text-gray-800">Notifications</h3>
                             <button
-                                onClick={() => setShowNotifications(false)}
+                                // onClick={() => setShowNotifications(false)}
                                 className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
                             >
                                 <X className="h-5 w-5 text-gray-500" />
@@ -249,11 +249,10 @@ const markAllAsRead = async () => {
                                 <button
                                     key={tab}
                                     onClick={() => setNotificationTab(tab)}
-                                    className={`flex-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors capitalize ${
-                                        notificationTab === tab
+                                    className={`flex-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors capitalize ${notificationTab === tab
                                             ? 'bg-purple-600 text-white'
                                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                                    }`}
+                                        }`}
                                 >
                                     {tab}
                                     {tab === 'unread' && unreadCount > 0 && (
@@ -277,9 +276,8 @@ const markAllAsRead = async () => {
                                     <div
                                         key={notification._id}
                                         onClick={() => !notification.isRead && markAsRead(notification._id)}
-                                        className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
-                                            !notification.isRead ? 'bg-purple-50' : ''
-                                        }`}
+                                        className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${!notification.isRead ? 'bg-purple-50' : ''
+                                            }`}
                                     >
                                         <div className="flex items-start">
                                             <span className="text-2xl mr-3">
@@ -298,11 +296,11 @@ const markAllAsRead = async () => {
                                                     {notification.message}
                                                 </p>
                                                 {notification.adminNote && (
- <div className="mt-2 p-2 bg-gray-100 rounded text-xs text-gray-700">
- <span className="font-semibold">Admin Note: </span>
- {notification.adminNote}
- </div>
- )}
+                                                    <div className="mt-2 p-2 bg-gray-100 rounded text-xs text-gray-700">
+                                                        <span className="font-semibold">Admin Note: </span>
+                                                        {notification.adminNote}
+                                                    </div>
+                                                )}
                                                 <p className="text-xs text-gray-400 mt-2">
                                                     {formatTime(notification.createdAt)}
                                                 </p>
@@ -317,9 +315,9 @@ const markAllAsRead = async () => {
                     {/* Footer */}
                     {filteredNotifications.length > 0 && (
                         <div className="p-3 border-t border-gray-200">
-                            <button 
-                            onClick={markAllAsRead}
-                            className="w-full text-center text-sm text-purple-600 hover:text-purple-700 font-medium">
+                            <button
+                                onClick={markAllAsRead}
+                                className="w-full text-center text-sm text-purple-600 hover:text-purple-700 font-medium">
                                 Mark all as read
                             </button>
                         </div>

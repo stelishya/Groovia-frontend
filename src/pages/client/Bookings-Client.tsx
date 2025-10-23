@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Bell } from 'lucide-react';
-import { getClientEventRequests } from '../../services/client/client.service';
+import { Search, Bell, X } from 'lucide-react';
+import { getClientEventRequests, updateEventBookingStatus } from '../../services/client/client.service';
 import Sidebar from '../../components/shared/Sidebar';
+import ConfirmationModal from '../../components/ui/ConfirmationModal';
 
 interface Dancer {
     _id: string;
@@ -33,7 +34,7 @@ const Header = () => (
     </header>
 );
 
-const RequestCard = ({ request }: { request: EventRequest }) => (
+const RequestCard = ({ request, onCancelClick }: { request: EventRequest, onCancelClick: (id: string) => void }) => (
     <div className="bg-purple-800 rounded-lg p-4 flex justify-between items-center">
         <div className="flex items-center">
             <img src={request.dancerId.profileImage || 'https://i.pravatar.cc/40'} alt={request.dancerId.username} className="w-12 h-12 rounded-full mr-4" />
@@ -53,12 +54,12 @@ const RequestCard = ({ request }: { request: EventRequest }) => (
                 {request.status === 'pending' && (
                     <>
                         {/* <button className="bg-green-500 text-white px-3 py-1 rounded-md text-sm">Accept</button> */}
-                        <button className="bg-orange-500 text-white px-3 py-1 rounded-md text-sm">Cancel Request</button>
+                        <button onClick={() => onCancelClick(request._id)} className="bg-orange-500 text-white px-3 py-1 rounded-md text-sm">Cancel Request</button>
                     </>
                 )}
                 {request.status === 'accepted' && (
                     <>
-                        <button className="bg-blue-500 text-white px-3 py-1 rounded-md text-sm">View Details</button>
+                        <button className="bg-blue-500 text-white px-3 py-1 rounded-md text-sm">Pay 50% Advance to Confirm Booking</button>
                         <button className="bg-purple-500 text-white px-3 py-1 rounded-md text-sm">Message</button>
                     </>
                 )}
@@ -70,19 +71,67 @@ const RequestCard = ({ request }: { request: EventRequest }) => (
 const BookingsPage = () => {
     const [requests, setRequests] = useState<EventRequest[]>([]);
     const [loading, setLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(5);
+    const [totalRequests, setTotalRequests] = useState(0);
+    const [search, setSearch] = useState('');
+    const [status, setStatus] = useState('');
+    const [sortBy, setSortBy] = useState('date');
+    const [modalOpen, setModalOpen] = useState(false);
+    const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
+
+    const handleUpdateStatus = async (id: string, status: 'cancelled') => {
+        try {
+            const updatedRequest = await updateEventBookingStatus(id, status);
+            setRequests(prevRequests => 
+                prevRequests.map(req => req._id === id ? { ...req, status: updatedRequest.request.status } : req)
+            );
+        } catch (error) {
+            console.error("Failed to update status", error);
+        }
+    };
+
+    const handleCancelClick = (id: string) => {
+        setSelectedRequestId(id);
+        setModalOpen(true);
+    };
+
+    const confirmCancel = () => {
+        if (selectedRequestId) {
+            handleUpdateStatus(selectedRequestId, 'cancelled');
+        }
+        setModalOpen(false);
+        setSelectedRequestId(null);
+    };
 
     useEffect(() => {
         const fetchRequests = async () => {
+            setLoading(true);
             try {
-                const data = await getClientEventRequests();
+                const params = new URLSearchParams();
+                params.append('page', currentPage.toString());
+                params.append('limit', pageSize.toString());
+                if (search) params.append('search', search);
+                if (status) params.append('status', status);
+                if (sortBy) params.append('sortBy', sortBy);
+
+                const data = await getClientEventRequests(params);
                 setRequests(data.requests || []);
+                setTotalRequests(data.total || 0);
             } catch (error) {
                 console.error("Failed to fetch requests", error);
             }
             setLoading(false);
         };
-        fetchRequests();
-    }, []);
+
+        const handler = setTimeout(() => {
+            fetchRequests();
+        }, 500); // Debounce search input
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [currentPage, pageSize, search, status, sortBy]);
 
     return (
         <div className="flex-grow p-8 bg-deep-purple text-white overflow-y-auto">
@@ -94,18 +143,23 @@ const BookingsPage = () => {
             <div className="flex justify-between items-center mb-6">
                 <div className="relative w-1/3">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-300" />
-                    <input type="text" placeholder="Search Requests..." className="w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg py-2 pl-10 focus:outline-none" />
+                    <input type="text" placeholder="Search by event..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg py-2 pl-10 focus:outline-none" />
+                    {search && <X className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-300 cursor-pointer" onClick={() => setSearch('')} />}
                 </div>
                 <div className="flex items-center space-x-4">
-                    <select className="bg-purple-700 text-white rounded-lg py-2 px-4 focus:outline-none">
-                        <option>All Status</option>
-                        <option>Pending</option>
-                        <option>Accepted</option>
-                        <option>Rejected</option>
+                    <select value={status} onChange={(e) => setStatus(e.target.value)} className="bg-purple-700 text-white rounded-lg py-2 px-4 focus:outline-none">
+                        <option value="">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="accepted">Accepted</option>
+                        <option value="rejected">Rejected</option>
+                        <option value="cancelled">Cancelled</option>
                     </select>
                     <div className="flex items-center">
                         <span className="text-gray-400 mr-2">Sort by:</span>
-                        <button className="bg-purple-600 text-white py-2 px-4 rounded-lg">Date (Newest)</button>
+                        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-purple-700 text-white rounded-lg py-2 px-4 focus:outline-none">
+                        <option value="date">Sort by Date</option>
+                        <option value="budget">Sort by Budget</option>
+                    </select>
                     </div>
                 </div>
             </div>
@@ -113,11 +167,49 @@ const BookingsPage = () => {
                 {loading ? (
                     <p>Loading requests...</p>
                 ) : requests.length > 0 ? (
-                    requests.map(req => <RequestCard key={req._id} request={req} />)
+                    requests.map(req => <RequestCard key={req._id} request={req} onCancelClick={handleCancelClick} />)
                 ) : (
                     <p>No event requests found.</p>
                 )}
             </div>
+
+            {/* Pagination */}
+            <div className="flex justify-end items-center mt-8 space-x-4">
+                <button 
+                    onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    Previous
+                </button>
+                <span className="text-white">Page {currentPage} of {Math.ceil(totalRequests / pageSize)}</span>
+                <button 
+                    onClick={() => setCurrentPage(p => p + 1)}
+                    disabled={currentPage >= Math.ceil(totalRequests / pageSize)}
+                    className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    Next
+                </button>
+            </div>
+            {modalOpen && (
+                <ConfirmationModal
+                show={modalOpen}
+                onClose={() => setModalOpen(false)}
+                onConfirm={confirmCancel}
+                title="Confirm Cancellation"
+                message="Are you sure you want to cancel this booking request?"
+                />
+                // <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                //     <div className="bg-purple-800 rounded-lg p-6 w-full max-w-md mx-4">
+                //         <h2 className="text-xl font-bold text-white mb-4">Confirm Cancellation</h2>
+                //         <p className="text-gray-300 mb-6">Are you sure you want to cancel this booking request?</p>
+                //         <div className="flex justify-end space-x-4">
+                //             <button onClick={() => setModalOpen(false)} className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors">Keep Request</button>
+                //             <button onClick={confirmCancel} className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors">Confirm</button>
+                //         </div>
+                //     </div>
+                // </div>
+            )}
         </div>
     );
 };

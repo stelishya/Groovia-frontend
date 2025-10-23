@@ -11,7 +11,7 @@ interface Dancer {
   username: string;
   profileImage?: string;
   danceStyles?: string[];
-  likes?: number;
+  likes?: any[];
   bio?: string;
   preferredLocation?: string;
   experienceYears?: number;
@@ -23,12 +23,16 @@ interface Dancer {
 interface DancerCardProps {
   dancer: Dancer;
   onSendRequest: (dancer: Dancer) => void;
+  isRequested: boolean;
+  onLike: (dancerId: string) => void;
+  isLiked: boolean;
 }
 
-const DancerCard = ({ dancer, onSendRequest }: DancerCardProps) => {
+const DancerCard = ({ dancer, onSendRequest, isRequested, onLike, isLiked }: DancerCardProps) => {
   console.log("DancerCard in Card.tsx : ", dancer)
   const navigate = useNavigate();
   const primaryStyle = dancer.danceStyles?.[0] || 'Dancer';
+  const likesCount = dancer.likes?.length || 0;
 
   return (
     <div className="bg-gradient-to-br from-purple-600 via-blue-500 to-pink-500 p-1 rounded-3xl transform hover:-translate-y-2 transition-all duration-300 shadow-xl hover:shadow-2xl h-full">
@@ -45,10 +49,10 @@ const DancerCard = ({ dancer, onSendRequest }: DancerCardProps) => {
           <UserIcon className="text-purple-400 mr-2" size={18} />
           <h3 className="text-xl font-bold">{dancer.username}</h3>
           </div>
-          <div className="flex items-center space-x-2">
-          <Heart className="text-pink-400" size={18} />
-          <span className="text-sm font-medium">{dancer.likes || 0} likes</span>
-          </div>
+          <button onClick={() => onLike(dancer._id)} className="flex items-center space-x-2 focus:outline-none">
+            <Heart className={`${isLiked ? 'fill-current text-pink-500' : 'text-pink-400'} transition-colors`} size={18} />
+            <span className="text-sm font-medium">{likesCount} {likesCount <= 1 ? 'like' : 'likes'}</span>
+          </button>
         </div>
         {/* Dance styles */}
         <div className="flex items-center justify-between mb-3">
@@ -97,15 +101,27 @@ const DancerCard = ({ dancer, onSendRequest }: DancerCardProps) => {
         </div>
           {/* Buttons*/}
           <div className="flex justify-end space-x-3 mt-auto">
-          <button className=" w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition">
+          <button 
+            className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition"
+            onClick={() => navigate(`/dancers/${dancer._id}`)} // Assuming a route like this exists
+          >
             View Profile
           </button>
-            <button
+          {isRequested ? (
+            <button 
+              className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition"
+              onClick={() => navigate('/bookings')}
+            >
+              View Details
+            </button>
+          ) : (
+            <button 
               className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition"
               onClick={() => onSendRequest(dancer)}
             >
               Send Request
             </button>
+          )}
           </div>
 
       </div>

@@ -1,4 +1,4 @@
-import { House, MessageSquare, Calendar, Briefcase, Trophy, CreditCard, User, LogOut, Settings, Search, Bell } from "lucide-react"
+import { House, MessageSquare, Calendar, Briefcase, Trophy, CreditCard, User, LogOut, Settings } from "lucide-react"
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logoutUser as logoutUserAction} from "../../redux/slices/user.slice";

@@ -1,7 +1,8 @@
-import { House, MessageSquare, Calendar, Briefcase, Trophy, CreditCard, User as UserIcon, LogOut, Settings, Search, Bell } from "lucide-react"
+import { House, MessageSquare, Calendar, Briefcase, Trophy, CreditCard, 
+    User as UserIcon, LogOut, Settings, Search, Bell ,X} from "lucide-react"
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { logoutUser } from "../../redux/slices/user.slice";
+// import { useNavigate } from "react-router-dom";
+// import { logoutUser } from "../../redux/slices/user.slice";
 import { type RootState } from "../../redux/store";
 import Sidebar from "../../components/shared/Sidebar";
 import DancerCard from "../../components/ui/Card";
@@ -9,14 +10,16 @@ import FormModal from "../../components/ui/FormModal";
 import { GitPullRequest } from "lucide-react";
 import { useEffect, useState } from "react";
 import getAllDancers, { sendRequestToDancers } from "../../services/client/browseDancers.service";
+import { toggleLike } from "../../services/dancer/dancer.service";
+import { getClientEventRequests } from '../../services/client/client.service';
 
 
 const Header = () => (
     <header className="flex justify-end items-center p-4">
-        <div className="relative w-80 mr-6">
+        {/* <div className="relative w-80 mr-6">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-300" />
             <input type="text" placeholder="Search Workshops, Competitions..." className="w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg py-2 pl-10 focus:outline-none" />
-        </div>
+        </div> */}
         <Bell className="text-white text-2xl mr-6 cursor-pointer" />
         <img src="https://i.pravatar.cc/40?img=32" alt="User" className="w-10 h-10 rounded-full cursor-pointer" />
     </header>
@@ -29,24 +32,32 @@ interface Dancer {
     //   role:string;
     profileImage?: string;
     bio?: string;
-    experienceYears?: number;
-    portfolioLinks?: string[];
+    // experienceYears?: number;
+    // portfolioLinks?: string[];
     danceStyles?: string[];
-    likes?: number;
+    likes?: string[];
     createdAt: string;
     updatedAt: string;
+}
+interface EventRequest {
+ _id: string;
+ dancerId: { // dancerId is an object after population
+ _id: string;
+ username: string;
+ profileImage?: string;
+ }; 
 }
 const Dashboard = ({ userData }: { userData: any }) => {
     console.log("Client Dashboard loaded")
 
     const [currentPage, setCurrentPage] = useState(1)
-    const [pageSize, setPageSize] = useState(10)
+    const [pageSize, setPageSize] = useState(8)
+    const [totalDancers, setTotalDancers] = useState(0);
     const [search, setSearch] = useState('');
-    const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
+    const [sortBy, setSortBy] = useState('likes');
     const [style, setStyle] = useState('');
-    const [city, setCity] = useState('');
-    const [filters, setFilters] = useState({ search: '', style: '', city: '' });
-    const [loading, setLoading] = useState(true)
+    // const [city, setCity] = useState('');
+        const [loading, setLoading] = useState(true)
     const [dancers, setDancers] = useState<Dancer[]>([])
     const [selectedDancer, setSelectedDancer] = useState<Dancer | null>(null)
     const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
@@ -56,11 +67,23 @@ const Dashboard = ({ userData }: { userData: any }) => {
         venue: '',
         budget: '',
     });
+    const [requestedDancerIds, setRequestedDancerIds] = useState(new Set<string>());
+    const [likedDancers, setLikedDancers] = useState(new Set<string>());
 
 
     useEffect(() => {
-        fetchDancers()
-    }, [])
+        const handler = setTimeout(() => {
+            fetchDancers();
+        }, 500); // Debounce search input
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [search, style, currentPage, sortBy]);
+
+    useEffect(() => {
+        fetchSentRequests();
+    }, []);
 
     const fetchDancers = async (): Promise<void> => {
         setLoading(true);
@@ -90,20 +113,45 @@ const Dashboard = ({ userData }: { userData: any }) => {
             // }
 
             const params = new URLSearchParams();
-            if (filters.search) params.append('search', filters.search);
-            if (filters.style) params.append('danceStyle', filters.style);
-            if (filters.city) params.append('location', filters.city);
+            if (search) params.append('search', search);
+            if (style) params.append('danceStyle', style);
+            // if (city) params.append('location', city);
+            if (sortBy) params.append('sortBy', sortBy);
+            params.append('page', currentPage.toString());
+            params.append('limit', pageSize.toString());
             console.log("params", params)
 
             //  const response = await ClientAxios.get(`/dancers?${params.toString()}`);
             const response = await getAllDancers(params);
             console.log("response in fetchDancers in ClientHome.tsx", response)
             setDancers(response.dancers || []);
+            setTotalDancers(response.total || 0);
+
+            // Update liked dancers set
+            const liked = new Set<string>();
+            response.dancers.forEach((dancer: Dancer) => {
+                if (dancer.likes?.includes(userData?._id)) {
+                    liked.add(dancer._id);
+                }
+            });
+            setLikedDancers(liked);
         } catch (error) {
             console.log("error in fetchDancers in ClientHome.tsx", error)
             setDancers([]);
         }
     }
+
+    const fetchSentRequests = async () => {
+        try {
+            const data:{requests:EventRequest[]} = await getClientEventRequests(new URLSearchParams);
+            if (data.requests) {
+                const ids = new Set(data.requests.map(req => req.dancerId._id));
+                setRequestedDancerIds(ids);
+            }
+        } catch (error) {
+            console.error("Failed to fetch sent requests:", error);
+        }
+    };
 
     const handleOpenRequestModal = (dancer: Dancer) => {
         setSelectedDancer(dancer);
@@ -123,10 +171,35 @@ const Dashboard = ({ userData }: { userData: any }) => {
             // API call
             const response = await sendRequestToDancers(selectedDancer._id, requestData);
             console.log("response of sendRequestToDancers in ClientHome.tsx",response)
+            // Add the dancer's ID to the set of requested dancers
+            setRequestedDancerIds(prevIds => new Set(prevIds).add(selectedDancer._id));
             handleCloseRequestModal();
             
         } catch (error) {
             console.error("Send request failed", error);
+        }
+    };
+
+    const handleLike = async (dancerId: string) => {
+        try {
+            const response = await toggleLike(dancerId);
+            const updatedDancer = response.dancer;
+
+            setDancers(prevDancers =>
+                prevDancers.map(d => (d._id === dancerId ? updatedDancer : d))
+            );
+
+            setLikedDancers(prevLiked => {
+                const newLiked = new Set(prevLiked);
+                if (newLiked.has(dancerId)) {
+                    newLiked.delete(dancerId);
+                } else {
+                    newLiked.add(dancerId);
+                }
+                return newLiked;
+            });
+        } catch (error) {
+            console.error("Failed to toggle like", error);
         }
     };
 
@@ -169,40 +242,53 @@ const Dashboard = ({ userData }: { userData: any }) => {
             </div>
             
         </div> */}
-            <div className="min-h-screen mt-12  p-6 border border-purple-500/50 rounded-xl">
-                <h1 className="text-3xl font-semibold text-center mb-8 text-white-800">
+            <div className="min-h-screen mt-12  p-6 bg-purple-500/50 border border-purple-500/50 rounded-xl">
+                <h1 className="text-3xl font-semibold text-center mb-8 text-deep-purple">
                     💃🏻 Browse Dancers
                 </h1>
 
                 {/* Filters */}
                 <div className="flex flex-wrap justify-center gap-4 mb-8">
+                    <div className="relative w-1/3">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-300" />
                     <input
                         type="text"
                         placeholder="Search dancers..."
-                        className="border border-gray-300 rounded-lg px-4 py-2 w-64 focus:ring-2 focus:ring-blue-400"
+                        className="border border-purple-300 bg-purple-700 rounded-lg px-4 py-2 pl-10 w-full focus:ring-2 focus:ring-blue-400"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
-
+                    {search && <X className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-300 cursor-pointer" onClick={() => setSearch('')} />}
+                    </div>
                     <select
-                        className="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400"
+                        className="border border-purple-300 bg-purple-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400"
                         value={style}
                         onChange={(e) => setStyle(e.target.value)}
                     >
-                        <option value="">All Categories</option>
-                        <option value="HipHop">Hip Hop</option>
+                        <option value="">All Styles</option>
+                        <option value="Hip-Hop">Hip Hop</option>
                         <option value="Classical">Classical</option>
                         <option value="Contemporary">Contemporary</option>
                         <option value="Folk">Folk</option>
+                        <option value="Breakdance">Breakdance</option>
                     </select>
 
-                    <input
+                    <select
+                        className="border border-purple-300 bg-purple-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400"
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value)}
+                    >
+                        <option value="likes">Sort by Likes</option>
+                        <option value="name">Sort by Name</option>
+                    </select>
+
+                    {/* <input
                         type="text"
                         placeholder="City"
-                        className="border border-gray-300 rounded-lg px-4 py-2 w-48 focus:ring-2 focus:ring-blue-400"
+                        className="border border-purple-300 bg-purple-700 rounded-lg px-4 py-2 w-48 focus:ring-2 focus:ring-blue-400"
                         value={city}
                         onChange={(e) => setCity(e.target.value)}
-                    />
+                    /> */}
 
                     {/* <button
                         onClick={handleFilter}
@@ -216,13 +302,39 @@ const Dashboard = ({ userData }: { userData: any }) => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     {dancers.length > 0 ? (
                         dancers.map((dancer) => (
-                            <DancerCard key={dancer._id} dancer={dancer} onSendRequest={handleOpenRequestModal} />
+                            <DancerCard 
+                                key={dancer._id} 
+                                dancer={dancer} 
+                                onSendRequest={handleOpenRequestModal} 
+                                isRequested={requestedDancerIds.has(dancer._id)}
+                                onLike={handleLike}
+                                isLiked={likedDancers.has(dancer._id)}
+                            />
                         ))
                     ) : (
                         <p className="text-center col-span-full text-gray-500">
                             No dancers found 😢
                         </p>
                     )}
+                </div>
+
+                {/* Pagination */}
+                <div className="flex justify-end items-center mt-8 space-x-4">
+                    <button 
+                        onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        Previous
+                    </button>
+                    <span className="text-white">Page {currentPage} of {Math.ceil(totalDancers / pageSize)}</span>
+                    <button 
+                        onClick={() => setCurrentPage(p => p + 1)}
+                        disabled={currentPage >= Math.ceil(totalDancers / pageSize)}
+                        className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        Next
+                    </button>
                 </div>
             </div>
 
@@ -283,7 +395,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
 };
 
 export default function Home() {
-    const { userData } = useSelector((state: RootState) => state.user)
+    const { userData } = useSelector((state: RootState) => state.user);
     return (
         <div className="flex h-screen bg-gray-900">
             <Sidebar />
