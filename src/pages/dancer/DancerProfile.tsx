@@ -9,8 +9,9 @@ import Sidebar from '../../components/shared/Sidebar';
 import UserNavbar from '../../components/shared/userNavbar';
 import FormModal from '../../components/ui/FormModal';
 import UpgradeRoleModal from '../../components/shared/UpgradeRoleModal';
-import { DancerAxios } from '../../api/user.axios';
+import { ClientAxios, DancerAxios } from '../../api/user.axios';
 import { loginUser } from '../../redux/slices/user.slice';
+import { decodeJwt } from '../../utils/auth';
 
 const Profile = () => {
     const navigate = useNavigate();
@@ -83,9 +84,18 @@ const Profile = () => {
 
     const handleProfileUpdate = async () => {
         try {
+             const token = localStorage.getItem('token');
+//  const decoded = decodeJwt(token);
+//  const role = decoded?.role?.[0];
+//  const api = role === 'dancer' ? DancerAxios : ClientAxios ;
+
             console.log("profileData : ", profileData)
-            const response = await DancerAxios.patch('/profile', profileData);
+            // const response = await DancerAxios.patch('/profile', profileData);
+             const response = await DancerAxios.patch('/profile', profileData);
             if (response.status === 200) {
+                 if (response.data?.token) {
+ localStorage.setItem('token', response.data.token);
+ }
                 toast.success('Profile updated successfully!');
                 //             setIsEditingProfile(false);
                 //         }
@@ -99,8 +109,7 @@ const Profile = () => {
                 const { user } = response.data;
                 dispatch(loginUser({ user, token: localStorage.getItem('token') || '' }));
                 setShowEditModal(false);
-                // Optionally refresh user data from backend
-                // window.location.reload(); // Temporary - should update Redux store instead
+               
             }
         } catch (error: any) {
             const errorMessage = error.response?.data?.message || 'Failed to update profile';

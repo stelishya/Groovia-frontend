@@ -48,7 +48,7 @@ const ConfirmationModal = ({
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div
-                className={`bg-gray-800 rounded-2xl p-6 max-w-md w-full border ${styles.border} shadow-2xl`}
+                className={`bg-purple-900 rounded-2xl p-6 max-w-md w-full border ${styles.border} shadow-2xl`}
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}

@@ -2,7 +2,7 @@
 import axios from "axios";
 import { ClientAxios } from '../../api/user.axios'; // Authenticated instance";
 
-const getAllDancers = async (params:URLSearchParams,page: number = 1, pageSize: number = 10) => {
+const getAllDancers = async (params:URLSearchParams,page: number = 1, pageSize: number = 1) => {
     try {
         params.append('page', page.toString());
  params.append('limit', pageSize.toString());

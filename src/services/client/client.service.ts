@@ -4,7 +4,15 @@ import axios from 'axios';
 export const getClientEventRequests = async (params: URLSearchParams) => {
     try {
         const response = await ClientAxios.get(`/event-requests?${params.toString()}`);
-        return response.data;
+        console.log('Raw API Response:', response.data);
+        // return response.data;
+        // Check if the response has a data property (common in Axios responses)
+        const responseData = response.data.data || response.data;
+        // Return in the expected format
+        return {
+            requests: responseData.requests || responseData.data || responseData,
+            total: responseData.total || responseData.length || 0
+        };
     } catch (error) {
         console.error('Failed to fetch client event requests:', error);
         if (axios.isAxiosError(error)) {

@@ -94,7 +94,7 @@ const Navbar: React.FC<NavbarProps> = ({
           <div className="relative">
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center space-x-2 p-1 md:p-2 rounded-lg hover:bg-gray-50"
+              className="flex items-center space-x-2 p-1 md:p-2 rounded-lg "
             >
               <div className="hidden md:block text-sm font-medium text-white-900">
                 Hello, {userName}
@@ -108,10 +108,10 @@ const Navbar: React.FC<NavbarProps> = ({
                   </span>
                 )}
               </div>
-              <ChevronDown className="h-4 w-4 text-gray-400" />
+              {/* <ChevronDown className="h-4 w-4 text-gray-400" /> */}
             </button>
 
-            {showUserMenu && (
+            {/* {showUserMenu && (
               <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-1">
                 <button
                   onClick={() => navigate("/admin/profile")}
@@ -119,14 +119,14 @@ const Navbar: React.FC<NavbarProps> = ({
                 >
                   Profile
                 </button>
-                {/* <button
+                <button
                   onClick={handleLogout}
                   className="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50"
                 >
                   Sign out
-                </button> */}
+                </button>
               </div>
-            )}
+            )} */}
           </div>
         </div>
       </div>

@@ -387,14 +387,14 @@ const filteredAndSortedData = useMemo(() => {
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Manage user information and accounts</p>
             </div>
             <div className="flex items-center gap-3 w-full sm:w-auto">
-              <Button
+              {/* <Button
                 variant="outline"
                 onClick={()=>({})}
                 className="border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 bg-transparent text-sm w-full sm:w-auto"
               >
                 <Download className="h-4 w-4 mr-2" />
                 Export
-              </Button>
+              </Button> */}
             </div>
           </div>
 

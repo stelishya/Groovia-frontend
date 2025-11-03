@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Bell, X } from 'lucide-react';
+import { Search, Bell, X, MapPin, DollarSign, Calendar } from 'lucide-react';
 import { getClientEventRequests, updateEventBookingStatus } from '../../services/client/client.service';
 import Sidebar from '../../components/shared/Sidebar';
 import ConfirmationModal from '../../components/ui/ConfirmationModal';
@@ -8,6 +8,7 @@ interface Dancer {
     _id: string;
     username: string;
     profileImage?: string;
+    danceStyles?: string[];
 }
 
 interface EventRequest {
@@ -35,22 +36,74 @@ const Header = () => (
 );
 
 const RequestCard = ({ request, onCancelClick }: { request: EventRequest, onCancelClick: (id: string) => void }) => (
-    <div className="bg-purple-800 rounded-lg p-4 flex justify-between items-center">
-        <div className="flex items-center">
-            <img src={request.dancerId.profileImage || 'https://i.pravatar.cc/40'} alt={request.dancerId.username} className="w-12 h-12 rounded-full mr-4" />
-            <div>
-                <h3 className="font-bold text-white">Dancer : {request.dancerId.username}</h3>
-                <h4 className="text-sm text-purple-300 underline">Event Request Details</h4>
-                <p className="text-sm text-deep-purple bold">Event: {request.event}</p>
-                <p className="text-sm text-deep-purple bold">Date: {new Date(request.date).toLocaleDateString()}</p>
-                <p className="text-sm text-deep-purple bold">Budget: {request.budget}</p>
+    <div className="bg-gradient-to-br from-deep-purple to-purple-500 rounded-lg p-6">
+        <div className="flex justify-between items-start">
+            {/* Left side - Dancer Info */}
+            {/* <div className="flex-1 pr-1"> */}
+                <div className="flex items-start mr-4">
+                    <div className="flex-shrink-0">
+                        <img 
+                            src={request.dancerId.profileImage || 'https://i.pravatar.cc/40'} 
+                            alt={request.dancerId.username} 
+                            className="w-12 h-12 rounded-full border-2 border-white" 
+                        />
+                    </div>
+                    <div className="ml-2">
+                        <h3 className="text-lg font-semibold text-white">{request.dancerId.username}</h3>
+                        <div className="mt-0.5 flex flex-wrap gap-1">
+                            {request.dancerId.danceStyles?.slice(0, 3).map((style, index) => (
+                                <span key={index} className="text-xs bg-white/20 text-white px-2 py-0.5 rounded-full">
+                                    {style || 'No styles'}
+                                </span>
+                            ))}
+                            {(!request.dancerId.danceStyles || request.dancerId.danceStyles.length === 0) && (
+                                <span className="text-xs text-white/70 italic">No dance styles listed</span>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            {/* </div> */}
+
+            {/* Vertical Divider */}
+            <div className="h-24 w-px bg-white/30"></div>
+
+            {/* Right side - Event Details */}
+            <div className="flex-1 pl-4">
+                <div className="flex justify-between items-start mb-3">
+                    <div>
+                        <h4 className="text-sm font-semibold text-white/80 mb-1">Event Details</h4>
+                        <p className="text-white font-medium">{request.event}</p>
+                    </div>
+                    <span className={`text-xs px-3 py-1 rounded-full ${request.status === 'pending' ? 'bg-yellow-500 text-black' : 'bg-green-500 text-white'}`}>
+                        {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                    </span>
+                </div>
+                
+                <div className="space-y-2">
+                    <div className="flex items-center text-white/90">
+                        <Calendar className="w-4 h-4 mr-2" />
+                        <span>{new Date(request.date).toLocaleDateString('en-US', { 
+                            year: 'numeric', 
+                            month: 'short', 
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        })}</span>
+                    </div>
+                    <div className="flex items-center text-white/90">
+                        <DollarSign className="w-4 h-4 mr-2" />
+                        <span>₹{request.budget}</span>
+                    </div>
+                    <div className="flex items-center text-white/90">
+                        <MapPin className="w-4 h-4 mr-2" />
+                        <span>{request.venue || 'Venue not specified'}</span>
+                    </div>
+                </div>
             </div>
         </div>
-        <div className="flex flex-col items-end">
-            <span className={`text-xs px-2 py-1 rounded-full mb-2 ${request.status === 'pending' ? 'bg-yellow-500 text-black' : 'bg-green-500 text-white'}`}>
-                {request.status}
-            </span>
-            <div className="flex space-x-2">
+
+        {/* Action Buttons */}
+        <div className="flex justify-end mt-4 space-x-3">
                 {request.status === 'pending' && (
                     <>
                         {/* <button className="bg-green-500 text-white px-3 py-1 rounded-md text-sm">Accept</button> */}
@@ -65,7 +118,7 @@ const RequestCard = ({ request, onCancelClick }: { request: EventRequest, onCanc
                 )}
             </div>
         </div>
-    </div>
+    // </div>
 );
 
 const BookingsPage = () => {
@@ -79,6 +132,8 @@ const BookingsPage = () => {
     const [sortBy, setSortBy] = useState('date');
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
+
+    console.log("requests in bookings page in bookings client :",requests)
 
     const handleUpdateStatus = async (id: string, status: 'cancelled') => {
         try {
@@ -116,8 +171,15 @@ const BookingsPage = () => {
                 if (sortBy) params.append('sortBy', sortBy);
 
                 const data = await getClientEventRequests(params);
-                setRequests(data.requests || []);
-                setTotalRequests(data.total || 0);
+                console.log('Processed API Response:', data);
+                if (Array.isArray(data.requests)) {
+                    setRequests(data.requests || []);
+                    setTotalRequests(data.total || 0);
+                }else{
+                     // If response is an object with requests/total properties
+                    setRequests(data.requests || []);
+                    setTotalRequests(data.total || 0);
+                }
             } catch (error) {
                 console.error("Failed to fetch requests", error);
             }
@@ -216,7 +278,7 @@ const BookingsPage = () => {
 
 
 
-const BookingsClient = () => {
+const BookingsClient : React.FC = () => {
     return (
         <div className="flex h-screen bg-gray-900">
             <Sidebar activeMenu='Bookings'/>

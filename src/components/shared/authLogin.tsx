@@ -173,13 +173,13 @@ export default function AuthLogin({
                         </button>
                     </form>
 
-                    {/* {(role==='user' &&
+                    {(role==='user' &&
                     <div className="mt-6 text-center">
                         <button className="w-full py-3 bg-white/90 hover:bg-white text-purple-800 font-semibold rounded-lg transition-colors shadow-md">
                             Continue with Google
                         </button>
                     </div>
-                    )} */}
+                    )}
 
                     {(role==='user' &&
                     <p className="text-center text-sm text-purple-200 mt-6">

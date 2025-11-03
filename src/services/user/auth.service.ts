@@ -4,6 +4,8 @@ import AuthAxios from "../../api/auth.axios";
 import type { SignupForm, VerificationData } from "../../types/auth.type";
 import type { AppDispatch } from "../../redux/store";
 import { loginUser } from "../../redux/slices/user.slice";
+import { decodeJwt } from '../../utils/auth';
+import { DancerAxios, ClientAxios } from '../../api/user.axios';
 
 const getErrorMessage = (error: any): string => {
   if (error.response?.data?.message) {
@@ -296,6 +298,29 @@ export const userResetPassword = async (data: {
   }
 };
 
+
+export async function fetchMyProfile() {
+  const token = localStorage.getItem('token');
+  const decoded = decodeJwt(token);
+  const role = decoded?.role?.[0];
+
+  if (!token || !role) throw new Error('Not authenticated');
+
+  if (role === 'dancer') {
+    const res = await DancerAxios.get('/profile');
+    return { role, profile: res.data };
+  }
+  if (role === 'client') {
+    const res = await ClientAxios.get('/profile');
+    return { role, profile: res.data };
+  }
+  if (role === 'admin') {
+    // Add admin profile endpoint if you have one
+    throw new Error('Admin profile endpoint not implemented');
+  }
+
+  throw new Error('Unknown role');
+}
 
 // Additional utility functions for better UX
 export const showValidationErrors = (errors: Record<string, string>) => {

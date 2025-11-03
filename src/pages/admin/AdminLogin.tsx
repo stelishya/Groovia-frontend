@@ -15,9 +15,9 @@ const AdminLogin: React.FC = () => {
 
       const response = await loginAdminAction(formData,dispatch);
       console.log("response in handleSubmit in AdminLogin in AdminLogin.tsx",response)
-      dispatch(adminLogin(response?.admin)); 
+      // dispatch(adminLogin(response?.admin)); 
       console.log("admin in handleSubmit in AdminLogin in AdminLogin.tsx",response?.admin)
-      console.log("response.success:",response.success)
+      // console.log("response:",response)
       if (response) {
         console.log("navigating to /admin/")
         navigate('/admin/');

@@ -35,8 +35,8 @@ const DancerCard = ({ dancer, onSendRequest, isRequested, onLike, isLiked }: Dan
   const likesCount = dancer.likes?.length || 0;
 
   return (
-    <div className="bg-gradient-to-br from-purple-600 via-blue-500 to-pink-500 p-1 rounded-3xl transform hover:-translate-y-2 transition-all duration-300 shadow-xl hover:shadow-2xl h-full">
-      <div className="bg-purple-800 rounded-3xl p-4 h-full flex flex-col text-white">
+    <div className="bg-gradient-to-br from-blue-500 to-pink-500 p-1 rounded-3xl transform hover:-translate-y-2 transition-all duration-300 shadow-xl hover:shadow-2xl h-full">
+      <div className="bg-gradient-to-br from-deep-purple to-purple-400 rounded-3xl p-4 h-full flex flex-col text-white">
 
         <img
           src={dancer.profileImage || `https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=400&h=300&fit=crop`}
@@ -62,21 +62,22 @@ const DancerCard = ({ dancer, onSendRequest, isRequested, onLike, isLiked }: Dan
         </div>
 
         {/* Bio */}
-        <p className="text-purple-200 text-sm mb-3 line-clamp-2 flex-grow">
+        <p className="text-white text-sm mb-3 line-clamp-2 flex-grow">
           {dancer.bio || `A passionate ${primaryStyle} dancer with a love for performance.`}
         </p>
 
         {/* Experience */}
         <div className="flex items-center justify-between mb-3">
         <div>
-        <label className="text-purple-200 text-sm">Experience</label>
-        <p>{dancer.experienceYears} year</p>
+        <label className="text-purple-200 text-xs">Experience</label>
+        <p className="text-white">{dancer.experienceYears} years</p>
         </div>
 
         {/* Social Links */}
           <div className="flex items-center space-x-3">
-            {dancer?.portfolioLinks && dancer.portfolioLinks.length > 0 ? (
-              dancer.portfolioLinks.map((link, index) => {
+            {
+            // dancer?.portfolioLinks && dancer.portfolioLinks.length > 0 ? (
+              dancer?.portfolioLinks?.map((link, index) => {
                 const getSocialIcon = (url: string) => {
                   try {
                     const hostname = new URL(url).hostname.toLowerCase();
@@ -94,19 +95,20 @@ const DancerCard = ({ dancer, onSendRequest, isRequested, onLike, isLiked }: Dan
                   </a>
                 );
               })
-            ) : (
-              <p className="text-white text-lg">No links provided</p>
-            )}
+            // ) : (
+            //   <p className="text-white text-xs">No links provided</p>
+            // )
+            }
           </div>
         </div>
           {/* Buttons*/}
           <div className="flex justify-end space-x-3 mt-auto">
-          <button 
+          {/* <button 
             className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition"
             onClick={() => navigate(`/dancers/${dancer._id}`)} // Assuming a route like this exists
           >
             View Profile
-          </button>
+          </button> */}
           {isRequested ? (
             <button 
               className="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition"
