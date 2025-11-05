@@ -9,11 +9,13 @@ import { type RootState } from "../../redux/store";
 import Sidebar from "../../components/shared/Sidebar";
 import DancerCard from "../../components/ui/Card";
 import FormModal from "../../components/ui/FormModal";
+import VenueMap from "../../components/ui/VenueMap";
 import { GitPullRequest } from "lucide-react";
 import { useEffect, useState } from "react";
 import getAllDancers, { sendRequestToDancers } from "../../services/client/browseDancers.service";
 import { toggleLike } from "../../services/dancer/dancer.service";
 import { getClientEventRequests } from '../../services/client/client.service';
+import toast from "react-hot-toast";
 
 
 const Header = () => (
@@ -78,7 +80,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
     });
     const [requestedDancerIds, setRequestedDancerIds] = useState(new Set<string>());
     const [likedDancers, setLikedDancers] = useState(new Set<string>());
-
+    const [showVenueMap, setShowVenueMap] = useState(false);
 
     useEffect(() => {
         const handler = setTimeout(() => {
@@ -260,7 +262,9 @@ const Dashboard = ({ userData }: { userData: any }) => {
             setRequestedDancerIds(prevIds => new Set(prevIds).add(selectedDancer._id));
             handleCloseRequestModal();
             fetchSentRequests(); // Refetch requests to ensure UI is up-to-date
-
+            if(response.success){
+                toast.success(response.message);
+            }
 
         } catch (error) {
             console.error("Send request failed", error);
@@ -399,7 +403,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
                             />
                         ))
                     ) : (
-                        <p className="text-center col-span-full text-gray-500">
+                        <p className="text-center col-span-full text-gray-500 fontSize-2xl">
                             No dancers found 😢
                         </p>
                     )}
@@ -483,10 +487,29 @@ const Dashboard = ({ userData }: { userData: any }) => {
                             className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
                                 formErrors.venue ? 'border-2 border-red-500' : ''
                             }`}
-                            placeholder="Event Venue"
+                            placeholder="Enter venue address"
+                            readOnly={showVenueMap}
                         />
                         {formErrors.venue && (
                             <p className="text-red-400 text-sm mt-1">{formErrors.venue}</p>
+                        )}
+                        <button
+                            type="button"
+                            onClick={() => setShowVenueMap(!showVenueMap)}
+                            className="mt-2 text-purple-300 hover:text-purple-100 text-sm underline"
+                        >
+                            {showVenueMap ? 'Hide Map' : 'Select from Map'}
+                        </button>
+                        {showVenueMap && (
+                            <div className="mt-3">
+                                <VenueMap
+                                    onVenueSelect={(venue) => {
+                                        setRequestData({ ...requestData, venue: venue.address });
+                                        if (formErrors.venue) setFormErrors({ ...formErrors, venue: '' });
+                                    }}
+                                    initialCenter={[20.5937, 78.9629]}
+                                />
+                            </div>
                         )}
                     </div>
                     <div>

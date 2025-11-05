@@ -2,10 +2,10 @@
 import axios from "axios";
 import { ClientAxios } from '../../api/user.axios'; // Authenticated instance";
 
-const getAllDancers = async (params:URLSearchParams,page: number = 1, pageSize: number = 1) => {
+const getAllDancers = async (params: URLSearchParams, page: number = 1, pageSize: number = 6) => {
     try {
         params.append('page', page.toString());
- params.append('limit', pageSize.toString());
+        params.append('limit', pageSize.toString());
         const response = await ClientAxios.get(`/?${params.toString()}`);
         if (response.status !== 200) {
             throw new Error(`HTTP error! status: ${response.status}`);

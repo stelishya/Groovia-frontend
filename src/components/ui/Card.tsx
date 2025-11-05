@@ -50,7 +50,7 @@ const DancerCard = ({ dancer, onSendRequest, isRequested, onLike, isLiked }: Dan
           <h3 className="text-xl font-bold">{dancer.username}</h3>
           </div>
           <button onClick={() => onLike(dancer._id)} className="flex items-center space-x-2 focus:outline-none">
-            <Heart className={`${isLiked ? 'fill-current text-pink-500' : 'text-pink-400'} transition-colors`} size={18} />
+            <Heart className={`${isLiked ? 'fill-current text-pink-500' : 'text-pink-400'} transition-colors`} size={20} />
             <span className="text-sm font-medium">{likesCount} {likesCount <= 1 ? 'like' : 'likes'}</span>
           </button>
         </div>

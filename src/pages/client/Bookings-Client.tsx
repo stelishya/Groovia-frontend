@@ -3,6 +3,21 @@ import { Search, Bell, X, MapPin, DollarSign, Calendar } from 'lucide-react';
 import { getClientEventRequests, updateEventBookingStatus } from '../../services/client/client.service';
 import Sidebar from '../../components/shared/Sidebar';
 import ConfirmationModal from '../../components/ui/ConfirmationModal';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// Fix for default marker icon
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconUrl: markerIcon,
+  iconRetinaUrl: markerIcon2x,
+  shadowUrl: markerShadow,
+});
 
 interface Dancer {
     _id: string;
@@ -35,7 +50,7 @@ const Header = () => (
     </header>
 );
 
-const RequestCard = ({ request, onCancelClick }: { request: EventRequest, onCancelClick: (id: string) => void }) => (
+const RequestCard = ({ request, onCancelClick, onViewMap }: { request: EventRequest, onCancelClick: (id: string) => void, onViewMap: (venue: string) => void }) => (
     <div className="bg-gradient-to-br from-deep-purple to-purple-500 rounded-lg p-6">
         <div className="flex justify-between items-start">
             {/* Left side - Dancer Info */}
@@ -96,7 +111,15 @@ const RequestCard = ({ request, onCancelClick }: { request: EventRequest, onCanc
                     </div>
                     <div className="flex items-center text-white/90">
                         <MapPin className="w-4 h-4 mr-2" />
-                        <span>{request.venue || 'Venue not specified'}</span>
+                        <span className="mr-2">{request.venue || 'Venue not specified'}</span>
+                        {request.venue && (
+                            <button 
+                                onClick={() => onViewMap(request.venue)}
+                                className="text-purple-300 hover:text-purple-100 underline text-xs"
+                            >
+                                View on Map
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
@@ -132,6 +155,10 @@ const BookingsPage = () => {
     const [sortBy, setSortBy] = useState('date');
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
+    const [mapModalOpen, setMapModalOpen] = useState(false);
+    const [selectedVenue, setSelectedVenue] = useState<string>('');
+    const [venueCoords, setVenueCoords] = useState<[number, number] | null>(null);
+    const [loadingCoords, setLoadingCoords] = useState(false);
 
     console.log("requests in bookings page in bookings client :",requests)
 
@@ -157,6 +184,31 @@ const BookingsPage = () => {
         }
         setModalOpen(false);
         setSelectedRequestId(null);
+    };
+
+    const handleViewMap = async (venue: string) => {
+        setSelectedVenue(venue);
+        setMapModalOpen(true);
+        setLoadingCoords(true);
+        
+        try {
+            // Geocode the venue address
+            const response = await fetch(
+                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(venue)}&limit=1`
+            );
+            const data = await response.json();
+            if (data && data.length > 0) {
+                setVenueCoords([parseFloat(data[0].lat), parseFloat(data[0].lon)]);
+            } else {
+                // Default to India center if geocoding fails
+                setVenueCoords([20.5937, 78.9629]);
+            }
+        } catch (error) {
+            console.error('Failed to geocode venue:', error);
+            setVenueCoords([20.5937, 78.9629]);
+        } finally {
+            setLoadingCoords(false);
+        }
     };
 
     useEffect(() => {
@@ -231,7 +283,7 @@ const BookingsPage = () => {
                 {loading ? (
                     <p>Loading requests...</p>
                 ) : requests.length > 0 ? (
-                    requests.map(req => <RequestCard key={req._id} request={req} onCancelClick={handleCancelClick} />)
+                    requests.map(req => <RequestCard key={req._id} request={req} onCancelClick={handleCancelClick} onViewMap={handleViewMap} />)
                 ) : (
                     <p>No event requests found.</p>
                 )}
@@ -263,6 +315,49 @@ const BookingsPage = () => {
                 title="Confirm Cancellation"
                 message="Are you sure you want to cancel this booking request?"
                 />
+            )}
+            {mapModalOpen && (
+                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-purple-900 rounded-2xl p-6 max-w-3xl w-full border border-purple-500">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-2xl font-bold text-white flex items-center">
+                                <MapPin className="mr-2" />
+                                Venue Location
+                            </h3>
+                            <button 
+                                onClick={() => setMapModalOpen(false)} 
+                                className="text-white hover:text-gray-300 text-2xl"
+                            >
+                                ×
+                            </button>
+                        </div>
+                        <p className="text-purple-300 mb-4">{selectedVenue}</p>
+                        {loadingCoords ? (
+                            <div className="h-96 flex items-center justify-center bg-purple-800 rounded-xl">
+                                <p className="text-white">Loading map...</p>
+                            </div>
+                        ) : venueCoords ? (
+                            <MapContainer
+                                center={venueCoords}
+                                zoom={15}
+                                className="h-96 w-full rounded-xl border-2 border-purple-500"
+                                style={{ zIndex: 0 }}
+                            >
+                                <TileLayer
+                                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                />
+                                <Marker position={venueCoords}>
+                                    <Popup>{selectedVenue}</Popup>
+                                </Marker>
+                            </MapContainer>
+                        ) : (
+                            <div className="h-96 flex items-center justify-center bg-purple-800 rounded-xl">
+                                <p className="text-white">Unable to load location</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
                 // <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
                 //     <div className="bg-purple-800 rounded-lg p-6 w-full max-w-md mx-4">
                 //         <h2 className="text-xl font-bold text-white mb-4">Confirm Cancellation</h2>
