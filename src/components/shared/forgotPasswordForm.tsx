@@ -17,10 +17,17 @@ const ForgotPasswordForm: React.FC = () => {
             return;
         }
         setIsLoading(true);
+        // does email exist or not
+
         console.log("Submitting email for password reset:", email);
         try {
-            await userSendResetLink(email);
-            toast.success("Password reset link sent successfully!");
+            const response =  await userSendResetLink(email);
+            console.log("response:",response)
+            if(response.success){
+                toast.success("Password reset link sent successfully!");
+            }else{
+                toast.error("Email does not exist.")
+            }
         } catch (error) {
             console.error("Failed to sent reset link",error)
         }

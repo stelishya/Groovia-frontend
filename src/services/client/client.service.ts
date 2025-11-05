@@ -10,8 +10,13 @@ export const getClientEventRequests = async (params: URLSearchParams) => {
         const responseData = response.data.data || response.data;
         // Return in the expected format
         return {
-            requests: responseData.requests || responseData.data || responseData,
-            total: responseData.total || responseData.length || 0
+            // requests: responseData.requests || responseData.data || responseData,
+            // total: responseData.total || responseData.length || 0
+            success: true,
+            data: {
+                requests: responseData.requests || responseData.data || responseData,
+                total: responseData.total || responseData.length || 0
+            }
         };
     } catch (error) {
         console.error('Failed to fetch client event requests:', error);

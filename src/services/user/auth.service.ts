@@ -215,17 +215,17 @@ export const userSendResetLink = async (email: string) => {
     const response = await AuthAxios.post('/forgot-password', { email }, {
       withCredentials: true
     });
-
+    
     toast.dismiss(loadingToast);
-    toast.success('Reset link sent to your email! ', {
-      position: 'top-right',
-      duration: 5000,
-      style: {
-        background: '#DCFCE7',
-        color: '#16A34A',
-        border: '1px solid #BBF7D0',
-      },
-    });
+    // toast.success('Reset link sent to your email! ', {
+    //   position: 'top-right',
+    //   duration: 5000,
+    //   style: {
+    //     background: '#DCFCE7',
+    //     color: '#16A34A',
+    //     border: '1px solid #BBF7D0',
+    //   },
+    // });
 
     return response.data;
   } catch (error) {

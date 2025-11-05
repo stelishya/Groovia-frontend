@@ -70,6 +70,12 @@ const Dashboard = ({ userData }: { userData: any }) => {
         venue: '',
         budget: '',
     });
+    const [formErrors, setFormErrors] = useState({
+        event: '',
+        date: '',
+        venue: '',
+        budget: '',
+    });
     const [requestedDancerIds, setRequestedDancerIds] = useState(new Set<string>());
     const [likedDancers, setLikedDancers] = useState(new Set<string>());
 
@@ -165,16 +171,85 @@ const Dashboard = ({ userData }: { userData: any }) => {
     const handleOpenRequestModal = (dancer: Dancer) => {
         setSelectedDancer(dancer);
         setIsRequestModalOpen(true);
+        // Reset form data and errors when opening modal
+        setRequestData({
+            event: '',
+            date: '',
+            venue: '',
+            budget: '',
+        });
+        setFormErrors({
+            event: '',
+            date: '',
+            venue: '',
+            budget: '',
+        });
     };
 
     const handleCloseRequestModal = () => {
         setIsRequestModalOpen(false);
         setSelectedDancer(null);
+        setFormErrors({
+            event: '',
+            date: '',
+            venue: '',
+            budget: '',
+        });
+    };
+
+    const validateForm = () => {
+        const errors = {
+            event: '',
+            date: '',
+            venue: '',
+            budget: '',
+        };
+        let isValid = true;
+
+        // Validate event
+        if (!requestData.event.trim()) {
+            errors.event = 'Event name is required';
+            isValid = false;
+        }
+
+        // Validate date
+        if (!requestData.date) {
+            errors.date = 'Event date is required';
+            isValid = false;
+        } else {
+            const selectedDate = new Date(requestData.date);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            if (selectedDate <= today) {
+                errors.date = 'Event date must be in the future';
+                isValid = false;
+            }
+        }
+
+        // Validate venue
+        if (!requestData.venue.trim()) {
+            errors.venue = 'Venue is required';
+            isValid = false;
+        }
+
+        // Validate budget
+        if (!requestData.budget.trim()) {
+            errors.budget = 'Budget is required';
+            isValid = false;
+        }
+
+        setFormErrors(errors);
+        return isValid;
     };
 
     const handleConfirmSend = async () => {
         try {
             if (!selectedDancer) return;
+
+            // Validate form before sending
+            if (!validateForm()) {
+                return;
+            }
 
             console.log(`Sending request to ${selectedDancer.username} with data:`, requestData);
             // API call
@@ -364,39 +439,72 @@ const Dashboard = ({ userData }: { userData: any }) => {
                         <input
                             type="text"
                             value={requestData.event}
-                            onChange={(e) => setRequestData({ ...requestData, event: e.target.value })}
-                            className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            onChange={(e) => {
+                                setRequestData({ ...requestData, event: e.target.value });
+                                if (formErrors.event) setFormErrors({ ...formErrors, event: '' });
+                            }}
+                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                                formErrors.event ? 'border-2 border-red-500' : ''
+                            }`}
                             placeholder="Event Name"
                         />
+                        {formErrors.event && (
+                            <p className="text-red-400 text-sm mt-1">{formErrors.event}</p>
+                        )}
                     </div>
                     <div>
                         <label className="block text-white font-medium mb-2">Date</label>
                         <input
                             type="date"
                             value={requestData.date}
-                            onChange={(e) => setRequestData({ ...requestData, date: e.target.value })}
-                            className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                             min={new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]}
+                            onChange={(e) => {
+                                setRequestData({ ...requestData, date: e.target.value });
+                                if (formErrors.date) setFormErrors({ ...formErrors, date: '' });
+                            }}
+                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                                formErrors.date ? 'border-2 border-red-500' : ''
+                            }`}
                         />
+                        {formErrors.date && (
+                            <p className="text-red-400 text-sm mt-1">{formErrors.date}</p>
+                        )}
                     </div>
                     <div>
                         <label className="block text-white font-medium mb-2">Venue</label>
                         <input
                             type="text"
                             value={requestData.venue}
-                            onChange={(e) => setRequestData({ ...requestData, venue: e.target.value })}
-                            className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            onChange={(e) => {
+                                setRequestData({ ...requestData, venue: e.target.value });
+                                if (formErrors.venue) setFormErrors({ ...formErrors, venue: '' });
+                            }}
+                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                                formErrors.venue ? 'border-2 border-red-500' : ''
+                            }`}
                             placeholder="Event Venue"
                         />
+                        {formErrors.venue && (
+                            <p className="text-red-400 text-sm mt-1">{formErrors.venue}</p>
+                        )}
                     </div>
                     <div>
                         <label className="block text-white font-medium mb-2">Budget</label>
                         <input
                             type="text"
                             value={requestData.budget}
-                            onChange={(e) => setRequestData({ ...requestData, budget: e.target.value })}
-                            className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            onChange={(e) => {
+                                setRequestData({ ...requestData, budget: e.target.value });
+                                if (formErrors.budget) setFormErrors({ ...formErrors, budget: '' });
+                            }}
+                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                                formErrors.budget ? 'border-2 border-red-500' : ''
+                            }`}
                             placeholder="e.g., $500 - $1000"
                         />
+                        {formErrors.budget && (
+                            <p className="text-red-400 text-sm mt-1">{formErrors.budget}</p>
+                        )}
                     </div>
                 </FormModal>
             )}
