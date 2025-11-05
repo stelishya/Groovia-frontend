@@ -239,9 +239,9 @@ const filteredAndSortedData = useMemo(() => {
           </Avatar> */}
           <div>
             <p className="font-medium text-gray-900 dark:text-gray-100 text-sm sm:text-base">{record.username}</p>
-            {/* <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
               {record.isGoogleUser ? 'Google User' : 'Regular User'}
-            </p> */}
+            </p>
           </div>
         </div>
       ),

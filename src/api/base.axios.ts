@@ -16,7 +16,9 @@ export const createBaseAxios = (basePath: string): AxiosInstance => {
   instance.interceptors.request.use(
     (config) => {
       const token = localStorage.getItem('token');
-      if (token) {
+      const skipAuth = config.url?.endsWith('/login') || config.url?.includes('/auth/common/google');
+
+      if (token && !skipAuth) {
         config.headers.Authorization = `Bearer ${token}`;
       }
       console.log("token in base axios:", token)
