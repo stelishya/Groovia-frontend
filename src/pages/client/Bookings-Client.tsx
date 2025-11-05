@@ -172,13 +172,15 @@ const BookingsPage = () => {
 
                 const data = await getClientEventRequests(params);
                 console.log('Processed API Response:', data);
-                if (Array.isArray(data.requests)) {
-                    setRequests(data.requests || []);
-                    setTotalRequests(data.total || 0);
+                if (Array.isArray(data.data.requests)) {
+                    console.log("requests in bookings page in bookings client :",data.data.requests)
+                    console.log("total in bookings page in bookings client :",data.data.total)
+                    setRequests(data.data.requests || []);
+                    setTotalRequests(data.data.total || 0);
                 }else{
                      // If response is an object with requests/total properties
-                    setRequests(data.requests || []);
-                    setTotalRequests(data.total || 0);
+                    setRequests(data.data.requests || []);
+                    setTotalRequests(data.data.total || 0);
                 }
             } catch (error) {
                 console.error("Failed to fetch requests", error);

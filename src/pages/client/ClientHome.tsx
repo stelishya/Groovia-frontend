@@ -96,6 +96,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
             // if (data.requests) {
             //     const ids = new Set(data.requests.map(req => req.dancerId._id));
             const response: { success: boolean; data?: { requests: EventRequest[] } } = await getClientEventRequests(new URLSearchParams);
+            console.log("response in fetchSentRequests in ClientHome.tsx", response)
             if (response.success && response.data && Array.isArray(response.data.requests)) {
                 const ids = new Set(response.data.requests.map((req: EventRequest) => req.dancerId._id));
                 setRequestedDancerIds(ids);

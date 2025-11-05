@@ -35,6 +35,7 @@ export default function AuthLogin({
 
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [selectedRole, setSelectedRole] = useState<'client' | 'dancer' | null>(null);
+  const [isGoogleInitializing, setIsGoogleInitializing] = useState(false);
   const dispatch = useDispatch();
 
   const validateEmail = (email: string) => {
@@ -68,43 +69,91 @@ export default function AuthLogin({
 async function startGoogleSignIn(role: 'client'|'dancer') {
   console.log("role in startGoogleSignIn : ",role);
   console.log('origin:', location.origin);
+  
+  setIsGoogleInitializing(true);
+  
+  // Clear any existing button
+  const existingButton = document.getElementById('google-signin-button');
+  if (existingButton) {
+    existingButton.innerHTML = '';
+  }
+  
   await loadGoogleScript();
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   console.log("clientId : ",clientId)
-  if (!clientId) throw new Error('Missing VITE_GOOGLE_CLIENT_ID');
+  if (!clientId) {
+    setIsGoogleInitializing(false);
+    throw new Error('Missing VITE_GOOGLE_CLIENT_ID');
+  }
 
+  console.log('🔵 Initializing Google Sign-In...');
+  
   (window as any).google.accounts.id.initialize({
     client_id: clientId,
     callback: async (resp: any) => {
+      console.log('🟢 Google callback fired!', resp);
       const credential = resp?.credential;
-      console.log("credential : ",credential)
-      if (!credential) return;
-      // 1) Send credential + role to backend
-      const url = `${import.meta.env.VITE_SERVER_URL}/auth/common/google`;
-      const { data } = await axios.post(url, { credential, role }); // backend must accept role
-      console.log("data in startGoogleSignIn : ",data)
-      // 2) Save token and hydrate
-      const accessToken = data?.accessToken;
-      if (!accessToken) throw new Error('No token returned from Google auth');
-      localStorage.setItem('token', accessToken);
+      console.log("credential : ", credential);
+      
+      if (!credential) {
+        console.error('❌ No credential received from Google');
+        return;
+      }
+      
+      try {
+        // Send credential + role to backend
+        console.log('📤 Sending to backend:', { role });
+        const url = `${import.meta.env.VITE_SERVER_URL}/auth/common/google`;
+        const { data } = await axios.post(url, { credential, role });
+        console.log('📥 Backend response:', data);
+        
+        // Save token and hydrate
+        const accessToken = data?.accessToken;
+        if (!accessToken) throw new Error('No token returned from Google auth');
+        
+        localStorage.setItem('token', accessToken);
+        console.log('✅ Token saved, fetching profile...');
 
-      // const me = await fetchMyProfile(); // fetches /<role>/me using token-derived role
-      // console.log("me in startGoogleSignIn : ",me)
-      // dispatch(loginUser({ user: me.profile, token: accessToken }));
-
-      // 3) Navigate based on role
-      // const home = role === 'dancer' ? '/dancer' : '/client';
-      navigate('/home');
-
-      setShowRoleModal(false);
-      setSelectedRole(null);
+        const me = await fetchMyProfile();
+        console.log('👤 User profile fetched:', me);
+        dispatch(loginUser({ user: me.profile, token: accessToken }));
+        
+        console.log('✅ navigating to /home');
+        navigate('/home');
+        setShowRoleModal(false);
+        setSelectedRole(null);
+      } catch (error) {
+        console.error('❌ Google login error:', error);
+        setShowRoleModal(false);
+        setSelectedRole(null);
+      }
     },
+    cancel_on_tap_outside: false,
   });
 
-  // Render Google One-Tap prompt or use a button:
-  (window as any).google.accounts.id.prompt(); // shows One Tap
-  // Alternatively, render a button:
-  // window.google.accounts.id.renderButton(document.getElementById('googleBtn')!, { theme: 'filled_black', size: 'large' })
+  console.log('🔵 Initialization complete, rendering button...');
+  
+  // Render Google Sign-In button (more reliable than One Tap)
+  // Wait a tick for React to render the div
+  setTimeout(() => {
+    const buttonDiv = document.getElementById('google-signin-button');
+    if (buttonDiv) {
+      (window as any).google.accounts.id.renderButton(
+        buttonDiv,
+        { 
+          theme: 'filled_blue',
+          size: 'large',
+          text: 'continue_with',
+          width: 280,
+          locale: 'en'
+        }
+      );
+      console.log('✅ Google button rendered');
+    } else {
+      console.error('❌ Button container not found');
+      setIsGoogleInitializing(false);
+    }
+  }, 100);
 }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -294,13 +343,27 @@ async function startGoogleSignIn(role: 'client'|'dancer') {
         <button className={`w-full py-2 rounded ${selectedRole==='client'?'bg-purple-600 text-white':'bg-gray-300'}`}
                 onClick={() => setSelectedRole('client')}>Client</button>
       </div>
+      
+      {isGoogleInitializing && (
+        <div className="mt-4">
+          <p className="text-sm text-gray-600 mb-2 text-center">Sign in with Google as {selectedRole}</p>
+          <div id="google-signin-button" className="flex justify-center"></div>
+        </div>
+      )}
+      
       <div className="mt-4 flex justify-end gap-2">
-        <button className="px-3 py-2 bg-gray-400 rounded" onClick={() => { setShowRoleModal(false); setSelectedRole(null); }}>Cancel</button>
-        <button className="px-3 py-2 bg-purple-600 text-white rounded disabled:opacity-70"
-                disabled={!selectedRole}
-                onClick={() => selectedRole && startGoogleSignIn(selectedRole)}>
-          Continue
-        </button>
+        <button className="px-3 py-2 bg-gray-400 rounded" onClick={() => { 
+          setShowRoleModal(false); 
+          setSelectedRole(null);
+          setIsGoogleInitializing(false);
+        }}>Cancel</button>
+        {!isGoogleInitializing && (
+          <button className="px-3 py-2 bg-purple-600 text-white rounded disabled:opacity-70"
+                  disabled={!selectedRole}
+                  onClick={() => selectedRole && startGoogleSignIn(selectedRole)}>
+            Continue
+          </button>
+        )}
       </div>
     </div>
   </div>

@@ -92,15 +92,15 @@ const Dashboard = ({userData}:{userData:any}) => (
                         <h3 className="text-xl font-bold">{userData?.username?.charAt(0).toUpperCase() + userData?.username?.slice(1)}</h3>
                         <span className="ml-3 text-xs bg-blue-500 rounded-full px-2 py-0.5">Dancer</span>
                     </div>
-                    <p className="text-sm text-gray-300">Contemporary & Hip-Hop Dance</p>
+                    <p className="text-sm text-gray-300">{userData?.danceStyles?.join(', ')}</p>
                 </div>
             </div>
-            <div className="flex space-x-12 text-center">
+            {/* <div className="flex space-x-12 text-center">
                 <div><div className="text-2xl font-bold">24</div><div className="text-sm text-gray-300">Workshops</div></div>
                 <div><div className="text-2xl font-bold">156</div><div className="text-sm text-gray-300">Bookings</div></div>
                 <div><div className="text-2xl font-bold">4.8</div><div className="text-sm text-gray-300">Reviews</div></div>
                 <div><div className="text-2xl font-bold">8</div><div className="text-sm text-gray-300">Competitions</div></div>
-            </div>
+            </div> */}
         </div>
 
         {/* <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">

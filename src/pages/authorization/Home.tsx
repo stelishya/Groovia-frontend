@@ -12,6 +12,7 @@ const HomePage: React.FC = () => {
     if(isLoading){
         return <div>Loading...</div>
     }
+    console.log("user in home page in Home.tsx : ",user)
     if (!user) {
         console.log("user not found in home page" )
         return <Navigate to="/login" replace />;
