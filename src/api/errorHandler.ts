@@ -18,7 +18,7 @@ export const handleAxiosError = (error: AxiosError) => {
   const message = (data as any)?.message || 'An unexpected error occurred';
 
   if (status === 401 && message === 'invalid password') {
-    toast.error(message);
+    // toast.error(message);
     return Promise.reject(error);
   }
   // if(status === 401 && message === 'user is blocked'){

@@ -10,11 +10,13 @@ interface SidebarLinkProps {
   to: string;
   icon: React.ReactNode;
   label: string;
+  end?: boolean;
 }
 
-const SidebarLink: React.FC<SidebarLinkProps> = ({ to, icon, label }) => (
+const SidebarLink: React.FC<SidebarLinkProps> = ({ to, icon, label, end }) => (
   <NavLink
     to={to}
+    end={end}
     className={({ isActive }) =>
       `flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-blue-600/20 hover:text-white rounded-lg transition-all duration-200 ${
         isActive ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/50' : ''
@@ -65,6 +67,7 @@ const Sidebar: React.FC = () => {
           to="/admin/" 
           icon={<LayoutDashboard size={20} />} 
           label="Dashboard" 
+          end
         />
         <SidebarLink 
           to="/admin/users" 
