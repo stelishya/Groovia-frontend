@@ -8,7 +8,33 @@ function App() {
   return (
     <Router>
       <>
-        <Toaster position="top-right" reverseOrder={false}/>
+        <Toaster 
+          position="top-right" 
+          reverseOrder={false}
+          toastOptions={{
+            style: {
+              border: '2px solid #9333ea',
+              background:'#6b21a8',
+                color:"white",
+              padding: '16px',
+              borderRadius: '8px',
+            },
+            success: {
+              style: {
+                border: '2px solid #9333ea',
+                background:'#6b21a8',
+                color:"white"
+              },
+            },
+            error: {
+              style: {
+                border: '2px solid #c23e06ff',
+                background:'#6b21a8',
+                color:"white"
+              },
+            },
+          }}
+        />
         <UserRoutes/>
         <AdminRoutes/>
       </>

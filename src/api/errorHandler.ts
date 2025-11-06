@@ -21,6 +21,9 @@ export const handleAxiosError = (error: AxiosError) => {
     // toast.error(message);
     return Promise.reject(error);
   }
+  if(message == "Email already exists" || message == "Username already exists"){
+    return Promise.reject(error);
+  }
   // if(status === 401 && message === 'user is blocked'){
   //   toast.error(message);
   //   return Promise.reject(error);

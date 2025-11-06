@@ -13,9 +13,17 @@ const HomePage: React.FC = () => {
         return <div>Loading...</div>
     }
     console.log("user in home page in Home.tsx : ",user)
+    
+    // Check for token before redirecting to prevent issues during state updates
     if (!user) {
-        console.log("user not found in home page" )
-        return <Navigate to="/login" replace />;
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.log("user not found in home page and no token" )
+            return <Navigate to="/login" replace />;
+        }
+        // If we have token but no user, show loading (temporary state)
+        console.log("user temporarily null but token exists")
+        return <div>Loading...</div>;
     }
 
     // Check the user's role and render the correct component

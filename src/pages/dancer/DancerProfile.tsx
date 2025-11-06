@@ -19,6 +19,8 @@ const Profile = () => {
     const { userData } = useSelector((state: RootState) => state.user);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
+    const [customDanceStyle, setCustomDanceStyle] = useState('');
+    const [showCustomInput, setShowCustomInput] = useState(false);
     // const [isRefreshing, setIsRefreshing] = useState(false);
     // const [isEditingProfile, setIsEditingProfile] = useState(false);
     const [profileData, setProfileData] = useState({
@@ -62,7 +64,7 @@ const Profile = () => {
     };
 
 
-    const currentRoles = userData?.role || [];
+    const currentRoles = Array.from(new Set(userData?.role || [])); // Remove duplicates
     const hasInstructorRole = currentRoles.includes('instructor');
     console.log(userData);
     const isDancer = currentRoles.includes('dancer') || hasInstructorRole;
@@ -84,32 +86,33 @@ const Profile = () => {
 
     const handleProfileUpdate = async () => {
         try {
-             const token = localStorage.getItem('token');
-//  const decoded = decodeJwt(token);
-//  const role = decoded?.role?.[0];
-//  const api = role === 'dancer' ? DancerAxios : ClientAxios ;
+            // Validation: Experience years should be <= 50
+            if (profileData.experienceYears > 50) {
+                toast.error('Experience years cannot exceed 50 years');
+                return;
+            }
 
+            // Validation: Check if required fields are filled
+            // if (!profileData.bio.trim() || profileData.experienceYears === 0 || profileData.danceStyles.length === 0) {
+            //     toast.error('Please fill in all required fields (bio, experience, dance styles)');
+            //     return;
+            // }
+
+            const token = localStorage.getItem('token');
             console.log("profileData : ", profileData)
-            // const response = await DancerAxios.patch('/profile', profileData);
-             const response = await DancerAxios.patch('/profile', profileData);
+            
+            const response = await DancerAxios.patch('/profile', profileData);
+            console.log("response  in handleProfileUpdate in dancer profile : ", response)
             if (response.status === 200) {
-                 if (response.data?.token) {
- localStorage.setItem('token', response.data.token);
- }
+                if (response.data?.token) {
+                    localStorage.setItem('token', response.data.token);
+                }
                 toast.success('Profile updated successfully!');
-                //             setIsEditingProfile(false);
-                //         }
-                //     } catch (error: any) {
-                //         // toast.error('Failed to update profile');
-                //         const errorMessage = error.response?.data?.message || 'Failed to update profile';
-                //         toast.error(errorMessage);
-                //         console.error('Profile update error:', error);
-                //     }
-                // }
+                
                 const { user } = response.data;
                 dispatch(loginUser({ user, token: localStorage.getItem('token') || '' }));
                 setShowEditModal(false);
-               
+                console.log('Profile update completed, modal closed, staying on profile page');
             }
         } catch (error: any) {
             const errorMessage = error.response?.data?.message || 'Failed to update profile';
@@ -118,12 +121,42 @@ const Profile = () => {
         }
     };
     const handleDanceStyleToggleInEdit = (style: string) => {
-        setProfileData(prev => ({
-            ...prev,
-            danceStyles: prev.danceStyles.includes(style)
-                ? prev.danceStyles.filter(s => s !== style)
-                : [...prev.danceStyles, style]
-        }));
+        if (style === 'Other') {
+            setShowCustomInput(!showCustomInput);
+            if (showCustomInput) {
+                // Remove custom styles when unchecking Other
+                setProfileData(prev => ({
+                    ...prev,
+                    danceStyles: prev.danceStyles.filter(s => danceStyleOptions.includes(s))
+                }));
+                setCustomDanceStyle('');
+            }
+        } else {
+            setProfileData(prev => ({
+                ...prev,
+                danceStyles: prev.danceStyles.includes(style)
+                    ? prev.danceStyles.filter(s => s !== style)
+                    : [...prev.danceStyles, style]
+            }));
+        }
+    };
+
+    const handleAddCustomDanceStyle = () => {
+        if (customDanceStyle.trim()) {
+            setProfileData(prev => ({
+                ...prev,
+                danceStyles: [...prev.danceStyles, customDanceStyle.trim()]
+            }));
+            setCustomDanceStyle('');
+        }
+    };
+
+    const isProfileComplete = () => {
+        return (
+            profileData.bio.trim() !== '' &&
+            profileData.experienceYears > 0 &&
+            profileData.danceStyles.length > 0
+        );
     };
     const handleLike = async () => {
         try {
@@ -286,7 +319,9 @@ const Profile = () => {
                                                         if (hostname.includes('linkedin.com')) return <Linkedin className="text-white hover:text-blue-500 transition-colors" />;
                                                         if (hostname.includes('twitter.com') || hostname.includes('x.com')) return <Twitter className="text-white hover:text-sky-400 transition-colors" />;
                                                         if (hostname.includes('facebook.com')) return <Facebook className="text-white hover:text-blue-600 transition-colors" />;
-                                                    } catch (e) { /* Invalid URL */ }
+                                                    } catch (e) {
+                                                         /* Invalid URL */ 
+                                                    }
                                                     return <LinkIcon className="text-white hover:text-purple-300 transition-colors" />;
                                                 };
                                                 return (
@@ -407,10 +442,19 @@ const Profile = () => {
                 <div>
                     <label className="block text-white font-medium mb-2">Years of Experience</label>
                     <input
-                        type="number"
-                        min="0"
-                        value={profileData.experienceYears}
-                        onChange={(e) => setProfileData({ ...profileData, experienceYears: parseInt(e.target.value) || 0 })}
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        value={profileData.experienceYears || ''}
+                        onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+                            const numValue = parseInt(value) || 0;
+                            if (numValue > 50) {
+                                toast.error('Experience years cannot exceed 50');
+                                return;
+                            }
+                            setProfileData({ ...profileData, experienceYears: numValue });
+                        }}
                         className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                         placeholder="e.g., 5"
                     />
@@ -424,15 +468,56 @@ const Profile = () => {
                                 key={style}
                                 type="button"
                                 onClick={() => handleDanceStyleToggleInEdit(style)}
-                                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${profileData.danceStyles.includes(style)
-                                    ? 'bg-purple-500 text-white'
-                                    : 'bg-purple-800 text-purple-200 hover:bg-purple-700'
+                                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                    style === 'Other' 
+                                        ? (showCustomInput ? 'bg-purple-500 text-white' : 'bg-purple-800 text-purple-200 hover:bg-purple-700')
+                                        : (profileData.danceStyles.includes(style)
+                                            ? 'bg-purple-500 text-white'
+                                            : 'bg-purple-800 text-purple-200 hover:bg-purple-700')
                                     }`}
                             >
                                 {style}
                             </button>
                         ))}
                     </div>
+                    {showCustomInput && (
+                        <div className="mt-3 flex gap-2">
+                            <input
+                                type="text"
+                                value={customDanceStyle}
+                                onChange={(e) => setCustomDanceStyle(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && handleAddCustomDanceStyle()}
+                                className="flex-1 px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                placeholder="Enter custom dance style"
+                            />
+                            <button
+                                type="button"
+                                onClick={handleAddCustomDanceStyle}
+                                className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
+                            >
+                                Add
+                            </button>
+                        </div>
+                    )}
+                    {profileData.danceStyles.filter(s => !danceStyleOptions.includes(s)).length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-2">
+                            {profileData.danceStyles.filter(s => !danceStyleOptions.includes(s)).map((style, idx) => (
+                                <span key={idx} className="px-3 py-1 bg-purple-600 text-white rounded-full text-sm flex items-center gap-2">
+                                    {style}
+                                    <button
+                                        type="button"
+                                        onClick={() => setProfileData(prev => ({
+                                            ...prev,
+                                            danceStyles: prev.danceStyles.filter(s => s !== style)
+                                        }))}
+                                        className="text-white hover:text-red-300"
+                                    >
+                                        ×
+                                    </button>
+                                </span>
+                            ))}
+                        </div>
+                    )}
                 </div>
                 {/* Portfolio Links */}
                 <div>
@@ -447,17 +532,31 @@ const Profile = () => {
                     <p className="text-purple-300 text-sm mt-1">Separate multiple links with commas</p>
                 </div>
                 {/* Available for Programs */}
-                <div className="flex items-center">
-                    <input
-                        type="checkbox"
-                        id="availableForProgramsEdit"
-                        checked={profileData.availableForPrograms}
-                        onChange={(e) => setProfileData({ ...profileData, availableForPrograms: e.target.checked })}
-                        className="w-5 h-5 text-purple-500 bg-purple-800 border-purple-600 rounded focus:ring-purple-500"
-                    />
-                    <label htmlFor="availableForProgramsEdit" className="ml-2 text-white font-medium">
-                        Available for programs
-                    </label>
+                <div>
+                    <div className="flex items-center">
+                        <input
+                            type="checkbox"
+                            id="availableForProgramsEdit"
+                            checked={profileData.availableForPrograms}
+                            onChange={(e) => {
+                                if (!isProfileComplete() && e.target.checked) {
+                                    toast.error('Please complete your profile (bio, experience, and dance styles) before marking yourself as available for programs.');
+                                    return;
+                                }
+                                setProfileData({ ...profileData, availableForPrograms: e.target.checked });
+                            }}
+                            disabled={!isProfileComplete()}
+                            className="w-5 h-5 text-purple-500 bg-purple-800 border-purple-600 rounded focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                        />
+                        <label htmlFor="availableForProgramsEdit" className="ml-2 text-white font-medium">
+                            Available for programs
+                        </label>
+                    </div>
+                    {!isProfileComplete() && (
+                        <p className="text-yellow-300 text-sm mt-1">
+                            Complete your bio, experience, and dance styles to enable this option
+                        </p>
+                    )}
                 </div>
             </FormModal>
 

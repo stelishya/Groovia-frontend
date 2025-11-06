@@ -205,7 +205,7 @@ const Profile = () => {
         }
     };
 
-    const currentRoles = userData?.role || [];
+    const currentRoles = Array.from(new Set(userData?.role || [])); // Remove duplicates
     const hasOrganizerRole = currentRoles.includes('organizer');
     console.log(userData);
 

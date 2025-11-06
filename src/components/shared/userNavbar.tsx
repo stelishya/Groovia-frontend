@@ -72,9 +72,15 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ onSearch }) => {
     const handleNewNotification = (notification: Notification) => {
         // Handle upgrade approved - update user role in Redux
         if (notification.type === 'upgrade_approved' && userData) {
+            // Only add 'instructor' if it doesn't already exist
+            const currentRoles = userData.role || [];
+            const updatedRoles = currentRoles.includes('instructor') 
+                ? currentRoles 
+                : [...currentRoles, 'instructor'];
+            
             const updatedUser = {
                 ...userData,
-                role: [...(userData.role || []), 'instructor']
+                role: updatedRoles
             };
             dispatch(loginUser({ user: updatedUser, token: token || '' }));
             toast.success(notification.title, {
