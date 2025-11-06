@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import Sidebar from "../../components/shared/Sidebar";
 import UserNavbar from "../../components/shared/userNavbar";
 import type { RootState } from "../../redux/store";
+import { Briefcase, Calendar, Trophy, TrophyIcon } from "lucide-react";
 
 // const Sidebar = () => {
 //     const dispatch = useDispatch();
@@ -119,7 +120,7 @@ const Dashboard = ({userData}:{userData:any}) => (
                 <div className="space-y-4">
                     <div className="bg-purple-700/70 p-4 rounded-lg flex items-start"><Briefcase className="mr-3 mt-1 text-purple-300"/><div><p>New registration for Contemporary Flow Basics</p><p className="text-xs text-gray-400">2 hours ago</p></div></div>
                     <div className="bg-purple-700/70 p-4 rounded-lg flex items-start"><Calendar className="mr-3 mt-1 text-purple-300"/><div><p>Booking request from Emily & James</p><p className="text-xs text-gray-400">5 hours ago</p></div></div>
-                    <div className="bg-purple-700/70 p-4 rounded-lg flex items-start"><Trophy className="mr-3 mt-1 text-purple-300"/><div><p>Competition registration deadline approaching</p><p className="text-xs text-gray-400">1 day ago</p></div></div>
+                    <div className="bg-purple-700/70 p-4 rounded-lg flex items-start"><TrophyIcon className="mr-3 mt-1 text-purple-300"/><div><p>Competition registration deadline approaching</p><p className="text-xs text-gray-400">1 day ago</p></div></div>
                 </div>
                 <button className="mt-6 w-full py-3 bg-gray-700 text-white font-bold rounded-lg hover:bg-gray-600">View All Notifications</button>
             </div>

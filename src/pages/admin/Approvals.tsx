@@ -30,6 +30,7 @@ const Approvals = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage] = useState(5);
+    const [actionType, setActionType] = useState<'approve' | 'reject' | null>(null);
 
     useEffect(() => {
         fetchRequests();
@@ -85,6 +86,7 @@ const Approvals = () => {
             });
             setSelectedRequest(null);
             setAdminNote('');
+            setActionType(null);
             fetchRequests();
         } catch (error) {
             toast.error('Failed to approve request');
@@ -102,6 +104,7 @@ const Approvals = () => {
             });
             setSelectedRequest(null);
             setAdminNote('');
+            setActionType(null);
             fetchRequests();
         } catch (error) {
             toast.error('Failed to reject request');
@@ -278,7 +281,10 @@ const Approvals = () => {
                                         {request.status === 'pending' && (
                                             <div className="flex gap-3 mt-4">
                                                 <button
-                                                    onClick={() => setSelectedRequest(request)}
+                                                    onClick={() => {
+                                                        setSelectedRequest(request);
+                                                        setActionType('approve');
+                                                    }}
                                                     className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium flex items-center justify-center transition-colors"
                                                 >
                                                     <Check size={18} className="mr-2" />
@@ -287,6 +293,7 @@ const Approvals = () => {
                                                 <button
                                                     onClick={() => {
                                                         setSelectedRequest(request);
+                                                        setActionType('reject');
                                                         setAdminNote('');
                                                     }}
                                                     className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium flex items-center justify-center transition-colors"
@@ -337,10 +344,10 @@ const Approvals = () => {
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-2xl p-6 max-w-md w-full">
                         <h3 className="text-2xl font-bold text-gray-800 mb-4">
-                            {selectedRequest.status === 'pending' ? 'Confirm Action' : 'Add Note'}
+                            {actionType === 'approve' ? 'Approve Request' : 'Reject Request'}
                         </h3>
                         <p className="text-gray-600 mb-4">
-                            Are you sure you want to {selectedRequest.status === 'pending' ? 'process' : 'update'} this request for <strong>{selectedRequest.username}</strong>?
+                            Are you sure you want to {actionType} this request for <strong>{selectedRequest.username}</strong>?
                         </p>
                         <div className="mb-4">
                             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -359,23 +366,27 @@ const Approvals = () => {
                                 onClick={() => {
                                     setSelectedRequest(null);
                                     setAdminNote('');
+                                    setActionType(null);
                                 }}
                                 className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-medium transition-colors"
                             >
                                 Cancel
                             </button>
-                            <button
-                                onClick={() => handleApprove(selectedRequest._id)}
-                                className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
-                            >
-                                Approve
-                            </button>
-                            <button
-                                onClick={() => handleReject(selectedRequest._id)}
-                                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
-                            >
-                                Reject
-                            </button>
+                            {actionType === 'approve' ? (
+                                <button
+                                    onClick={() => handleApprove(selectedRequest._id)}
+                                    className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                                >
+                                    Approve
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={() => handleReject(selectedRequest._id)}
+                                    className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
+                                >
+                                    Reject
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>

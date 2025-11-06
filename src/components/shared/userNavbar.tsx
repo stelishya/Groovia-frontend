@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Bell, ChevronDown, X, User, Settings, LogOut } from 'lucide-react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { type RootState } from '../../redux/store';
-import { UserAxios } from '../../api/auth.axios';
+import { NotificationAxios } from '../../api/auth.axios';
+import { loginUser } from '../../redux/slices/user.slice';
+import toast from 'react-hot-toast';
 
 interface Notification {
     _id: string;
@@ -23,34 +25,74 @@ interface UserNavbarProps {
 
 const UserNavbar: React.FC<UserNavbarProps> = ({ onSearch }) => {
     const navigate = useNavigate();
-    const { userData } = useSelector((state: RootState) => state.user);
+    const dispatch = useDispatch();
+    const { userData, token } = useSelector((state: RootState) => state.user);
     const [searchQuery, setSearchQuery] = useState('');
     const [showNotifications, setShowNotifications] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [notificationTab, setNotificationTab] = useState<'all' | 'unread' | 'read'>('all');
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loadingNotifications, setLoadingNotifications] = useState(false);
-    // Fetch notifications when component mounts
-    // useEffect(() => {
-    //     if (userData?._id) {
-    //         fetchNotifications();
-    //     }
-    // }, [userData?._id]);
+    const [processedNotifications, setProcessedNotifications] = useState<Set<string>>(new Set());
+
+    // Fetch notifications when component mounts and poll every 30 seconds
+    useEffect(() => {
+        if (userData?._id) {
+            fetchNotifications();
+            // Poll for new notifications every 30 seconds
+            const interval = setInterval(() => {
+                fetchNotifications();
+            }, 30000);
+            return () => clearInterval(interval);
+        }
+    }, [userData?._id]);
     const fetchNotifications = async () => {
         try {
             setLoadingNotifications(true);
-            const response = await UserAxios.get(`/notifications/user/${userData?._id}`);
+            const response = await NotificationAxios.get(`/user/${userData?._id}`);
             console.log("response in fetchNotifications : ", response)
-            setNotifications(response.data);
+            // Backend returns { success: true, data: [...] }
+            const newNotifications = response.data.data || [];
+            setNotifications(newNotifications);
+
+            // Process new unread notifications
+            newNotifications.forEach((notif: Notification) => {
+                if (!notif.isRead && !processedNotifications.has(notif._id)) {
+                    handleNewNotification(notif);
+                    setProcessedNotifications(prev => new Set(prev).add(notif._id));
+                }
+            });
         } catch (error) {
             console.error('Failed to fetch notifications:', error);
         } finally {
             setLoadingNotifications(false);
         }
     };
+
+    const handleNewNotification = (notification: Notification) => {
+        // Handle upgrade approved - update user role in Redux
+        if (notification.type === 'upgrade_approved' && userData) {
+            const updatedUser = {
+                ...userData,
+                role: [...(userData.role || []), 'instructor']
+            };
+            dispatch(loginUser({ user: updatedUser, token: token || '' }));
+            toast.success(notification.title, {
+                duration: 5000,
+                icon: '🎉',
+            });
+        }
+        // Handle upgrade rejected
+        else if (notification.type === 'upgrade_rejected') {
+            toast.error(notification.title, {
+                duration: 5000,
+                icon: '❌',
+            });
+        }
+    };
     const markAsRead = async (notificationId: string) => {
         try {
-            await UserAxios.patch(`/notifications/${notificationId}/read`);
+            await NotificationAxios.patch(`/${notificationId}/read`);
             // Update local state
             setNotifications(prev =>
                 prev.map(notif =>
@@ -63,7 +105,7 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ onSearch }) => {
     };
     const markAllAsRead = async () => {
         try {
-            await UserAxios.patch(`/notifications/user/${userData?._id}/read-all`);
+            await NotificationAxios.patch(`/user/${userData?._id}/read-all`);
             // Update local state
             setNotifications(prev =>
                 prev.map(notif =>
@@ -160,7 +202,7 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ onSearch }) => {
                 {/* Notification Bell */}
                 <div className="relative mr-6">
                     <button
-                        // onClick={() => setShowNotifications(!showNotifications)}
+                        onClick={() => setShowNotifications(!showNotifications)}
                         className="relative text-white text-2xl cursor-pointer hover:text-purple-300 transition-colors"
                     >
                         <Bell className="w-6 h-6" />
@@ -175,7 +217,7 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ onSearch }) => {
                 {/* User Profile */}
                 <div className="relative">
                     <button
-                        onClick={() => setShowUserMenu(!showUserMenu)}
+                        // onClick={() => setShowUserMenu(!showUserMenu)}
                         className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
                     >
                         <img
@@ -236,7 +278,7 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ onSearch }) => {
                         <div className="flex items-center justify-between mb-3">
                             <h3 className="text-lg font-bold text-gray-800">Notifications</h3>
                             <button
-                                // onClick={() => setShowNotifications(false)}
+                                onClick={() => setShowNotifications(false)}
                                 className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
                             >
                                 <X className="h-5 w-5 text-gray-500" />
