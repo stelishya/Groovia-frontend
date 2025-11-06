@@ -56,7 +56,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
 
     const [currentPage, setCurrentPage] = useState(1)
     // const [pageSize, setPageSize] = useState(1)
-    const pageSize = 1;
+    const pageSize = 6;
     const [totalDancers, setTotalDancers] = useState(0);
     const [search, setSearch] = useState('');
     const [sortBy, setSortBy] = useState('likes');
@@ -144,7 +144,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
             // if (city) params.append('location', city);
             if (sortBy) params.append('sortBy', sortBy);
             params.append('page', currentPage.toString());
-            params.append('limit', pageSize.toString());
+            // params.append('limit', pageSize.toString());
             console.log("params", params)
 
             //  const response = await ClientAxios.get(`/dancers?${params.toString()}`);
@@ -263,7 +263,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
             handleCloseRequestModal();
             fetchSentRequests(); // Refetch requests to ensure UI is up-to-date
             if(response.success){
-                toast.success(response.message);
+                toast.success(response.data?.message);
             }
 
         } catch (error) {
@@ -274,8 +274,12 @@ const Dashboard = ({ userData }: { userData: any }) => {
     const handleLike = async (dancerId: string) => {
         try {
             const response = await toggleLike(dancerId);
-            const updatedDancer = response.dancer;
-
+            const updatedDancer = response.data?.dancer || response.dancer;
+            if(!updatedDancer){
+                console.log("no dancer data in response")
+                toast.error('Failed to update like status');
+                return;
+            }
             setDancers(prevDancers =>
                 prevDancers.map(d => (d._id === dancerId ? updatedDancer : d))
             );
@@ -291,6 +295,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
             });
         } catch (error) {
             console.error("Failed to toggle like", error);
+            toast.error('Failed to update like status');
         }
     };
 

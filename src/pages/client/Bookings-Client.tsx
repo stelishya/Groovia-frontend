@@ -14,9 +14,9 @@ import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconUrl: markerIcon,
-  iconRetinaUrl: markerIcon2x,
-  shadowUrl: markerShadow,
+    iconUrl: markerIcon,
+    iconRetinaUrl: markerIcon2x,
+    shadowUrl: markerShadow,
 });
 
 interface Dancer {
@@ -55,28 +55,28 @@ const RequestCard = ({ request, onCancelClick, onViewMap }: { request: EventRequ
         <div className="flex justify-between items-start">
             {/* Left side - Dancer Info */}
             {/* <div className="flex-1 pr-1"> */}
-                <div className="flex items-start mr-4">
-                    <div className="flex-shrink-0">
-                        <img 
-                            src={request.dancerId.profileImage || 'https://i.pravatar.cc/40'} 
-                            alt={request.dancerId.username} 
-                            className="w-12 h-12 rounded-full border-2 border-white" 
-                        />
-                    </div>
-                    <div className="ml-2">
-                        <h3 className="text-lg font-semibold text-white">{request.dancerId.username}</h3>
-                        <div className="mt-0.5 flex flex-wrap gap-1">
-                            {request.dancerId.danceStyles?.slice(0, 3).map((style, index) => (
-                                <span key={index} className="text-xs bg-white/20 text-white px-2 py-0.5 rounded-full">
-                                    {style || 'No styles'}
-                                </span>
-                            ))}
-                            {(!request.dancerId.danceStyles || request.dancerId.danceStyles.length === 0) && (
-                                <span className="text-xs text-white/70 italic">No dance styles listed</span>
-                            )}
-                        </div>
+            <div className="flex items-start mr-4">
+                <div className="flex-shrink-0">
+                    <img
+                        src={request.dancerId.profileImage || 'https://i.pravatar.cc/40'}
+                        alt={request.dancerId.username}
+                        className="w-12 h-12 rounded-full border-2 border-white"
+                    />
+                </div>
+                <div className="ml-2">
+                    <h3 className="text-lg font-semibold text-white">{request.dancerId.username}</h3>
+                    <div className="mt-0.5 flex flex-wrap gap-1">
+                        {request.dancerId.danceStyles?.slice(0, 3).map((style, index) => (
+                            <span key={index} className="text-xs bg-white/20 text-white px-2 py-0.5 rounded-full">
+                                {style || 'No styles'}
+                            </span>
+                        ))}
+                        {(!request.dancerId.danceStyles || request.dancerId.danceStyles.length === 0) && (
+                            <span className="text-xs text-white/70 italic">No dance styles listed</span>
+                        )}
                     </div>
                 </div>
+            </div>
             {/* </div> */}
 
             {/* Vertical Divider */}
@@ -89,17 +89,21 @@ const RequestCard = ({ request, onCancelClick, onViewMap }: { request: EventRequ
                         <h4 className="text-sm font-semibold text-white/80 mb-1">Event Details</h4>
                         <p className="text-white font-medium">{request.event}</p>
                     </div>
-                    <span className={`text-xs px-3 py-1 rounded-full ${request.status === 'pending' ? 'bg-yellow-500 text-black' : 'bg-green-500 text-white'}`}>
+                    {/* <span className={`text-xs px-3 py-1 rounded-full ${request.status === 'pending' ? 'bg-yellow-500 text-black' : 'bg-green-500 text-white'}`}> */}
+                    <span className={`text-xs px-2 py-1 rounded-full mb-2 ${request.status === 'pending' ? 'bg-yellow-500 text-black' :
+                            request.status === 'rejected' ? 'bg-red-500 text-white' :
+                                'bg-green-500 text-white'
+                        }`}>
                         {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
                     </span>
                 </div>
-                
+
                 <div className="space-y-2">
                     <div className="flex items-center text-white/90">
                         <Calendar className="w-4 h-4 mr-2" />
-                        <span>{new Date(request.date).toLocaleDateString('en-US', { 
-                            year: 'numeric', 
-                            month: 'short', 
+                        <span>{new Date(request.date).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
                             day: 'numeric',
                             hour: '2-digit',
                             minute: '2-digit'
@@ -113,7 +117,7 @@ const RequestCard = ({ request, onCancelClick, onViewMap }: { request: EventRequ
                         <MapPin className="w-4 h-4 mr-2" />
                         <span className="mr-2">{request.venue || 'Venue not specified'}</span>
                         {request.venue && (
-                            <button 
+                            <button
                                 onClick={() => onViewMap(request.venue)}
                                 className="text-purple-300 hover:text-purple-100 underline text-xs"
                             >
@@ -127,20 +131,20 @@ const RequestCard = ({ request, onCancelClick, onViewMap }: { request: EventRequ
 
         {/* Action Buttons */}
         <div className="flex justify-end mt-4 space-x-3">
-                {request.status === 'pending' && (
-                    <>
-                        {/* <button className="bg-green-500 text-white px-3 py-1 rounded-md text-sm">Accept</button> */}
-                        <button onClick={() => onCancelClick(request._id)} className="bg-orange-500 text-white px-3 py-1 rounded-md text-sm">Cancel Request</button>
-                    </>
-                )}
-                {request.status === 'accepted' && (
-                    <>
-                        <button className="bg-blue-500 text-white px-3 py-1 rounded-md text-sm">Pay 50% Advance to Confirm Booking</button>
-                        <button className="bg-purple-500 text-white px-3 py-1 rounded-md text-sm">Message</button>
-                    </>
-                )}
-            </div>
+            {request.status === 'pending' && (
+                <>
+                    {/* <button className="bg-green-500 text-white px-3 py-1 rounded-md text-sm">Accept</button> */}
+                    <button onClick={() => onCancelClick(request._id)} className="bg-orange-500 text-white px-3 py-1 rounded-md text-sm">Cancel Request</button>
+                </>
+            )}
+            {request.status === 'accepted' && (
+                <>
+                    <button className="bg-blue-500 text-white px-3 py-1 rounded-md text-sm">Pay 50% Advance to Confirm Booking</button>
+                    <button className="bg-purple-500 text-white px-3 py-1 rounded-md text-sm">Message</button>
+                </>
+            )}
         </div>
+    </div>
     // </div>
 );
 
@@ -160,12 +164,12 @@ const BookingsPage = () => {
     const [venueCoords, setVenueCoords] = useState<[number, number] | null>(null);
     const [loadingCoords, setLoadingCoords] = useState(false);
 
-    console.log("requests in bookings page in bookings client :",requests)
+    console.log("requests in bookings page in bookings client :", requests)
 
     const handleUpdateStatus = async (id: string, status: 'cancelled') => {
         try {
             const updatedRequest = await updateEventBookingStatus(id, status);
-            setRequests(prevRequests => 
+            setRequests(prevRequests =>
                 prevRequests.map(req => req._id === id ? { ...req, status: updatedRequest.request.status } : req)
             );
         } catch (error) {
@@ -190,7 +194,7 @@ const BookingsPage = () => {
         setSelectedVenue(venue);
         setMapModalOpen(true);
         setLoadingCoords(true);
-        
+
         try {
             // Geocode the venue address
             const response = await fetch(
@@ -225,12 +229,12 @@ const BookingsPage = () => {
                 const data = await getClientEventRequests(params);
                 console.log('Processed API Response:', data);
                 if (Array.isArray(data.data.requests)) {
-                    console.log("requests in bookings page in bookings client :",data.data.requests)
-                    console.log("total in bookings page in bookings client :",data.data.total)
+                    console.log("requests in bookings page in bookings client :", data.data.requests)
+                    console.log("total in bookings page in bookings client :", data.data.total)
                     setRequests(data.data.requests || []);
                     setTotalRequests(data.data.total || 0);
-                }else{
-                     // If response is an object with requests/total properties
+                } else {
+                    // If response is an object with requests/total properties
                     setRequests(data.data.requests || []);
                     setTotalRequests(data.data.total || 0);
                 }
@@ -273,9 +277,9 @@ const BookingsPage = () => {
                     <div className="flex items-center">
                         <span className="text-gray-400 mr-2">Sort by:</span>
                         <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-purple-700 text-white rounded-lg py-2 px-4 focus:outline-none">
-                        <option value="date">Sort by Date</option>
-                        <option value="budget">Sort by Budget</option>
-                    </select>
+                            <option value="date">Sort by Date</option>
+                            <option value="budget">Sort by Budget</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -291,15 +295,15 @@ const BookingsPage = () => {
 
             {/* Pagination */}
             <div className="flex justify-end items-center mt-8 space-x-4">
-                <button 
+                <button
                     onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
                     disabled={currentPage === 1}
                     className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     Previous
                 </button>
-                <span className="text-white">Page {currentPage} of {Math.ceil(totalRequests / pageSize)}</span>
-                <button 
+                <span className="text-white">Page {currentPage} of {Math.max(1, Math.ceil(totalRequests / pageSize))}</span>
+                <button
                     onClick={() => setCurrentPage(p => p + 1)}
                     disabled={currentPage >= Math.ceil(totalRequests / pageSize)}
                     className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
@@ -309,11 +313,11 @@ const BookingsPage = () => {
             </div>
             {modalOpen && (
                 <ConfirmationModal
-                show={modalOpen}
-                onClose={() => setModalOpen(false)}
-                onConfirm={confirmCancel}
-                title="Confirm Cancellation"
-                message="Are you sure you want to cancel this booking request?"
+                    show={modalOpen}
+                    onClose={() => setModalOpen(false)}
+                    onConfirm={confirmCancel}
+                    title="Confirm Cancellation"
+                    message="Are you sure you want to cancel this booking request?"
                 />
             )}
             {mapModalOpen && (
@@ -324,8 +328,8 @@ const BookingsPage = () => {
                                 <MapPin className="mr-2" />
                                 Venue Location
                             </h3>
-                            <button 
-                                onClick={() => setMapModalOpen(false)} 
+                            <button
+                                onClick={() => setMapModalOpen(false)}
                                 className="text-white hover:text-gray-300 text-2xl"
                             >
                                 ×
@@ -375,10 +379,10 @@ const BookingsPage = () => {
 
 
 
-const BookingsClient : React.FC = () => {
+const BookingsClient: React.FC = () => {
     return (
         <div className="flex h-screen bg-gray-900">
-            <Sidebar activeMenu='Bookings'/>
+            <Sidebar activeMenu='Bookings' />
             <BookingsPage />
         </div>
     );

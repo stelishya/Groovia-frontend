@@ -49,7 +49,15 @@ const DancerCard = ({ dancer, onSendRequest, isRequested, onLike, isLiked }: Dan
           <UserIcon className="text-purple-400 mr-2" size={18} />
           <h3 className="text-xl font-bold">{dancer.username}</h3>
           </div>
-          <button onClick={() => onLike(dancer._id)} className="flex items-center space-x-2 focus:outline-none">
+          <button 
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onLike(dancer._id);
+            }} 
+            className="flex items-center space-x-2 focus:outline-none hover:scale-110 transition-transform"
+            type="button"
+          >
             <Heart className={`${isLiked ? 'fill-current text-pink-500' : 'text-pink-400'} transition-colors`} size={20} />
             <span className="text-sm font-medium">{likesCount} {likesCount <= 1 ? 'like' : 'likes'}</span>
           </button>

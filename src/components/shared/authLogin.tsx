@@ -106,7 +106,10 @@ async function startGoogleSignIn(role: 'client'|'dancer') {
         const url = `${import.meta.env.VITE_SERVER_URL}/auth/common/google`;
         const { data } = await axios.post(url, { credential, role });
         console.log('📥 Backend response:', data);
-        
+        if(!data.success){
+          toast.error(data.message);
+          return;
+        }
         // Save token and hydrate
         const accessToken = data?.accessToken;
         if (!accessToken) throw new Error('No token returned from Google auth');

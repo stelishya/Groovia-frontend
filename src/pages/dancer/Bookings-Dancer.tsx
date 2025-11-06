@@ -30,7 +30,7 @@ interface Client {
 
 interface EventRequest {
     _id: string;
-    clientId: Client;
+    clientId: Client | null;
     event: string;
     date: string;
     venue: string;
@@ -52,12 +52,12 @@ const Header = () => (
     </header>
 );
 
-const RequestCard = ({ request, onAcceptClick, onViewMap }: { request: EventRequest, onAcceptClick: (id: string) => void, onViewMap: (venue: string) => void }) => (
+const RequestCard = ({ request, onAcceptClick, onDeclineClick, onViewMap }: { request: EventRequest, onAcceptClick: (id: string) => void, onDeclineClick: (id: string) => void, onViewMap: (venue: string) => void }) => (
     <div className="bg-purple-800 rounded-lg p-4 flex justify-between items-center">
         <div className="flex items-center">
-            <img src={request.clientId.profileImage || 'https://i.pravatar.cc/40'} alt={request.clientId.username} className="w-12 h-12 rounded-full mr-4" />
+            <img src={request.clientId?.profileImage || 'https://i.pravatar.cc/40'} alt={request.clientId?.username || 'Unknown'} className="w-12 h-12 rounded-full mr-4" />
             <div>
-                <h3 className="font-bold text-white">{request.clientId.username}</h3>
+                <h3 className="font-bold text-white">{request.clientId?.username || 'Unknown Client'}</h3>
                 <p className="text-sm text-gray-400">{request.event}</p>
                 <div className="flex items-center text-sm text-gray-400">
                     <MapPin className="inline mr-1" size={14} />
@@ -74,14 +74,18 @@ const RequestCard = ({ request, onAcceptClick, onViewMap }: { request: EventRequ
             </div>
         </div>
         <div className="flex flex-col items-end">
-            <span className={`text-xs px-2 py-1 rounded-full mb-2 ${request.status === 'pending' ? 'bg-yellow-500 text-black' : 'bg-green-500 text-white'}`}>
+            <span className={`text-xs px-2 py-1 rounded-full mb-2 ${
+                request.status === 'pending' ? 'bg-yellow-500 text-black' : 
+                request.status === 'rejected' ? 'bg-red-500 text-white' : 
+                'bg-green-500 text-white'
+            }`}>
                 {request.status}
             </span>
             <div className="flex space-x-2">
                 {request.status === 'pending' && (
                     <>
                         <button onClick={() => onAcceptClick(request._id)} className="bg-green-500 text-white px-3 py-1 rounded-md text-sm">Accept</button>
-                        <button className="bg-red-500 text-white px-3 py-1 rounded-md text-sm">Decline</button>
+                        <button onClick={() => onDeclineClick(request._id)} className="bg-red-500 text-white px-3 py-1 rounded-md text-sm">Decline</button>
                     </>
                 )}
                 {request.status === 'accepted' && (
@@ -106,6 +110,7 @@ const BookingsPage = () => {
     const [sortBy, setSortBy] = useState('date');
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
+    const [actionType, setActionType] = useState<'accept' | 'decline' | null>(null);
     const [mapModalOpen, setMapModalOpen] = useState(false);
     const [selectedVenue, setSelectedVenue] = useState<string>('');
     const [venueCoords, setVenueCoords] = useState<[number, number] | null>(null);
@@ -113,10 +118,14 @@ const BookingsPage = () => {
 
     const handleUpdateStatus = async (id: string, status: 'accepted' | 'rejected' | 'cancelled') => {
         try {
-            const updatedRequest = await updateEventBookingStatus(id, status);
-            setRequests(prevRequests => 
-                prevRequests.map(req => req._id === id ? { ...req, status: updatedRequest.request.status } : req)
-            );
+            const response = await updateEventBookingStatus(id, status);
+            // Backend returns: { success: true, data: { message, request } }
+            const updatedRequest = response.data?.request;
+            if (updatedRequest) {
+                setRequests(prevRequests => 
+                    prevRequests.map(req => req._id === id ? { ...req, status: updatedRequest.status } : req)
+                );
+            }
         } catch (error) {
             console.error("Failed to update status", error);
         }
@@ -124,15 +133,24 @@ const BookingsPage = () => {
 
     const handleAcceptClick = (id: string) => {
         setSelectedRequestId(id);
+        setActionType('accept');
+        setModalOpen(true);
+    };
+    
+    const handleDeclineClick = (id: string) => {
+        setSelectedRequestId(id);
+        setActionType('decline');
         setModalOpen(true);
     };
 
-    const confirmAccept = () => {
-        if (selectedRequestId) {
-            handleUpdateStatus(selectedRequestId, 'accepted');
+    const confirmAction = () => {
+        if (selectedRequestId && actionType) {
+            const status = actionType === 'accept' ? 'accepted' : 'rejected';
+            handleUpdateStatus(selectedRequestId, status);
         }
         setModalOpen(false);
         setSelectedRequestId(null);
+        setActionType(null);
     };
 
     const handleViewMap = async (venue: string) => {
@@ -223,7 +241,7 @@ const BookingsPage = () => {
                 {loading ? (
                     <p>Loading requests...</p>
                 ) : requests.length > 0 ? (
-                    requests.map(req => <RequestCard key={req._id} request={req} onAcceptClick={handleAcceptClick} onViewMap={handleViewMap} />)
+                    requests.map(req => <RequestCard key={req._id} request={req} onAcceptClick={handleAcceptClick} onDeclineClick={handleDeclineClick} onViewMap={handleViewMap} />)
                 ) : (
                     <p>No client requests found.</p>
                 )}
@@ -238,7 +256,7 @@ const BookingsPage = () => {
                 >
                     Previous
                 </button>
-                <span className="text-white">Page {currentPage} of {Math.ceil(totalRequests / pageSize)}</span>
+                <span className="text-white">Page {currentPage} of {Math.max(1, Math.ceil(totalRequests / pageSize))}</span>
                 <button 
                     onClick={() => setCurrentPage(p => p + 1)}
                     disabled={currentPage >= Math.ceil(totalRequests / pageSize)}
@@ -250,10 +268,16 @@ const BookingsPage = () => {
             {modalOpen && (
                 <ConfirmationModal
                 show={modalOpen}
-                onClose={() => setModalOpen(false)}
-                onConfirm={confirmAccept}
-                title="Confirm Acceptance"
-                message="Are you sure you want to accept this booking request?"
+                onClose={() => {
+                    setModalOpen(false);
+                    setActionType(null);
+                }}
+                onConfirm={confirmAction}
+                title={actionType === 'accept' ? 'Confirm Acceptance' : 'Confirm Decline'}
+                message={actionType === 'accept' 
+                    ? 'Are you sure you want to accept this booking request?' 
+                    : 'Are you sure you want to decline this booking request?'
+                }
                 />
             )}
             {mapModalOpen && (

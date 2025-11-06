@@ -33,6 +33,11 @@ const Navbar: React.FC<NavbarProps> = ({
     onSearch?.(searchQuery)
   }
 
+  const handleClearSearch = () => {
+    setSearchQuery('')
+    onSearch?.('')
+  }
+
 //   const handleLogout = async () => {
 //     try {
 //       await logoutAdmin()
@@ -70,8 +75,17 @@ const Navbar: React.FC<NavbarProps> = ({
               placeholder="Search here"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent bg-gray-800"
+              className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent bg-gray-800 text-white"
             />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={handleClearSearch}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </form>
         </div>
 

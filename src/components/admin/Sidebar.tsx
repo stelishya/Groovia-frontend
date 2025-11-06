@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Users, Briefcase, Trophy, CreditCard, LogOut, Settings, VerifiedIcon } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { logoutAdmin } from '../../services/admin/admin.service';
-import {logoutAdmin as logoutAdminAction} from '../../redux/slices/admin.slice'
+import {logoutAdmin as logoutAdminAction} from '../../redux/slices/admin.slice';
+import ConfirmationModal from '../ui/ConfirmationModal'
 
 interface SidebarLinkProps {
   to: string;
@@ -28,8 +29,15 @@ const SidebarLink: React.FC<SidebarLinkProps> = ({ to, icon, label }) => (
 const Sidebar: React.FC = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const [showLogoutModal, setShowLogoutModal] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
-  const handleLogout = async () => {
+  const handleLogoutClick = () => {
+    setShowLogoutModal(true)
+  }
+
+  const handleLogoutConfirm = async () => {
+    setIsLoggingOut(true)
     try {
       await logoutAdmin();
       dispatch(logoutAdminAction());
@@ -38,6 +46,9 @@ const Sidebar: React.FC = () => {
       console.error("Logout failed:", error);
       dispatch(logoutAdminAction())
       navigate("/admin/login",{replace:true});
+    } finally {
+      setIsLoggingOut(false)
+      setShowLogoutModal(false)
     }
   };
 
@@ -90,7 +101,7 @@ const Sidebar: React.FC = () => {
           label="Log Out" 
         /> */}
         <button 
-        onClick={handleLogout}
+        onClick={handleLogoutClick}
         className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-red-600/20 hover:text-red-400 rounded-lg transition-all duration-200 w-full text-left">
           <LogOut size={20} />
           <span className="font-medium">Log Out</span>
@@ -101,6 +112,19 @@ const Sidebar: React.FC = () => {
           label="Settings" 
         />
       </div>
+
+      {/* Logout Confirmation Modal */}
+      <ConfirmationModal
+        show={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={handleLogoutConfirm}
+        title="Confirm Logout"
+        message="Are you sure you want to log out? You will need to sign in again to access the admin panel."
+        confirmText="Log Out"
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={isLoggingOut}
+      />
     </div>
   );
 };

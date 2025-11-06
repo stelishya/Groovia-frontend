@@ -1,18 +1,86 @@
 import { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { type RootState } from '../../redux/store';
-import { User, Settings, ArrowLeft, Crown } from 'lucide-react';
+import { loginUser } from '../../redux/slices/user.slice';
+import { User, Settings, ArrowLeft, Crown, Edit2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { UserAxios } from '../../api/auth.axios';
 import Sidebar from '../../components/shared/Sidebar';
 import UserNavbar from '../../components/shared/userNavbar';
+import FormModal from '../../components/ui/FormModal';
+import { ClientAxios } from '../../api/user.axios';
 
 const Profile = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const { userData } = useSelector((state: RootState) => state.user);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [profileData, setProfileData] = useState({
+        username: userData?.username || '',
+        email: userData?.email || '',
+        phone: userData?.phone || '',
+        bio: userData?.bio || '',
+    })
+    const [profileErrors, setProfileErrors] = useState({
+        username: '',
+        email: '',
+        phone: '',
+        bio: '',
+    });
+    const validateProfileForm = () => {
+        const errors = {
+            username: '',
+            email: '',
+            phone: '',
+            bio: '',
+        };
+        let isValid = true;
+        // Username validation
+        if (!profileData.username.trim()) {
+            errors.username = 'Username is required';
+            isValid = false;
+        } else if (!/^[a-zA-Z0-9_]+$/.test(profileData.username)) {
+            errors.username = 'Username can only contain letters, numbers, and underscores';
+            isValid = false;
+        } else if (profileData.username.length < 3 || profileData.username.length > 30) {
+            errors.username = 'Username must be between 3 and 30 characters';
+            isValid = false;
+        }
+        // Email validation
+        if (!profileData.email.trim()) {
+            errors.email = 'Email is required';
+            isValid = false;
+        } else if (!/^\S+@\S+\.\S+$/.test(profileData.email)) {
+            errors.email = 'Please enter a valid email address';
+            isValid = false;
+        }
+        // Phone validation (optional)
+        if (profileData.phone && !/^\+?[0-9]{7,15}$/.test(profileData.phone)) {
+            errors.phone = 'Phone number must be 7-15 digits (can start with +)';
+            isValid = false;
+        }
+        // Bio validation (optional)
+        if (profileData.bio && profileData.bio.length > 500) {
+            errors.bio = 'Bio must not exceed 500 characters';
+            isValid = false;
+        }
+        setProfileErrors(errors);
+        return isValid;
+    }
+    const handleOpenEditModal = () => {
+        // Populate form with current user data
+        setProfileData({
+            username: userData?.username || '',
+            email: userData?.email || '',
+            phone: userData?.phone || '',
+            bio: userData?.bio || '',
+        });
+        setShowEditModal(true);
+    };
+
     const [upgradeFormData, setUpgradeFormData] = useState({
         danceStyles: [] as string[],
         experienceYears: '',
@@ -28,11 +96,55 @@ const Profile = () => {
             setUpgradeFormData(prev => ({ ...prev, certificate: e.target.files![0] }));
         }
     };
+    const handleProfileUpdate = async () => {
+        // Validate form before submission
+        if (!validateProfileForm()) {
+            toast.error('Please fix the errors in the form');
+            return;
+        }
+
+        try {
+            const response = await ClientAxios.patch('/profile', profileData);
+            console.log('✅ Profile update response received:', response);
+            // return response.data;
+            // Backend returns: { success: true, data: { message, user } }
+            if (response.data?.success) {
+                const updatedUser = response.data.data?.user;
+                if (updatedUser) {
+                    // Update Redux state with the new user data
+                    const token = localStorage.getItem('token') || '';
+                    dispatch(loginUser({ user: updatedUser, token }));
+                }
+                toast.success(response.data.data?.message || 'Profile updated successfully!');
+                setShowEditModal(false);
+            } else {
+                console.warn('⚠️ Response success is false');
+                toast.error('Update failed - please try again');
+            }
+        } catch (error: any) {
+            console.error('❌ Profile update error:', error);
+            
+            // Extract error message from various possible response structures
+            let errorMessage = 'Failed to update profile';
+            
+            if (error.response?.data) {
+                const data = error.response.data;
+                // Handle different error response formats
+                if (data.error?.message) {
+                    errorMessage = data.error.message;
+                } else if (data.message) {
+                    errorMessage = data.message;
+                }
+            }
+            
+            toast.error(errorMessage);
+        }
+    }
     const handleUpgradeRole = async () => {
         try {
             // TODO: Implement upgrade role API call
             // Validation
-            
+
             if (!upgradeFormData.bio.trim()) {
                 toast.error('Please provide a bio');
                 return;
@@ -153,11 +265,6 @@ const Profile = () => {
                                         </div>
                                     </div>
 
-                                    {/* Settings Button */}
-                                    <button className="mt-4 sm:mt-0 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center transition-colors">
-                                        <Settings size={18} className="mr-2" />
-                                        Edit Profile
-                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -165,64 +272,165 @@ const Profile = () => {
 
                         {/* User Details */}
                         <div className="mt-6 bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-purple-500/30">
-                            <h2 className="text-2xl font-bold text-white mb-4">Account Details</h2>
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="text-purple-200 text-sm">Username</label>
-                                    <p className="text-white text-lg">{userData?.username}</p>
+                            {/* Header with Title and Edit Button */}
+                            <div className="flex justify-between items-center mb-6">
+                                <h2 className="text-2xl font-bold text-white">Account Details</h2>
+                                <button
+                                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center transition-colors"
+                                    onClick={handleOpenEditModal}
+                                >
+                                    <Edit2 size={18} className="mr-2" />
+                                    Edit Profile
+                                </button>
+                            </div>
+
+                            {/* Two Column Layout */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Left Column */}
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="text-purple-200 text-sm">Username</label>
+                                        <p className="text-white text-lg">{userData?.username}</p>
+                                    </div>
+                                    <div>
+                                        <label className="text-purple-200 text-sm">Email</label>
+                                        <p className="text-white text-lg">{userData?.email}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <label className="text-purple-200 text-sm">Email</label>
-                                    <p className="text-white text-lg">{userData?.email}</p>
+
+                                {/* Right Column */}
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="text-purple-200 text-sm">Bio</label>
+                                        <p className="text-white text-lg">{userData?.bio || 'No bio added yet'}</p>
+                                    </div>
+                                    <div>
+                                        <label className="text-purple-200 text-sm">Phone</label>
+                                        <p className="text-white text-lg">{userData?.phone || 'Not provided'}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <label className="text-purple-200 text-sm">Phone</label>
-                                    <p className="text-white text-lg">{userData?.phone || 'Not provided'}</p>
-                                </div>
-                                {/* <div>
-                                    <label className="text-purple-200 text-sm">Account Status</label>
-                                    <p className="text-white text-lg">
-                                        {userData?.isVerified ? (
-                                            <span className="text-green-400">✓ Verified</span>
-                                        ) : (
-                                            <span className="text-yellow-400">⚠ Not Verified</span>
-                                        )}
-                                    </p>
-                                </div> */}
                             </div>
                         </div>
-                                            {/* Upgrade Role Section */}
-                                            {!hasOrganizerRole && (
-                                                <div className="mt-6 bg-gradient-to-r from-yellow-400/20 to-orange-500/20 backdrop-blur-lg rounded-2xl p-6 border border-yellow-500/30">
-                                                    <div className="flex items-start">
-                                                        <div className="flex-shrink-0">
-                                                            <Crown className="text-yellow-400" size={32} />
-                                                        </div>
-                                                        <div className="ml-4 flex-1">
-                                                            <h3 className="text-xl font-bold text-white mb-2">Upgrade to Organizer Role</h3>
-                                                            <p className="text-purple-100 mb-4">
-                                                                Unlock additional features by upgrading to a Organizer role. As a Organizer, you can:
-                                                            </p>
-                                                            <ul className="list-disc list-inside text-purple-100 space-y-1 mb-4">
-                                                                <li>Create and conduct competitions</li>
-                                                                <li>Teach dance classes and courses</li>
-                                                                <li>Earn from your expertise</li>
-                                                                <li>Build your student community</li>
-                                                                <li>Access instructor-only features</li>
-                                                            </ul>
-                                                            <button
-                                                                onClick={() => setShowUpgradeModal(true)}
-                                                                className="px-6 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold rounded-lg hover:from-yellow-500 hover:to-orange-600 transition-all shadow-lg"
-                                                            >
-                                                                Request Upgrade
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
+                        {/* Upgrade Role Section */}
+                        {!hasOrganizerRole && (
+                            <div className="mt-6 bg-gradient-to-r from-yellow-400/20 to-orange-500/20 backdrop-blur-lg rounded-2xl p-6 border border-yellow-500/30">
+                                <div className="flex items-start">
+                                    <div className="flex-shrink-0">
+                                        <Crown className="text-yellow-400" size={32} />
+                                    </div>
+                                    <div className="ml-4 flex-1">
+                                        <h3 className="text-xl font-bold text-white mb-2">Upgrade to Organizer Role</h3>
+                                        <p className="text-purple-100 mb-4">
+                                            Unlock additional features by upgrading to a Organizer role. As a Organizer, you can:
+                                        </p>
+                                        <ul className="list-disc list-inside text-purple-100 space-y-1 mb-4">
+                                            <li>Create and conduct competitions</li>
+                                            <li>Teach dance classes and courses</li>
+                                            <li>Earn from your expertise</li>
+                                            <li>Build your student community</li>
+                                            <li>Access instructor-only features</li>
+                                        </ul>
+                                        <button
+                                            onClick={() => setShowUpgradeModal(true)}
+                                            className="px-6 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold rounded-lg hover:from-yellow-500 hover:to-orange-600 transition-all shadow-lg"
+                                        >
+                                            Request Upgrade
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </main>
             </div>
+            <FormModal
+                isOpen={showEditModal}
+                onClose={() => setShowEditModal(false)}
+                title="Edit Client Profile"
+                icon={<Edit2 className="text-purple-300" size={32} />}
+                onSubmit={handleProfileUpdate}
+                submitText="Save Changes"
+                submitButtonClass="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+            >
+                {/* Username */}
+                <div>
+                    <label className="block text-white font-medium mb-2">Username</label>
+                    <input
+                        type="text"
+                        value={profileData.username}
+                        onChange={(e) => {
+                            setProfileData({ ...profileData, username: e.target.value });
+                            if (profileErrors.username) setProfileErrors({ ...profileErrors, username: '' });
+                        }}
+                        className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 ${profileErrors.username ? 'border-2 border-red-500 focus:ring-red-500' : 'focus:ring-purple-500'
+                            }`}
+                        placeholder="Your username"
+                    />
+                    {profileErrors.username && (
+                        <p className="text-red-400 text-sm mt-1">{profileErrors.username}</p>
+                    )}
+                </div>
+                {/* Email */}
+                <div>
+                    <label className="block text-white font-medium mb-2">Email</label>
+                    <input
+                        type="email"
+                        value={profileData.email}
+                        onChange={(e) => {
+                            setProfileData({ ...profileData, email: e.target.value });
+                            if (profileErrors.email) setProfileErrors({ ...profileErrors, email: '' });
+                        }}
+                        className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 ${profileErrors.email ? 'border-2 border-red-500 focus:ring-red-500' : 'focus:ring-purple-500'
+                            }`}
+                        placeholder="your.email@example.com"
+                    />
+                    {profileErrors.email && (
+                        <p className="text-red-400 text-sm mt-1">{profileErrors.email}</p>
+                    )}
+                </div>
+                {/* Phone */}
+                <div>
+                    <label className="block text-white font-medium mb-2">Phone (Optional)</label>
+                    <input
+                        type="tel"
+                        value={profileData.phone}
+                        onChange={(e) => {
+                            setProfileData({ ...profileData, phone: e.target.value });
+                            if (profileErrors.phone) setProfileErrors({ ...profileErrors, phone: '' });
+                        }}
+                        className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 ${profileErrors.phone ? 'border-2 border-red-500 focus:ring-red-500' : 'focus:ring-purple-500'
+                            }`}
+                        placeholder="+1234567890"
+                    />
+                    {profileErrors.phone && (
+                        <p className="text-red-400 text-sm mt-1">{profileErrors.phone}</p>
+                    )}
+                </div>
+                {/* Bio */}
+                <div>
+                    <label className="block text-white font-medium mb-2">
+                        Bio (Optional)
+                        <span className="text-gray-400 text-sm ml-2">
+                            {profileData.bio.length}/500
+                        </span>
+                    </label>
+                    <textarea
+                        value={profileData.bio}
+                        onChange={(e) => {
+                            setProfileData({ ...profileData, bio: e.target.value });
+                            if (profileErrors.bio) setProfileErrors({ ...profileErrors, bio: '' });
+                        }}
+                        className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 ${profileErrors.bio ? 'border-2 border-red-500 focus:ring-red-500' : 'focus:ring-purple-500'
+                            }`}
+                        rows={4}
+                        placeholder="Tell us about yourself..."
+                        maxLength={500}
+                    />
+                    {profileErrors.bio && (
+                        <p className="text-red-400 text-sm mt-1">{profileErrors.bio}</p>
+                    )}
+                </div>
+            </FormModal>
             {/* Upgrade Modal */}
             {showUpgradeModal && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
