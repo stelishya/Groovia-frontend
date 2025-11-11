@@ -4,8 +4,8 @@ import { Navigate } from 'react-router-dom';
 import { type RootState } from '../../redux/store';
 import DancerProfile from '../dancer/DancerProfile'; // renders the dancer profile
 import ClientProfile from '../client/ClientProfile'; // renders the client profile
-import BookingsClient from '../client/Bookings-Client';
-import BookingsDancer from '../dancer/Bookings-Dancer';
+import BookingsClient from '../client/BookingsClient';
+import BookingsDancer from '../dancer/BookingsDancer';
 
 const BookingsPage: React.FC = () => {
     console.log("BOOKINGS PAGE")

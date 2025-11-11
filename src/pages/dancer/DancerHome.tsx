@@ -3,7 +3,7 @@
 // import {Search, Bell } from "lucide-react"
 import { useSelector } from "react-redux";
 import Sidebar from "../../components/shared/Sidebar";
-import UserNavbar from "../../components/shared/userNavbar";
+import UserNavbar from "../../components/shared/Navbar";
 import type { RootState } from "../../redux/store";
 import { Briefcase, Calendar, Trophy, TrophyIcon } from "lucide-react";
 

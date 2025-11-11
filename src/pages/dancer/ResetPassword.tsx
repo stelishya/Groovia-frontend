@@ -1,4 +1,4 @@
-import ResetPasswordForm from "../../components/shared/resetPasswordForm";
+import ResetPasswordForm from "../../components/shared/ResetPasswordForm";
 
 const UserResetPassword = () => <ResetPasswordForm />;
 

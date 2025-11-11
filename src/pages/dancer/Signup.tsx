@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom"
 import type { SignupForm } from "../../types/auth.type"
 import { signup } from "../../services/user/auth.service"
-import AuthSignup from "../../components/shared/authSignup"
+import AuthSignup from "../../components/shared/AuthSignup"
 
 
 const Signup: React.FC = () => {

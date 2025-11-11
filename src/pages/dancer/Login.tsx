@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom"
 import type { LoginForm } from "../../types/auth.type"
-import AuthLogin from "../../components/shared/authLogin"
+import AuthLogin from "../../components/shared/AuthLogin"
 import { userLogin } from "../../services/user/auth.service"
 import toast from "react-hot-toast"
 import { useDispatch } from "react-redux"

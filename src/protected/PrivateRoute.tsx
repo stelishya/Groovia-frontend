@@ -3,26 +3,30 @@ import { useSelector } from 'react-redux';
 import { Navigate, useLocation } from 'react-router-dom';
 import { type RootState } from '../redux/store';
 
+/**
+ * User type enum for route protection
+ */
+export type UserType = 'user' | 'admin';
+
 interface PrivateRouteProps {
     children: React.ReactNode;
-    // userType: 'dancer' | 'client' | 'admin';
-    userType: 'user' | 'admin';
+    userType: UserType;
 }
 
-export const PrivateRoute: React.FC<PrivateRouteProps> = ({ children,userType }) => {
-    const { isAuthenticated:isUserAuthenticated } = useSelector((state: RootState) => state.user);
-    const { isAuthenticated:isAdminAuthenticated } = useSelector((state: RootState) => state.admin);
+export const PrivateRoute: React.FC<PrivateRouteProps> = ({ children, userType }) => {
+    const { isAuthenticated: isUserAuthenticated } = useSelector((state: RootState) => state.user);
+    const { isAuthenticated: isAdminAuthenticated } = useSelector((state: RootState) => state.admin);
     
     const location = useLocation();
-    let isAuthenticated=false;
-    let loginPath="/login";
+    let isAuthenticated = false;
+    let loginPath = "/login";
 
-    if(userType==="admin"){
-        isAuthenticated=isAdminAuthenticated;
-        loginPath="/admin/login";
-    }else{
+    if (userType === 'admin') {
+        isAuthenticated = isAdminAuthenticated;
+        loginPath = "/admin/login";
+    } else {
         isAuthenticated = isUserAuthenticated;
-        loginPath="/login";
+        loginPath = "/login";
     }
 
     if (!isAuthenticated) {

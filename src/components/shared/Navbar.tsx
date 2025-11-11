@@ -3,8 +3,9 @@ import { Search, Bell, ChevronDown, X, User, Settings, LogOut } from 'lucide-rea
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { type RootState } from '../../redux/store';
-import { NotificationAxios } from '../../api/auth.axios';
+import { NotificationAxios } from '../../api/user.axios';
 import { loginUser } from '../../redux/slices/user.slice';
+import { Role, hasRole } from '../../utils/constants/roles';
 import toast from 'react-hot-toast';
 
 interface Notification {
@@ -72,11 +73,11 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ onSearch }) => {
     const handleNewNotification = (notification: Notification) => {
         // Handle upgrade approved - update user role in Redux
         if (notification.type === 'upgrade_approved' && userData) {
-            // Only add 'instructor' if it doesn't already exist
+            // Only add instructor role if it doesn't already exist
             const currentRoles = userData.role || [];
-            const updatedRoles = currentRoles.includes('instructor') 
+            const updatedRoles = hasRole(userData.role, Role.INSTRUCTOR)
                 ? currentRoles 
-                : [...currentRoles, 'instructor'];
+                : [...currentRoles, Role.INSTRUCTOR];
             
             const updatedUser = {
                 ...userData,

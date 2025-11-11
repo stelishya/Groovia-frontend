@@ -1,26 +1,30 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { type RootState } from '../../redux/store';
-import { User, Settings, ArrowLeft, Crown, Edit2, Heart, Instagram, Linkedin, Facebook, LinkIcon, Youtube, Twitter } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { User, Settings, ArrowLeft, Crown, Edit2, Heart, Instagram, Linkedin, Facebook, LinkIcon, Youtube, Twitter, Camera } from 'lucide-react';
+// import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { UserAxios } from '../../api/auth.axios';
+import { DancerAxios } from '../../api/user.axios';
+import { loginUser } from '../../redux/slices/user.slice';
+import { validateImageFile, validateExperienceYears } from '../../utils/validation';
+import { Role, hasRole, hasAnyRole } from '../../utils/constants/roles';
 import Sidebar from '../../components/shared/Sidebar';
-import UserNavbar from '../../components/shared/userNavbar';
+import UserNavbar from '../../components/shared/Navbar';
 import FormModal from '../../components/ui/FormModal';
 import UpgradeRoleModal from '../../components/shared/UpgradeRoleModal';
-import { ClientAxios, DancerAxios } from '../../api/user.axios';
-import { loginUser } from '../../redux/slices/user.slice';
-import { decodeJwt } from '../../utils/auth';
 
 const Profile = () => {
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
     const dispatch = useDispatch();
     const { userData } = useSelector((state: RootState) => state.user);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [customDanceStyle, setCustomDanceStyle] = useState('');
     const [showCustomInput, setShowCustomInput] = useState(false);
+    const [selectedImage, setSelectedImage] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
     // const [isRefreshing, setIsRefreshing] = useState(false);
     // const [isEditingProfile, setIsEditingProfile] = useState(false);
     const [profileData, setProfileData] = useState({
@@ -63,11 +67,66 @@ const Profile = () => {
         }
     };
 
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            
+            // Use validation utility
+            const validation = validateImageFile(file, 5);
+            if (!validation.isValid) {
+                toast.error(validation.error);
+                return;
+            }
+            
+            setSelectedImage(file);
+            
+            // Create preview
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleUploadProfilePicture = async () => {
+        if (!selectedImage) {
+            toast.error('Please select an image first');
+            return;
+        }
+
+        setIsUploading(true);
+        try {
+            const formData = new FormData();
+            formData.append('profileImage', selectedImage);
+
+            const response = await DancerAxios.post('/profile/upload-picture', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            if (response.status === 200) {
+                toast.success('Profile picture uploaded successfully!');
+                const { user } = response.data;
+                dispatch(loginUser({ user, token: localStorage.getItem('token') || '' }));
+                setSelectedImage(null);
+                setImagePreview(null);
+            }
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.message || 'Failed to upload profile picture';
+            toast.error(errorMessage);
+            console.error('Upload error:', error);
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
 
     const currentRoles = Array.from(new Set(userData?.role || [])); // Remove duplicates
-    const hasInstructorRole = currentRoles.includes('instructor');
+    const hasInstructorRole = hasRole(userData?.role, Role.INSTRUCTOR);
     console.log(userData);
-    const isDancer = currentRoles.includes('dancer') || hasInstructorRole;
+    const isDancer = hasAnyRole(userData?.role, [Role.DANCER, Role.INSTRUCTOR]);
     useEffect(() => {
         if (userData) {
             setProfileData({
@@ -86,9 +145,10 @@ const Profile = () => {
 
     const handleProfileUpdate = async () => {
         try {
-            // Validation: Experience years should be <= 50
-            if (profileData.experienceYears > 50) {
-                toast.error('Experience years cannot exceed 50 years');
+            // Validation: Experience years
+            const expValidation = validateExperienceYears(profileData.experienceYears, 50);
+            if (!expValidation.isValid) {
+                toast.error(expValidation.error);
                 return;
             }
 
@@ -202,15 +262,49 @@ const Profile = () => {
                             <div className="px-6 pb-6">
                                 <div className="flex flex-col sm:flex-row items-center sm:items-end -mt-16 sm:-mt-12">
                                     {/* Avatar */}
-                                    <div className="relative">
+                                    <div className="relative group">
                                         <div className="w-32 h-32 rounded-full border-4 border-white bg-purple-200 flex items-center justify-center overflow-hidden">
-                                            {userData?.profileImage ? (
+                                            {imagePreview ? (
+                                                <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                                            ) : userData?.profileImage ? (
                                                 <img src={userData.profileImage} alt="Profile" className="w-full h-full object-cover" />
                                             ) : (
                                                 <User size={64} className="text-purple-600" />
                                             )}
                                         </div>
+                                        <label htmlFor="profile-image-upload" className="absolute bottom-0 right-0 bg-purple-600 hover:bg-purple-700 text-white rounded-full p-2 cursor-pointer transition-colors shadow-lg">
+                                            <Camera size={20} />
+                                            <input
+                                                id="profile-image-upload"
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={handleImageChange}
+                                                className="hidden"
+                                            />
+                                        </label>
                                     </div>
+
+                                    {/* Upload Button (shown when image is selected) */}
+                                    {selectedImage && (
+                                        <div className="mt-4 sm:mt-0 sm:ml-4 flex gap-2">
+                                            <button
+                                                onClick={handleUploadProfilePicture}
+                                                disabled={isUploading}
+                                                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                {isUploading ? 'Uploading...' : 'Upload'}
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedImage(null);
+                                                    setImagePreview(null);
+                                                }}
+                                                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    )}
 
                                     {/* User Info */}
                                     <div className="mt-4 sm:mt-0 sm:ml-6 flex-1 text-center sm:text-left">

@@ -7,9 +7,10 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { UserAxios } from '../../api/auth.axios';
 import Sidebar from '../../components/shared/Sidebar';
-import UserNavbar from '../../components/shared/userNavbar';
+import UserNavbar from '../../components/shared/Navbar';
 import FormModal from '../../components/ui/FormModal';
 import { ClientAxios } from '../../api/user.axios';
+import { validateUsername, validateEmail, validatePhone, validateBio } from '../../utils/validation';
 
 const Profile = () => {
     const navigate = useNavigate();
@@ -38,35 +39,35 @@ const Profile = () => {
             bio: '',
         };
         let isValid = true;
+
         // Username validation
-        if (!profileData.username.trim()) {
-            errors.username = 'Username is required';
-            isValid = false;
-        } else if (!/^[a-zA-Z0-9_]+$/.test(profileData.username)) {
-            errors.username = 'Username can only contain letters, numbers, and underscores';
-            isValid = false;
-        } else if (profileData.username.length < 3 || profileData.username.length > 30) {
-            errors.username = 'Username must be between 3 and 30 characters';
+        const usernameResult = validateUsername(profileData.username);
+        if (!usernameResult.isValid) {
+            errors.username = usernameResult.error;
             isValid = false;
         }
+
         // Email validation
-        if (!profileData.email.trim()) {
-            errors.email = 'Email is required';
-            isValid = false;
-        } else if (!/^\S+@\S+\.\S+$/.test(profileData.email)) {
-            errors.email = 'Please enter a valid email address';
+        const emailResult = validateEmail(profileData.email);
+        if (!emailResult.isValid) {
+            errors.email = emailResult.error;
             isValid = false;
         }
+
         // Phone validation (optional)
-        if (profileData.phone && !/^\+?[0-9]{7,15}$/.test(profileData.phone)) {
-            errors.phone = 'Phone number must be 7-15 digits (can start with +)';
+        const phoneResult = validatePhone(profileData.phone, false);
+        if (!phoneResult.isValid) {
+            errors.phone = phoneResult.error;
             isValid = false;
         }
+
         // Bio validation (optional)
-        if (profileData.bio && profileData.bio.length > 500) {
-            errors.bio = 'Bio must not exceed 500 characters';
+        const bioResult = validateBio(profileData.bio);
+        if (!bioResult.isValid) {
+            errors.bio = bioResult.error;
             isValid = false;
         }
+
         setProfileErrors(errors);
         return isValid;
     }

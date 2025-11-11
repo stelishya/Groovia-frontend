@@ -10,6 +10,7 @@ import { useDispatch } from "react-redux";
 import axios from "axios";
 import { fetchMyProfile } from '../../services/user/auth.service';
 import { loginUser } from '../../redux/slices/user.slice';
+import { Role, UserType } from '../../utils/constants/roles';
 
 
 export interface AuthLoginProps {
@@ -17,7 +18,7 @@ export interface AuthLoginProps {
   onSubmit: (data: LoginForm) => Promise<void>
   title: string
   //   subtitle?: string
-  role: "user" | "admin"
+  role: UserType
 }
 
 export default function AuthLogin({
@@ -34,7 +35,7 @@ export default function AuthLogin({
   const navigate = useNavigate();
 
   const [showRoleModal, setShowRoleModal] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<'client' | 'dancer' | null>(null);
+  const [selectedRole, setSelectedRole] = useState<Role.CLIENT | Role.DANCER | null>(null);
   const [isGoogleInitializing, setIsGoogleInitializing] = useState(false);
   const dispatch = useDispatch();
 
@@ -53,111 +54,111 @@ export default function AuthLogin({
   };
 
   function loadGoogleScript() {
-  return new Promise<void>((resolve, reject) => {
-    if ((window as any).google?.accounts?.id) return resolve();
-    const s = document.createElement('script');
-    s.src = 'https://accounts.google.com/gsi/client';
-    s.async = true;
-    s.defer = true;
-    s.onload = () => resolve();
-    s.onerror = () => reject(new Error('Failed to load Google script'));
-    document.head.appendChild(s);
-    console.log("Google script loaded - s: ",s);
-  });
-}
-
-async function startGoogleSignIn(role: 'client'|'dancer') {
-  console.log("role in startGoogleSignIn : ",role);
-  console.log('origin:', location.origin);
-  
-  setIsGoogleInitializing(true);
-  
-  // Clear any existing button
-  const existingButton = document.getElementById('google-signin-button');
-  if (existingButton) {
-    existingButton.innerHTML = '';
-  }
-  
-  await loadGoogleScript();
-  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-  console.log("clientId : ",clientId)
-  if (!clientId) {
-    setIsGoogleInitializing(false);
-    throw new Error('Missing VITE_GOOGLE_CLIENT_ID');
+    return new Promise<void>((resolve, reject) => {
+      if ((window as any).google?.accounts?.id) return resolve();
+      const s = document.createElement('script');
+      s.src = 'https://accounts.google.com/gsi/client';
+      s.async = true;
+      s.defer = true;
+      s.onload = () => resolve();
+      s.onerror = () => reject(new Error('Failed to load Google script'));
+      document.head.appendChild(s);
+      console.log("Google script loaded - s: ", s);
+    });
   }
 
-  console.log('🔵 Initializing Google Sign-In...');
-  
-  (window as any).google.accounts.id.initialize({
-    client_id: clientId,
-    callback: async (resp: any) => {
-      console.log('🟢 Google callback fired!', resp);
-      const credential = resp?.credential;
-      console.log("credential : ", credential);
-      
-      if (!credential) {
-        console.error('❌ No credential received from Google');
-        return;
-      }
-      
-      try {
-        // Send credential + role to backend
-        console.log('📤 Sending to backend:', { role });
-        const url = `${import.meta.env.VITE_SERVER_URL}/auth/common/google`;
-        const { data } = await axios.post(url, { credential, role });
-        console.log('📥 Backend response:', data);
-        if(!data.success){
-          toast.error(data.message);
+  async function startGoogleSignIn(role: 'client' | 'dancer') {
+    console.log("role in startGoogleSignIn : ", role);
+    console.log('origin:', location.origin);
+
+    setIsGoogleInitializing(true);
+
+    // Clear any existing button
+    const existingButton = document.getElementById('google-signin-button');
+    if (existingButton) {
+      existingButton.innerHTML = '';
+    }
+
+    await loadGoogleScript();
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    console.log("clientId : ", clientId)
+    if (!clientId) {
+      setIsGoogleInitializing(false);
+      throw new Error('Missing VITE_GOOGLE_CLIENT_ID');
+    }
+
+    console.log('🔵 Initializing Google Sign-In...');
+
+    (window as any).google.accounts.id.initialize({
+      client_id: clientId,
+      callback: async (resp: any) => {
+        console.log('🟢 Google callback fired!', resp);
+        const credential = resp?.credential;
+        console.log("credential : ", credential);
+
+        if (!credential) {
+          console.error('❌ No credential received from Google');
           return;
         }
-        // Save token and hydrate
-        const accessToken = data?.accessToken;
-        if (!accessToken) throw new Error('No token returned from Google auth');
-        
-        localStorage.setItem('token', accessToken);
-        console.log('✅ Token saved, fetching profile...');
 
-        const me = await fetchMyProfile();
-        console.log('👤 User profile fetched:', me);
-        dispatch(loginUser({ user: me.profile, token: accessToken }));
-        
-        console.log('✅ navigating to /home');
-        navigate('/home');
-        setShowRoleModal(false);
-        setSelectedRole(null);
-      } catch (error) {
-        console.error('❌ Google login error:', error);
-        setShowRoleModal(false);
-        setSelectedRole(null);
-      }
-    },
-    cancel_on_tap_outside: false,
-  });
+        try {
+          // Send credential + role to backend
+          console.log('📤 Sending to backend:', { role });
+          const url = `${import.meta.env.VITE_SERVER_URL}/auth/common/google`;
+          const { data } = await axios.post(url, { credential, role });
+          console.log('📥 Backend response:', data);
+          if (!data.success) {
+            toast.error(data.message);
+            return;
+          }
+          // Save token and hydrate
+          const accessToken = data?.accessToken;
+          if (!accessToken) throw new Error('No token returned from Google auth');
 
-  console.log('🔵 Initialization complete, rendering button...');
-  
-  // Render Google Sign-In button (more reliable than One Tap)
-  // Wait a tick for React to render the div
-  setTimeout(() => {
-    const buttonDiv = document.getElementById('google-signin-button');
-    if (buttonDiv) {
-      (window as any).google.accounts.id.renderButton(
-        buttonDiv,
-        { 
-          theme: 'filled_blue',
-          size: 'large',
-          text: 'continue_with',
-          width: 280,
-          locale: 'en'
+          localStorage.setItem('token', accessToken);
+          console.log('✅ Token saved, fetching profile...');
+
+          const me = await fetchMyProfile();
+          console.log('👤 User profile fetched:', me);
+          dispatch(loginUser({ user: me.profile, token: accessToken }));
+
+          console.log('✅ navigating to /home');
+          navigate('/home');
+          setShowRoleModal(false);
+          setSelectedRole(null);
+        } catch (error) {
+          console.error('❌ Google login error:', error);
+          setShowRoleModal(false);
+          setSelectedRole(null);
         }
-      );
-      console.log('✅ Google button rendered');
-    } else {
-      console.error('❌ Button container not found');
-      setIsGoogleInitializing(false);
-    }
-  }, 100);
-}
+      },
+      cancel_on_tap_outside: false,
+    });
+
+    console.log('🔵 Initialization complete, rendering button...');
+
+    // Render Google Sign-In button (more reliable than One Tap)
+    // Wait a tick for React to render the div
+    setTimeout(() => {
+      const buttonDiv = document.getElementById('google-signin-button');
+      if (buttonDiv) {
+        (window as any).google.accounts.id.renderButton(
+          buttonDiv,
+          {
+            theme: 'filled_blue',
+            size: 'large',
+            text: 'continue_with',
+            width: 280,
+            locale: 'en'
+          }
+        );
+        console.log('✅ Google button rendered');
+      } else {
+        console.error('❌ Button container not found');
+        setIsGoogleInitializing(false);
+      }
+    }, 100);
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -206,32 +207,14 @@ async function startGoogleSignIn(role: 'client'|'dancer') {
     });
     try {
       await onSubmit(credentials);
-      // await userLogin(credentials)
     } catch (error) {
-      // Error toast is handled by the service
       console.error('Login failed:', error);
-
-
-      // toast.error(error as string, {
-      //   position: 'top-right',
-      //   duration: 5000,
-      //   style: {
-      //     background: '#FEE2E2',
-      //     color: '#DC2626',
-      //     border: '1px solid #FECACA',
-      //   },
-      //   icon: '❌',
-      // });
     } finally {
       setIsLoading(false);
       toast.dismiss(loadingToast)
     }
   };
 
-
-  // const handleGoogleLogin = () => {
-
-  // }
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-purple-900 via-purple-800 to-pink-600 p-4">
       <div className="relative w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 bg-purple-500/20 backdrop-blur-lg rounded-2xl shadow-2xl overflow-hidden">
@@ -336,41 +319,41 @@ async function startGoogleSignIn(role: 'client'|'dancer') {
       </div>
 
       {showRoleModal && (
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-    <div className="bg-white rounded-lg p-6 w-80">
-      <h3 className="text-lg font-semibold mb-4">Continue as</h3>
-      <p className="text-sm text-gray-600 mb-4">Select your role to continue</p>
-      <div className="space-y-2">
-        <button className={`w-full py-2 rounded ${selectedRole==='dancer'?'bg-purple-600 text-white':'bg-gray-300'}`}
-                onClick={() => setSelectedRole('dancer')}>Dancer</button>
-        <button className={`w-full py-2 rounded ${selectedRole==='client'?'bg-purple-600 text-white':'bg-gray-300'}`}
-                onClick={() => setSelectedRole('client')}>Client</button>
-      </div>
-      
-      {isGoogleInitializing && (
-        <div className="mt-4">
-          <p className="text-sm text-gray-600 mb-2 text-center">Sign in with Google as {selectedRole}</p>
-          <div id="google-signin-button" className="flex justify-center"></div>
-        </div>
-      )}
-      
-      <div className="mt-4 flex justify-end gap-2">
-        <button className="px-3 py-2 bg-gray-400 rounded" onClick={() => { 
-          setShowRoleModal(false); 
-          setSelectedRole(null);
-          setIsGoogleInitializing(false);
-        }}>Cancel</button>
-        {!isGoogleInitializing && (
-          <button className="px-3 py-2 bg-purple-600 text-white rounded disabled:opacity-70"
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-80">
+            <h3 className="text-lg font-semibold mb-4">Continue as</h3>
+            <p className="text-sm text-gray-600 mb-4">Select your role to continue</p>
+            <div className="space-y-2">
+              <button className={`w-full py-2 rounded ${selectedRole === 'dancer' ? 'bg-purple-600 text-white' : 'bg-gray-300'}`}
+                onClick={() => setSelectedRole(Role.DANCER)}>Dancer</button>
+              <button className={`w-full py-2 rounded ${selectedRole === 'client' ? 'bg-purple-600 text-white' : 'bg-gray-300'}`}
+                onClick={() => setSelectedRole(Role.CLIENT)}>Client</button>
+            </div>
+
+            {isGoogleInitializing && (
+              <div className="mt-4">
+                <p className="text-sm text-gray-600 mb-2 text-center">Sign in with Google as {selectedRole}</p>
+                <div id="google-signin-button" className="flex justify-center"></div>
+              </div>
+            )}
+
+            <div className="mt-4 flex justify-end gap-2">
+              <button className="px-3 py-2 bg-gray-400 rounded" onClick={() => {
+                setShowRoleModal(false);
+                setSelectedRole(null);
+                setIsGoogleInitializing(false);
+              }}>Cancel</button>
+              {!isGoogleInitializing && (
+                <button className="px-3 py-2 bg-purple-600 text-white rounded disabled:opacity-70"
                   disabled={!selectedRole}
                   onClick={() => selectedRole && startGoogleSignIn(selectedRole)}>
-            Continue
-          </button>
-        )}
-      </div>
-    </div>
-  </div>
-)}
+                  Continue
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

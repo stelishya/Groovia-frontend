@@ -43,3 +43,70 @@ export const updateEventBookingStatus = async (eventId: string, status: 'accepte
         }
     }
 };
+
+export interface UpdateClientProfileData {
+    username?: string;
+    email?: string;
+    phone?: string;
+    bio?: string;
+    profileImage?: string;
+}
+
+/**
+ * Get client profile
+ */
+export const getClientProfile = async () => {
+    try {
+        const response = await ClientAxios.get('/profile');
+        return response.data;
+    } catch (error) {
+        console.error('Failed to fetch client profile:', error);
+        if (axios.isAxiosError(error)) {
+            const message = error.response?.data?.message || 'Failed to fetch profile';
+            throw new Error(message);
+        }
+        throw error;
+    }
+};
+
+/**
+ * Update client profile
+ */
+export const updateClientProfile = async (profileData: UpdateClientProfileData) => {
+    try {
+        const response = await ClientAxios.patch('/profile', profileData);
+        return response.data;
+    } catch (error) {
+        console.error('Failed to update client profile:', error);
+        if (axios.isAxiosError(error)) {
+            const message = error.response?.data?.message || 'Failed to update profile';
+            throw new Error(message);
+        }
+        throw error;
+    }
+};
+
+/**
+ * Upload profile picture
+ */
+export const uploadClientProfilePicture = async (file: File) => {
+    try {
+        const formData = new FormData();
+        formData.append('profileImage', file);
+
+        const response = await ClientAxios.post('/profile/upload-picture', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+
+        return response.data;
+    } catch (error) {
+        console.error('Failed to upload profile picture:', error);
+        if (axios.isAxiosError(error)) {
+            const message = error.response?.data?.message || 'Failed to upload profile picture';
+            throw new Error(message);
+        }
+        throw error;
+    }
+};

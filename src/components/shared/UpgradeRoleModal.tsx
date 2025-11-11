@@ -5,7 +5,7 @@ import { toast } from 'react-hot-toast';
 // import UserAxios from '../../services/user/axios.service';
 import { upgradeService } from '../../services/user/upgradeRole.service';
 
-import FormModal from '../../components/ui/FormModal';
+import FormModal from '../ui/FormModal';
 
 interface InstructorFormData {
     danceStyles: string[];

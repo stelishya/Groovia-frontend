@@ -1,4 +1,3 @@
-
 import toast from "react-hot-toast";
 import AuthAxios from "../../api/auth.axios";
 import type { SignupForm, VerificationData } from "../../types/auth.type";
@@ -6,6 +5,7 @@ import type { AppDispatch } from "../../redux/store";
 import { loginUser } from "../../redux/slices/user.slice";
 import { decodeJwt } from '../../utils/auth';
 import { DancerAxios, ClientAxios } from '../../api/user.axios';
+import { Role } from '../../utils/constants/roles';
 
 const getErrorMessage = (error: any): string => {
   if (error.response?.data?.message) {
@@ -306,15 +306,15 @@ export async function fetchMyProfile() {
 
   if (!token || !role) throw new Error('Not authenticated');
 
-  if (role === 'dancer') {
+  if (role === Role.DANCER || role === Role.INSTRUCTOR) {
     const res = await DancerAxios.get('/profile');
     return { role, profile: res.data };
   }
-  if (role === 'client') {
+  if (role === Role.CLIENT) {
     const res = await ClientAxios.get('/profile');
     return { role, profile: res.data };
   }
-  if (role === 'admin') {
+  if (role === Role.ADMIN) {
     // Add admin profile endpoint if you have one
     throw new Error('Admin profile endpoint not implemented');
   }

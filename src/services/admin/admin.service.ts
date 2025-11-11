@@ -5,7 +5,8 @@ import toast from 'react-hot-toast';
 import type { LoginForm } from '../../types/auth.type';
 import {loginAdmin as loginAdminAction} from '../../redux/slices/admin.slice';
 import type { AppDispatch } from '../../redux/store';
-import { AdminAxios, AuthAxiosAdmin } from '../../api/auth.axios';
+import { AuthAxiosAdmin } from '../../api/auth.axios';
+import { AdminAxios } from "../../api/user.axios";
 
 // let  AdminAxios = createBaseAxios('/admin-auth');
 

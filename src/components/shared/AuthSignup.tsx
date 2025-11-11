@@ -89,13 +89,13 @@ export default function AuthSignup({
     }
 
     // Phone
-    if (!form.phone) {
-      newErrors.phone = "Phone number is required"
-    } else if (!validatePhone(form.phone)) {
-      newErrors.phone = "Please enter a valid phone number"
-    } else if (!/^\d{10}$/.test(form.phone)) {
-      newErrors.phone = "Phone number must be exactly 10 digits"
-    }
+    // if (!form.phone) {
+    //   newErrors.phone = "Phone number is required"
+    // } else if (!validatePhone(form.phone)) {
+    //   newErrors.phone = "Please enter a valid phone number"
+    // } else if (!/^\d{10}$/.test(form.phone)) {
+    //   newErrors.phone = "Phone number must be exactly 10 digits"
+    // }
 
     // Password
     if (!form.password) {
@@ -201,11 +201,11 @@ export default function AuthSignup({
             data-oid="qrmlkw:">
 
             {/* You can replace this with an actual image */}
-            <img 
-    src="/src/assets/SignupImage.png"
-    alt="Groovia signup"
-    className="absolute inset-0 w-full h-full object-cover"
-  />
+            <img
+              src="/src/assets/SignupImage.png"
+              alt="Groovia signup"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
             {/* <div
               className="absolute inset-0 flex items-center justify-center"
               data-oid="dc:vehc">
@@ -278,7 +278,7 @@ export default function AuthSignup({
 
 
               {/* Phone */}
-              <label className="block text-sm font-medium text-gray-700 mb-0.5">Phone Number</label>
+              {/* <label className="block text-sm font-medium text-gray-700 mb-0.5">Phone Number</label>
               <input
                 type="tel"
                 name="phone"
@@ -293,7 +293,7 @@ export default function AuthSignup({
                   <AlertCircle className="w-4 h-4 text-red-500" />&nbsp;
                   {error.phone}
                 </p>
-              )}
+              )} */}
 
               {/* Role Selector */}
               <label className="block text-sm font-medium text-gray-700 mb-0.5 ">Select Role</label>
@@ -353,16 +353,16 @@ export default function AuthSignup({
 
               {/* Confirm Password */}
               <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                name="confirmPassword"
-                placeholder="Confirm Password"
-                value={form.confirmPassword}
-                onChange={handleInputChange}
-                // required
-                className="w-full px-3 py-2 bg-purple-200/80 border-none rounded-xl text-purple-900 placeholder-purple-700/70 focus:outline-none focus:ring-2 focus:ring-purple-500 text-base"
-                data-oid="5kzxcwk" />
+                <label className="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  placeholder="Confirm Password"
+                  value={form.confirmPassword}
+                  onChange={handleInputChange}
+                  // required
+                  className="w-full px-3 py-2 bg-purple-200/80 border-none rounded-xl text-purple-900 placeholder-purple-700/70 focus:outline-none focus:ring-2 focus:ring-purple-500 text-base"
+                  data-oid="5kzxcwk" />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
@@ -370,7 +370,7 @@ export default function AuthSignup({
                 >
                   {showConfirmPassword ? <Eye className="w-5 h-5 text-purple-700" /> : <EyeOff className="w-5 h-5 text-purple-700" />}
                 </button>
-                </div>
+              </div>
               {error.confirmPassword && (
                 <p className="mt-1 text-sm text-red-600 flex items-center">
                   <AlertCircle className="w-4 h-4 text-red-500" />&nbsp;

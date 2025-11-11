@@ -4,11 +4,12 @@ import { PrivateRoute } from "../protected/PrivateRoute";
 import Signup from "../pages/dancer/Signup";
 import VerifyOtp from "../pages/dancer/VerifyOtp";
 import Login from "../pages/dancer/Login";
-import ForgotPasswordForm from "../components/shared/forgotPasswordForm";
-import ResetPasswordForm from "../components/shared/resetPasswordForm";
+import ForgotPasswordForm from "../components/shared/ForgotPasswordForm";
+import ResetPasswordForm from "../components/shared/ResetPasswordForm";
 import HomePage from "../pages/authorization/Home";
 import ProfilePage from "../pages/authorization/Profile";
 import BookingsPage from "../pages/authorization/Bookings";
+import LandingPage from "../pages/LandingPage";
 // import BookingsPage from "../pages/dancer/Bookings-Dancer";
 
 // import Home from "../pages/dancer/Home";
@@ -27,6 +28,11 @@ const UserRoutes = () => {
             <Route path="/signup" element={
                 <PublicRoute userType="dancer">
                     <Signup />
+                </PublicRoute>
+            } />
+            <Route path="/landing" element={
+                <PublicRoute userType="dancer">
+                    <LandingPage />
                 </PublicRoute>
             } />
             <Route path="/verify-otp" element={

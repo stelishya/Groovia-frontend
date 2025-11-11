@@ -166,7 +166,7 @@
   
 "use client";
 
-import AuthOTP from "../../components/shared/authOTP";
+import AuthOTP from "../../components/shared/AuthOTP";
 
 export default function VerifyOtp() {
     return (

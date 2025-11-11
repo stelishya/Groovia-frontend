@@ -4,14 +4,8 @@ const AuthAxios = createBaseAxios('/auth/user');
 console.log("HI from AuthAxios in auth.axios.ts:",AuthAxios)
 export default AuthAxios;
 
-export const UserAxios = createBaseAxios('/users');
-console.log("HI from UserAxios in auth.axios.ts:",UserAxios)
-
-export const NotificationAxios = createBaseAxios('/notifications');
-console.log("HI from NotificationAxios in auth.axios.ts:",NotificationAxios)
-
 export const AuthAxiosAdmin = createBaseAxios('/auth/admin');
 console.log("HI from AuthAxiosAdmin in auth.axios.ts:",AuthAxiosAdmin)
 
-export const AdminAxios = createBaseAxios('/admins');
-console.log("HI from AdminAxios in auth.axios.ts:",AdminAxios)
+export const UserAxios = createBaseAxios('/users');
+console.log("HI from UserAxios in auth.axios.ts:",UserAxios)

@@ -1,5 +1,5 @@
 import axios, { type AxiosInstance } from 'axios';
-import { handleAxiosError } from './errorHandler.ts';
+import { handleAxiosError } from './errorHandler';
 
 export const createBaseAxios = (basePath: string): AxiosInstance => {
   console.log("HI!! from base axios in base.axios.ts")
