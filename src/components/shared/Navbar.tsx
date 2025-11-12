@@ -246,11 +246,21 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ onSearch, title, subTitle }) =>
                         // onClick={() => setShowUserMenu(!showUserMenu)}
                         className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
                     >
-                        <img
-                            src={userData?.profileImage || "https://i.pravatar.cc/40?img=32"}
-                            alt="User"
-                            className="w-10 h-10 rounded-full cursor-pointer border-2 border-purple-500"
-                        />
+                        {userData?.profileImage ? (
+                            <img
+                                src={userData?.profileImage}
+                                alt="User"
+                                className="w-10 h-10 rounded-full cursor-pointer border-2 border-purple-500"
+                                referrerPolicy="no-referrer"
+                                crossOrigin="anonymous"
+                                onError={(e) => {
+                                    e.currentTarget.onerror = null;
+                                    e.currentTarget.src = 'https://img.icons8.com/?size=128&id=tZuAOUGm9AuS&format=png';
+                                }}
+                            />
+                        ) : (
+                            <User size={34} className="text-purple-600 bg-purple-200 rounded-full p-2" />
+                        )}
                     </button>
 
                     {/* User Dropdown Menu */}
@@ -262,7 +272,7 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ onSearch, title, subTitle }) =>
                             </div>
                             <button
                                 onClick={() => {
-                                    navigate('/user/profile');
+                                    navigate('/profile');
                                     setShowUserMenu(false);
                                 }}
                                 className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center"

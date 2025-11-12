@@ -229,7 +229,7 @@ const Profile = () => {
                 {/* Main Content */}
                 {/* <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8"> */}
                 <main className="flex-1 overflow-y-auto bg-deep-purple">
-                    <UserNavbar />
+                    <UserNavbar title='Profile' subTitle='View and manage your profile'/>
                     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                         {/* Profile Card */}
                         <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl overflow-hidden border border-purple-500/30">

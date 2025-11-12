@@ -2,11 +2,9 @@
 
 import type React from "react"
 import { useState } from "react"
-import { Search, Bell, MessageSquare, ShoppingCart, ChevronDown, Menu, X } from "lucide-react"
+import { Search, Bell, MessageSquare, X } from "lucide-react"
 import { useDispatch } from "react-redux"
 import { useNavigate } from "react-router-dom"
-// import { logoutAdmin as logoutAdminAction } from "@/redux/slices/admin.slice"
-// import { logoutAdmin } from "@/services/admin/admin.service"
 
 interface NavbarProps {
   userName?: string
@@ -37,17 +35,6 @@ const Navbar: React.FC<NavbarProps> = ({
     setSearchQuery('')
     onSearch?.('')
   }
-
-//   const handleLogout = async () => {
-//     try {
-//       await logoutAdmin()
-//       dispatch(logoutAdminAction())
-//       navigate("/admin/login")
-//     } catch {
-//       dispatch(logoutAdminAction())
-//       navigate("/admin/login")
-//     }
-//   }
 
   return (
     <header className="fixed top-0 left-0 right-0 md:left-64 h-16 bg-gray-900 border-b border-gray-600 shadow-sm z-40">

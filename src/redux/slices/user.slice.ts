@@ -9,6 +9,7 @@ interface UserData {
   profileImage?: string;
   phone?: string;
   isVerified?: boolean;
+  isBlocked?: boolean;
   // Dancer Profile Fields
   bio?: string;
   experienceYears?: number;

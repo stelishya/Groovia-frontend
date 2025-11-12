@@ -11,6 +11,7 @@ import L from 'leaflet';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+import UserNavbar from '../../components/shared/Navbar';
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -28,12 +29,12 @@ interface Dancer {
 
 interface EventRequest {
     _id: string;
-    dancerId: Dancer;
+    dancerId: Dancer | null;
     event: string;
     date: string;
     venue: string;
     budget: string;
-    status: 'pending' | 'accepted' | 'rejected' | 'completed';
+    status: 'pending' | 'accepted' | 'rejected' | 'completed' | 'cancelled';
 }
 
 
@@ -58,20 +59,20 @@ const RequestCard = ({ request, onCancelClick, onViewMap }: { request: EventRequ
             <div className="flex items-start mr-4">
                 <div className="flex-shrink-0">
                     <img
-                        src={request.dancerId.profileImage || 'https://i.pravatar.cc/40'}
-                        alt={request.dancerId.username}
+                        src={request.dancerId?.profileImage || 'https://img.icons8.com/?size=128&id=tZuAOUGm9AuS&format=png'}
+                        alt={request.dancerId?.username || 'Unassigned'}
                         className="w-12 h-12 rounded-full border-2 border-white"
                     />
                 </div>
                 <div className="ml-2">
-                    <h3 className="text-lg font-semibold text-white">{request.dancerId.username}</h3>
+                    <h3 className="text-lg font-semibold text-white">{request.dancerId?.username || 'Unassigned'}</h3>
                     <div className="mt-0.5 flex flex-wrap gap-1">
-                        {request.dancerId.danceStyles?.slice(0, 3).map((style, index) => (
+                        {request.dancerId?.danceStyles?.slice(0, 3).map((style, index) => (
                             <span key={index} className="text-xs bg-white/20 text-white px-2 py-0.5 rounded-full">
                                 {style || 'No styles'}
                             </span>
                         ))}
-                        {(!request.dancerId.danceStyles || request.dancerId.danceStyles.length === 0) && (
+                        {(!request.dancerId?.danceStyles || request.dancerId?.danceStyles.length === 0) && (
                             <span className="text-xs text-white/70 italic">No dance styles listed</span>
                         )}
                     </div>
@@ -105,8 +106,8 @@ const RequestCard = ({ request, onCancelClick, onViewMap }: { request: EventRequ
                             year: 'numeric',
                             month: 'short',
                             day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
+                            // hour: '2-digit',
+                            // minute: '2-digit'
                         })}</span>
                     </div>
                     <div className="flex items-center text-white/90">
@@ -255,7 +256,8 @@ const BookingsPage = () => {
 
     return (
         <div className="flex-grow p-8 bg-deep-purple text-white overflow-y-auto">
-            <Header />
+            {/* <Header /> */}
+            <UserNavbar title="Bookings Management" subTitle="Manage your bookings"/>
             <div className="flex border-b border-purple-700 mb-6">
                 <button className="py-2 px-4 text-white border-b-2 border-purple-500 font-semibold">Event Requests History ({requests.length})</button>
                 {/* <button className="py-2 px-4 text-gray-400">Booked Workshops (0)</button> */}

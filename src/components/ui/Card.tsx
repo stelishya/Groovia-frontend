@@ -39,7 +39,7 @@ const DancerCard = ({ dancer, onSendRequest, isRequested, onLike, isLiked }: Dan
       <div className="bg-gradient-to-br from-deep-purple to-purple-400 rounded-3xl p-4 h-full flex flex-col text-white">
 
         <img
-          src={dancer.profileImage || `https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=400&h=300&fit=crop`}
+          src={dancer.profileImage || `https://img.icons8.com/?size=128&id=tZuAOUGm9AuS&format=png`}
           alt={dancer.username}
           className="w-full h-56 object-cover rounded-2xl mb-4"
         />

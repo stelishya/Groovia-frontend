@@ -312,12 +312,18 @@ const filteredAndSortedData = useMemo(() => {
       dataIndex: "isActive",
       align: "center",
       render: (_value: unknown, record: User) => (
-        <Switch
-          checked={record.isActive}
-          onCheckedChange={() => openBlockModal(record)}
+        <button
+          onClick={() => openBlockModal(record)}
           disabled={updateLoading === record._id}
-          className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-red-600"
-        />
+          aria-pressed={record.isActive}
+          aria-label={record.isActive ? 'Active - click to block' : 'Blocked - click to unblock'}
+          title={record.isActive ? 'Active - click to block' : 'Blocked - click to unblock'}
+          className={`relative inline-flex h-6 w-12 items-center rounded-full transition-colors disabled:opacity-50 ${record.isActive ? 'bg-green-500' : 'bg-red-500'}`}
+        >
+          <span
+            className={`absolute left-0.5 top-1/2 -translate-y-1/2 inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${record.isActive ? 'translate-x-6' : 'translate-x-0'}`}
+          />
+        </button>
       ),
     },]
     return (

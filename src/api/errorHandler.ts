@@ -1,6 +1,8 @@
 import { AxiosError, type InternalAxiosRequestConfig, type AxiosInstance } from 'axios';
 import toast from 'react-hot-toast';
 import { refreshToken } from '../services/user/auth.service';
+import { store } from '../redux/store';
+import { logoutUser } from '../redux/slices/user.slice';
 
 interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
@@ -34,6 +36,23 @@ export const handleAxiosError = async (error: AxiosError) => {
   const message = (data as any)?.message || 'An unexpected error occurred';
   const isAccessTokenExpired = (data as any)?.isAccessTokenExpired;
   const isRefreshTokenExpired = (data as any)?.isRefreshTokenExpired;
+  const isUserBlocked = (data as any)?.isUserBlocked;
+
+  // Handle blocked user
+  if (status === 401 && (isUserBlocked || message === 'User account is blocked')) {
+    toast.error('Your account has been blocked. Please contact support.');
+    // Update Redux immediately so guards react without waiting for navigation
+    try { store.dispatch(logoutUser()); } catch {}
+    // Clear persisted tokens
+    localStorage.removeItem('token');
+    localStorage.removeItem('userDatas');
+    localStorage.removeItem('userToken');
+    localStorage.removeItem('user');
+    setTimeout(() => {
+      window.location.href = '/login';
+    }, 1200);
+    return Promise.reject(error);
+  }
 
   // Handle token expiration with automatic refresh
   if (status === 401 && isAccessTokenExpired && !originalRequest._retry) {
@@ -75,9 +94,12 @@ export const handleAxiosError = async (error: AxiosError) => {
       processQueue(refreshError, null);
       isRefreshing = false;
       
-      // If refresh fails, redirect to login
+      // If refresh fails, clear session and redirect to login
       toast.error('Your session has expired. Please login again.');
+      try { store.dispatch(logoutUser()); } catch {}
       localStorage.removeItem('token');
+      localStorage.removeItem('userDatas');
+      localStorage.removeItem('userToken');
       localStorage.removeItem('user');
       setTimeout(() => {
         window.location.href = '/login';
@@ -90,7 +112,10 @@ export const handleAxiosError = async (error: AxiosError) => {
   // Handle refresh token expiration
   if (status === 401 && isRefreshTokenExpired) {
     toast.error('Your session has expired. Please login again.');
+    try { store.dispatch(logoutUser()); } catch {}
     localStorage.removeItem('token');
+    localStorage.removeItem('userDatas');
+    localStorage.removeItem('userToken');
     localStorage.removeItem('user');
     setTimeout(() => {
       window.location.href = '/login';
@@ -105,10 +130,6 @@ export const handleAxiosError = async (error: AxiosError) => {
   if(message == "Email already exists" || message == "Username already exists"){
     return Promise.reject(error);
   }
-  // if(status === 401 && message === 'user is blocked'){
-  //   toast.error(message);
-  //   return Promise.reject(error);
-  // }
 
   // Skip toasting for errors handled by token refresh logic
   if (

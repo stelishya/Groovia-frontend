@@ -16,6 +16,7 @@ import getAllDancers, { sendRequestToDancers } from "../../services/client/brows
 import { toggleLike } from "../../services/dancer/dancer.service";
 import { getClientEventRequests } from '../../services/client/client.service';
 import toast from "react-hot-toast";
+import UserNavbar from "../../components/shared/Navbar";
 
 
 const Header = () => (
@@ -25,7 +26,7 @@ const Header = () => (
             <input type="text" placeholder="Search Workshops, Competitions..." className="w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg py-2 pl-10 focus:outline-none" />
         </div> */}
         <Bell className="text-white text-2xl mr-6 cursor-pointer" />
-        <img src="https://i.pravatar.cc/40?img=32" alt="User" className="w-10 h-10 rounded-full cursor-pointer" />
+        <img src="https://img.icons8.com/?size=128&id=tZuAOUGm9AuS&format=png" alt="User" className="w-10 h-10 rounded-full cursor-pointer" />
     </header>
 );
 interface Dancer {
@@ -49,7 +50,7 @@ interface EventRequest {
         _id: string;
         username: string;
         profileImage?: string;
-    };
+    } | null;
 }
 const Dashboard = ({ userData }: { userData: any }) => {
     console.log("Client Dashboard loaded")
@@ -100,7 +101,11 @@ const Dashboard = ({ userData }: { userData: any }) => {
             const response: { success: boolean; data?: { requests: EventRequest[] } } = await getClientEventRequests(new URLSearchParams);
             console.log("response in fetchSentRequests in ClientHome.tsx", response)
             if (response.success && response.data && Array.isArray(response.data.requests)) {
-                const ids = new Set(response.data.requests.map((req: EventRequest) => req.dancerId._id));
+                const ids = new Set(
+                    response.data.requests
+                        .map((req: EventRequest) => req.dancerId?._id)
+                        .filter((id): id is string => Boolean(id))
+                );
                 setRequestedDancerIds(ids);
             }
         } catch (error) {
@@ -307,7 +312,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
     // };
     return (
         <main className="flex-grow p-8 bg-deep-purple text-white overflow-y-auto">
-            <Header />
+            <UserNavbar />
             <div className="mt-8">
                 <h1 className="text-5xl font-light leading-tight">BOOK, TRACK, ENJOY – <br /> ALL IN ONE PLATFORM</h1>
                 <p className="text-gray-400 mt-4 max-w-lg">Your ultimate destination for dance education, competitive showcases, and community engagement.</p>

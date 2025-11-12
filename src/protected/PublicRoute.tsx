@@ -27,14 +27,13 @@ export const PublicRoute: React.FC<PublicRouteProps> = ({
     const checkAuthentication = () => {
         switch (userType) {
             case 'dancer':
-                return userAuth.isAuthenticated && userAuth.userData;
+                return userAuth.isAuthenticated && userAuth.userData && !userAuth.userData.isBlocked;
             case 'client':
-                return userAuth.isAuthenticated && userAuth.userData;
+                return userAuth.isAuthenticated && userAuth.userData && !userAuth.userData.isBlocked;
             case 'admin':
-              // return false;
                 return adminAuth.adminData !== null;
             default:
-            return false;
+                return false;
         }
     };
 

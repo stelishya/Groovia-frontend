@@ -217,7 +217,7 @@ export default function AuthLogin({
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-purple-900 via-purple-800 to-pink-600 p-4">
-      <div className="relative w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 bg-purple-500/20 backdrop-blur-lg rounded-2xl shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 bg-purple-900 border-2 border-purple-800 backdrop-blur-lg rounded-2xl shadow-2xl overflow-hidden">
         {/* Left Side: Form */}
         <div className="p-8 md:p-12">
           <button onClick={() => navigate(-1)} className="absolute top-4 left-4 w-10 h-10 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors">
