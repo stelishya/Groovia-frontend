@@ -16,11 +16,15 @@ export const createBaseAxios = (basePath: string): AxiosInstance => {
   instance.interceptors.request.use(
     (config) => {
       const token = localStorage.getItem('token');
-      const skipAuth = config.url?.endsWith('/login') || config.url?.includes('/auth/common/google');
+      const skipAuth = config.url?.endsWith('/login') || config.url?.includes('/auth/common/google') || config.url?.includes('/refresh-token');
 
       if (token && !skipAuth) {
         config.headers.Authorization = `Bearer ${token}`;
       }
+      
+      // Store axios instance reference for retry mechanism
+      (config as any).__axiosInstance = instance;
+      
       console.log("token in base axios:", token)
       console.log("config in base axios:", config)
       return config;

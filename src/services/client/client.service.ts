@@ -102,9 +102,9 @@ export const uploadClientProfilePicture = async (file: File) => {
 
         return response.data;
     } catch (error) {
-        console.error('Failed to upload profile picture:', error);
+        console.error('Failed to upload profile image:', error);
         if (axios.isAxiosError(error)) {
-            const message = error.response?.data?.message || 'Failed to upload profile picture';
+            const message = error.response?.data?.message || 'Failed to upload profile image';
             throw new Error(message);
         }
         throw error;

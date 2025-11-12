@@ -299,6 +299,16 @@ export const userResetPassword = async (data: {
 };
 
 
+export const refreshToken = async (): Promise<{ accessToken: string }> => {
+  try {
+    const response = await AuthAxios.post('/refresh-token');
+    return response.data;
+  } catch (error) {
+    console.error('Token refresh failed:', error);
+    throw error;
+  }
+};
+
 export async function fetchMyProfile() {
   const token = localStorage.getItem('token');
   const decoded = decodeJwt(token);

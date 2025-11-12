@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Search, Bell, X, MapPin } from 'lucide-react';
 import { getEventRequests } from '../../services/dancer/dancer.service';
+import { fetchMyProfile } from '../../services/user/auth.service';
 import Sidebar from '../../components/shared/Sidebar';
 import { updateEventBookingStatus } from '../../services/client/client.service';
 import ConfirmationModal from '../../components/ui/ConfirmationModal';
@@ -14,6 +15,7 @@ import L from 'leaflet';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+import UserNavbar from '../../components/shared/Navbar';
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -39,7 +41,7 @@ interface EventRequest {
 }
 
 
-const Header = () => (
+const Header = ({ user }: { user: Client | null }) => (
     <header className="flex justify-between items-center mb-8">
         <div>
             <h1 className="text-3xl font-bold text-white">Bookings Management</h1>
@@ -47,7 +49,7 @@ const Header = () => (
         </div>
         <div className="flex items-center space-x-4">
             <Bell className="text-white" />
-            <img src="https://i.pravatar.cc/40?img=33" alt="User" className="w-10 h-10 rounded-full" />
+            <img src={user?.profileImage} alt="User" className="w-10 h-10 rounded-full" />
         </div>
     </header>
 );
@@ -100,6 +102,7 @@ const RequestCard = ({ request, onAcceptClick, onDeclineClick, onViewMap }: { re
 );
 
 const BookingsPage = () => {
+    const [user, setUser] = useState<Client | null>(null);
     const [requests, setRequests] = useState<EventRequest[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
@@ -207,9 +210,22 @@ const BookingsPage = () => {
         };
     }, [currentPage, pageSize, search, status, sortBy]);
 
+    useEffect(() => {
+        const getProfile = async () => {
+            try {
+                const { profile } = await fetchMyProfile();
+                setUser(profile.user);
+            } catch (error) {
+                console.error("Failed to fetch user profile", error);
+            }
+        };
+        getProfile();
+    }, []);
+
     return (
         <div className="flex-grow p-8 bg-deep-purple text-white overflow-y-auto">
-            <Header />
+            {/* <Header user={user} /> */}
+            <UserNavbar title="Bookings Management" subTitle="Manage your client requests & workshop bookings"/>
             <div className="flex border-b border-purple-700 mb-6">
                 <button className="py-2 px-4 text-white border-b-2 border-purple-500 font-semibold">Client Requests ({requests.length})</button>
                 <button className="py-2 px-4 text-gray-400">Booked Workshops (0)</button>

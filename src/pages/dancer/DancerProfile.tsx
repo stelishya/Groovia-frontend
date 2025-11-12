@@ -5,7 +5,6 @@ import { User, Settings, ArrowLeft, Crown, Edit2, Heart, Instagram, Linkedin, Fa
 // import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { UserAxios } from '../../api/auth.axios';
-import { DancerAxios } from '../../api/user.axios';
 import { loginUser } from '../../redux/slices/user.slice';
 import { validateImageFile, validateExperienceYears } from '../../utils/validation';
 import { Role, hasRole, hasAnyRole } from '../../utils/constants/roles';
@@ -13,6 +12,9 @@ import Sidebar from '../../components/shared/Sidebar';
 import UserNavbar from '../../components/shared/Navbar';
 import FormModal from '../../components/ui/FormModal';
 import UpgradeRoleModal from '../../components/shared/UpgradeRoleModal';
+import ProfileImageModal from '../../components/ui/ProfileImageModal';
+import { uploadProfilePicture } from '../../services/dancer/dancer.service';
+import { DancerAxios } from '../../api/user.axios';
 
 const Profile = () => {
     // const navigate = useNavigate();
@@ -22,9 +24,7 @@ const Profile = () => {
     const [showEditModal, setShowEditModal] = useState(false);
     const [customDanceStyle, setCustomDanceStyle] = useState('');
     const [showCustomInput, setShowCustomInput] = useState(false);
-    const [selectedImage, setSelectedImage] = useState<File | null>(null);
-    const [imagePreview, setImagePreview] = useState<string | null>(null);
-    const [isUploading, setIsUploading] = useState(false);
+    const [showImageModal, setShowImageModal] = useState(false);
     // const [isRefreshing, setIsRefreshing] = useState(false);
     // const [isEditingProfile, setIsEditingProfile] = useState(false);
     const [profileData, setProfileData] = useState({
@@ -67,60 +67,39 @@ const Profile = () => {
         }
     };
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const file = e.target.files[0];
-            
-            // Use validation utility
-            const validation = validateImageFile(file, 5);
-            if (!validation.isValid) {
-                toast.error(validation.error);
-                return;
-            }
-            
-            setSelectedImage(file);
-            
-            // Create preview
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreview(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-        }
+    const handleImageChange = () => {
+        // Open modal in edit mode (no imageUrl means edit mode)
+        setShowImageModal(true);
     };
 
-    const handleUploadProfilePicture = async () => {
-        if (!selectedImage) {
-            toast.error('Please select an image first');
-            return;
-        }
-
-        setIsUploading(true);
+    const handleUploadComplete = async (croppedBlob: Blob) => {
         try {
-            const formData = new FormData();
-            formData.append('profileImage', selectedImage);
-
-            const response = await DancerAxios.post('/profile/upload-picture', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
+            // Convert blob to file
+            const croppedFile = new File([croppedBlob], 'profile.jpg', {
+                type: 'image/jpeg',
             });
 
-            if (response.status === 200) {
-                toast.success('Profile picture uploaded successfully!');
-                const { user } = response.data;
-                dispatch(loginUser({ user, token: localStorage.getItem('token') || '' }));
-                setSelectedImage(null);
-                setImagePreview(null);
-            }
+            // Upload using dancer service
+            const response = await uploadProfilePicture(croppedFile);
+            
+            toast.success('Profile picture uploaded successfully!');
+            
+            // Update Redux state with new user data
+            const { user } = response;
+            dispatch(loginUser({ user, token: localStorage.getItem('token') || '' }));
         } catch (error: any) {
-            const errorMessage = error.response?.data?.message || 'Failed to upload profile picture';
+            const errorMessage = error.message || 'Failed to upload profile image';
             toast.error(errorMessage);
             console.error('Upload error:', error);
-        } finally {
-            setIsUploading(false);
+            throw error; // Re-throw to let modal handle it
         }
     };
+
+    const handleImageClick = () => {
+        // Open modal (will show preview if imageUrl exists, edit mode otherwise)
+        setShowImageModal(true);
+    };
+
 
 
     const currentRoles = Array.from(new Set(userData?.role || [])); // Remove duplicates
@@ -251,7 +230,7 @@ const Profile = () => {
                 {/* Main Content */}
                 {/* <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8"> */}
                 <main className="flex-1 overflow-y-auto bg-deep-purple">
-                    <UserNavbar />
+                    <UserNavbar title="Profile" subTitle="View and edit your profile" />
                     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                         {/* Profile Card */}
                         <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl overflow-hidden border border-purple-500/30">
@@ -263,48 +242,24 @@ const Profile = () => {
                                 <div className="flex flex-col sm:flex-row items-center sm:items-end -mt-16 sm:-mt-12">
                                     {/* Avatar */}
                                     <div className="relative group">
-                                        <div className="w-32 h-32 rounded-full border-4 border-white bg-purple-200 flex items-center justify-center overflow-hidden">
-                                            {imagePreview ? (
-                                                <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                                            ) : userData?.profileImage ? (
+                                        <div 
+                                            className="w-32 h-32 rounded-full border-4 border-white bg-purple-200 flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                                            onClick={handleImageClick}
+                                        >
+                                            {userData?.profileImage ? (
                                                 <img src={userData.profileImage} alt="Profile" className="w-full h-full object-cover" />
                                             ) : (
                                                 <User size={64} className="text-purple-600" />
                                             )}
                                         </div>
-                                        <label htmlFor="profile-image-upload" className="absolute bottom-0 right-0 bg-purple-600 hover:bg-purple-700 text-white rounded-full p-2 cursor-pointer transition-colors shadow-lg">
+                                        <button 
+                                            onClick={handleImageChange}
+                                            className="absolute bottom-0 right-0 bg-purple-600 hover:bg-purple-700 text-white rounded-full p-2 cursor-pointer transition-colors shadow-lg"
+                                        >
                                             <Camera size={20} />
-                                            <input
-                                                id="profile-image-upload"
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={handleImageChange}
-                                                className="hidden"
-                                            />
-                                        </label>
+                                        </button>
                                     </div>
 
-                                    {/* Upload Button (shown when image is selected) */}
-                                    {selectedImage && (
-                                        <div className="mt-4 sm:mt-0 sm:ml-4 flex gap-2">
-                                            <button
-                                                onClick={handleUploadProfilePicture}
-                                                disabled={isUploading}
-                                                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                            >
-                                                {isUploading ? 'Uploading...' : 'Upload'}
-                                            </button>
-                                            <button
-                                                onClick={() => {
-                                                    setSelectedImage(null);
-                                                    setImagePreview(null);
-                                                }}
-                                                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
-                                            >
-                                                Cancel
-                                            </button>
-                                        </div>
-                                    )}
 
                                     {/* User Info */}
                                     <div className="mt-4 sm:mt-0 sm:ml-6 flex-1 text-center sm:text-left">
@@ -663,6 +618,15 @@ const Profile = () => {
                 userData={profileData}
             />
 
+            {/* Unified Profile Image Modal */}
+            <ProfileImageModal
+                isOpen={showImageModal}
+                imageUrl={userData?.profileImage}
+                onClose={() => setShowImageModal(false)}
+                onUploadComplete={handleUploadComplete}
+                userName={userData?.username}
+                aspectRatio={1}
+            />
 
         </div>
     );

@@ -22,9 +22,11 @@ interface Notification {
 
 interface UserNavbarProps {
     onSearch?: (query: string) => void;
+    title?: string;
+    subTitle?: string;
 }
 
-const UserNavbar: React.FC<UserNavbarProps> = ({ onSearch }) => {
+const UserNavbar: React.FC<UserNavbarProps> = ({ onSearch, title, subTitle }) => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { userData, token } = useSelector((state: RootState) => state.user);
@@ -76,9 +78,9 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ onSearch }) => {
             // Only add instructor role if it doesn't already exist
             const currentRoles = userData.role || [];
             const updatedRoles = hasRole(userData.role, Role.INSTRUCTOR)
-                ? currentRoles 
+                ? currentRoles
                 : [...currentRoles, Role.INSTRUCTOR];
-            
+
             const updatedUser = {
                 ...userData,
                 role: updatedRoles
@@ -192,9 +194,13 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ onSearch }) => {
 
     return (
         <>
-            <header className="flex justify-end items-center p-4 relative">
+            <header className="flex justify-between items-center p-4 relative">
+                <div>
+                    <h1 className="text-3xl font-bold text-white">{title}</h1>
+                    <p className="text-gray-400">{subTitle}</p>
+                </div>
                 {/* Search Bar */}
-                <div className="relative w-80 mr-6">
+                {/* <div className="relative w-80 mr-6">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-300" />
                     <input
                         type="text"
@@ -204,7 +210,20 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ onSearch }) => {
                         onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit(e)}
                         className="w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />
-                </div>
+                </div> */}
+
+                <div className="flex items-center">
+                {/* <div className="relative w-80 mr-6">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-300" />
+                    <input
+                        type="text"
+                        placeholder="Search Workshops, Competitions..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit(e)}
+                        className="w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                </div> */}
 
                 {/* Notification Bell */}
                 <div className="relative mr-6">
@@ -275,6 +294,7 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ onSearch }) => {
                         </div>
                     )}
                 </div>
+            </div>
             </header>
 
             {/* Notification Dropdown Panel */}
@@ -299,8 +319,8 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ onSearch }) => {
                                     key={tab}
                                     onClick={() => setNotificationTab(tab)}
                                     className={`flex-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors capitalize ${notificationTab === tab
-                                            ? 'bg-purple-600 text-white'
-                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                        ? 'bg-purple-600 text-white'
+                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                         }`}
                                 >
                                     {tab}
