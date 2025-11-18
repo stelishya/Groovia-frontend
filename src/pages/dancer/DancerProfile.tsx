@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { type RootState } from '../../redux/store';
-import { User, Settings, ArrowLeft, Crown, Edit2, Heart, Instagram, Linkedin, Facebook, LinkIcon, Youtube, Twitter, Camera } from 'lucide-react';
-// import { useNavigate } from 'react-router-dom';
+import { User, Settings, ArrowLeft, Crown, Edit2, Heart, Instagram, Linkedin, Facebook, LinkIcon, Youtube, Twitter, Camera, CreditCard, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { UserAxios } from '../../api/auth.axios';
 import { loginUser } from '../../redux/slices/user.slice';
@@ -11,13 +11,15 @@ import { Role, hasRole, hasAnyRole } from '../../utils/constants/roles';
 import Sidebar from '../../components/shared/Sidebar';
 import UserNavbar from '../../components/shared/Navbar';
 import FormModal from '../../components/ui/FormModal';
-import UpgradeRoleModal from '../../components/shared/UpgradeRoleModal';
+import UpgradeRoleModal, { UpgradeRoleSection } from '../../components/shared/UpgradeRoleModal';
 import ProfileImageModal from '../../components/ui/ProfileImageModal';
 import { uploadProfilePicture } from '../../services/dancer/dancer.service';
 import { DancerAxios } from '../../api/user.axios';
+import { upgradeService, type UpgradeStatus, ROLE_UPGRADE_PRICE } from '../../services/user/upgradeRole.service';
+import { fetchMyProfile } from '../../services/user/auth.service';
 
 const Profile = () => {
-    // const navigate = useNavigate();
+    const navigate = useNavigate();
     const dispatch = useDispatch();
     const { userData } = useSelector((state: RootState) => state.user);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -25,6 +27,8 @@ const Profile = () => {
     const [customDanceStyle, setCustomDanceStyle] = useState('');
     const [showCustomInput, setShowCustomInput] = useState(false);
     const [showImageModal, setShowImageModal] = useState(false);
+    const [upgradeRequests, setUpgradeRequests] = useState<UpgradeStatus[]>([]);
+    const [loadingUpgradeStatus, setLoadingUpgradeStatus] = useState(true);
     // const [isRefreshing, setIsRefreshing] = useState(false);
     // const [isEditingProfile, setIsEditingProfile] = useState(false);
     const [profileData, setProfileData] = useState({
@@ -38,6 +42,8 @@ const Profile = () => {
         // preferredLocation: userData?.preferredLocation || '',
         availableForPrograms: userData?.availableForPrograms || false
     });
+    const [didClean, setDidClean] = useState(false);
+
     // const [upgradeFormData, setUpgradeFormData] = useState({
     //     danceStyles: [] as string[],
     //     experienceYears: '',
@@ -81,9 +87,9 @@ const Profile = () => {
 
             // Upload using dancer service
             const response = await uploadProfilePicture(croppedFile);
-            
+
             toast.success('Profile picture uploaded successfully!');
-            
+
             // Update Redux state with new user data
             const { user } = response;
             dispatch(loginUser({ user, token: localStorage.getItem('token') || '' }));
@@ -103,11 +109,14 @@ const Profile = () => {
 
 
     const currentRoles = Array.from(new Set(userData?.role || [])); // Remove duplicates
-    const hasInstructorRole = hasRole(userData?.role, Role.INSTRUCTOR);
-    console.log(userData);
+    const hasApprovedPaymentPending = upgradeRequests.some(r => r.status === 'approved' && r.paymentStatus === 'pending');
+
+    const hasInstructorRole = hasRole(userData?.role, Role.INSTRUCTOR) && !hasApprovedPaymentPending;
+    console.log("hasInstructorRole in dancer profile : ", hasInstructorRole);
+    console.log("userData in dancer profile : ", userData);
     const isDancer = hasAnyRole(userData?.role, [Role.DANCER, Role.INSTRUCTOR]);
     useEffect(() => {
-        if (userData) {
+        if (userData && !didClean) {
             setProfileData({
                 username: userData.username || '',
                 email: userData.email || '',
@@ -116,10 +125,47 @@ const Profile = () => {
                 experienceYears: userData.experienceYears || 0,
                 portfolioLinks: userData.portfolioLinks || [],
                 danceStyles: userData.danceStyles || [],
-                availableForPrograms: userData.availableForPrograms || false,
+                availableForPrograms: userData.availableForPrograms || false
             });
+            fetchUpgradeStatus().then(() => {
+            const hasApprovedPending = upgradeRequests.some(r => r.status === 'approved' && r.paymentStatus === 'pending');
+            console.log("hasApprovedPending in dancer profile : ", hasApprovedPending)
+            if (hasApprovedPending && userData.role.includes('instructor')) {
+                console.log("USERDATA.ROLE in dancer profile : ", userData.role)
+                const cleanedUser = {
+                    ...userData,
+                    role: userData.role.filter(r => r !== 'instructor')
+                };
+                console.log("cleanedUser in dancer profile : ", cleanedUser)
+                dispatch(loginUser({ user: cleanedUser, token: localStorage.getItem('token') || '' }));
+                setDidClean(true);
+            }
+        });
+            // const interval = setInterval(() => {
+            //     const shouldPoll = upgradeRequests.some(r =>
+            //         r.status === 'pending' ||
+            //         (r.status === 'approved' && r.paymentStatus === 'pending')
+            //     );
+            //     if (shouldPoll) {
+            //         fetchUpgradeStatus();
+            //     } else {
+            //         clearInterval(interval);
+            //     }
+            // }, 5000);
+            // return () => clearInterval(interval);
         }
-    }, [userData]);
+    }, [userData,didClean]);
+
+    // const fetchUpgradeStatus = async () => {
+    //     try {
+    //         const requests = await upgradeService.getUpgradeStatus();
+    //         setUpgradeRequests(requests);
+    //     } catch (error) {
+    //         console.error('Failed to fetch upgrade status:', error);
+    //     } finally {
+    //         setLoadingUpgradeStatus(false);
+    //     }
+    // };
 
 
     const handleProfileUpdate = async () => {
@@ -139,7 +185,7 @@ const Profile = () => {
 
             const token = localStorage.getItem('token');
             console.log("profileData : ", profileData)
-            
+
             const response = await DancerAxios.patch('/profile', profileData);
             console.log("response  in handleProfileUpdate in dancer profile : ", response)
             if (response.status === 200) {
@@ -147,7 +193,7 @@ const Profile = () => {
                     localStorage.setItem('token', response.data.token);
                 }
                 toast.success('Profile updated successfully!');
-                
+
                 const { user } = response.data;
                 dispatch(loginUser({ user, token: localStorage.getItem('token') || '' }));
                 setShowEditModal(false);
@@ -210,7 +256,26 @@ const Profile = () => {
     const likeCount =
         Array.isArray(userData?.likes) ? userData.likes.length
             : typeof userData?.likes === 'number' ? userData.likes
-            : 0;
+                : 0;
+
+    const fetchUpgradeStatus = async () => {
+        try {
+            const requests = await upgradeService.getUpgradeStatus();
+            setUpgradeRequests(requests);
+            console.log('upgradeRequests in dancer profile:', upgradeRequests);
+        } catch (error) {
+            console.error('Failed to fetch upgrade status:', error);
+        } finally {
+            setLoadingUpgradeStatus(false);
+        }
+    };
+    const handlePaymentClick = (request: UpgradeStatus) => {
+        // Store upgrade request in localStorage for checkout page
+        localStorage.setItem('pendingUpgradeRequest', JSON.stringify(request));
+        // Navigate to checkout with upgrade context
+        navigate('/checkout', { state: { upgradeRequest: request } });
+    };
+    console.log('roles in dancer profile:', userData?.role);
     return (
         <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-pink-600">
             {/* Header */}
@@ -242,7 +307,7 @@ const Profile = () => {
                                 <div className="flex flex-col sm:flex-row items-center sm:items-end -mt-16 sm:-mt-12">
                                     {/* Avatar */}
                                     <div className="relative group">
-                                        <div 
+                                        <div
                                             className="w-32 h-32 rounded-full border-4 border-white bg-purple-200 flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
                                             onClick={handleImageClick}
                                         >
@@ -252,7 +317,7 @@ const Profile = () => {
                                                 <User size={64} className="text-purple-600" />
                                             )}
                                         </div>
-                                        <button 
+                                        <button
                                             onClick={handleImageChange}
                                             className="absolute bottom-0 right-0 bg-purple-600 hover:bg-purple-700 text-white rounded-full p-2 cursor-pointer transition-colors shadow-lg"
                                         >
@@ -369,7 +434,7 @@ const Profile = () => {
                                                         if (hostname.includes('twitter.com') || hostname.includes('x.com')) return <Twitter className="text-white hover:text-sky-400 transition-colors" />;
                                                         if (hostname.includes('facebook.com')) return <Facebook className="text-white hover:text-blue-600 transition-colors" />;
                                                     } catch (e) {
-                                                         /* Invalid URL */ 
+                                                        /* Invalid URL */
                                                     }
                                                     return <LinkIcon className="text-white hover:text-purple-300 transition-colors" />;
                                                 };
@@ -402,7 +467,7 @@ const Profile = () => {
                         </div>
 
                         {/* Upgrade Role Section */}
-                        {!hasInstructorRole && (
+                        {/* {!hasInstructorRole && (
                             <div className="mt-6 bg-gradient-to-r from-yellow-400/20 to-orange-500/20 backdrop-blur-lg rounded-2xl p-6 border border-yellow-500/30">
                                 <div className="flex items-start">
                                     <div className="flex-shrink-0">
@@ -429,8 +494,18 @@ const Profile = () => {
                                     </div>
                                 </div>
                             </div>
+                        )} */}
+                        {!loadingUpgradeStatus && (
+                            <UpgradeRoleSection
+                                upgradeRequests={upgradeRequests}
+                                onRequestUpgrade={() => setShowUpgradeModal(true)}
+                                onPaymentClick={(request) => handlePaymentClick(request)}
+                                onRefreshStatus={fetchUpgradeStatus}
+                                roleType="instructor"
+                                userType="dancer"
+                                hasRole={hasInstructorRole}
+                            />
                         )}
-
                     </div>
                 </main>
             </div>
@@ -517,12 +592,11 @@ const Profile = () => {
                                 key={style}
                                 type="button"
                                 onClick={() => handleDanceStyleToggleInEdit(style)}
-                                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                    style === 'Other' 
-                                        ? (showCustomInput ? 'bg-purple-500 text-white' : 'bg-purple-800 text-purple-200 hover:bg-purple-700')
-                                        : (profileData.danceStyles.includes(style)
-                                            ? 'bg-purple-500 text-white'
-                                            : 'bg-purple-800 text-purple-200 hover:bg-purple-700')
+                                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${style === 'Other'
+                                    ? (showCustomInput ? 'bg-purple-500 text-white' : 'bg-purple-800 text-purple-200 hover:bg-purple-700')
+                                    : (profileData.danceStyles.includes(style)
+                                        ? 'bg-purple-500 text-white'
+                                        : 'bg-purple-800 text-purple-200 hover:bg-purple-700')
                                     }`}
                             >
                                 {style}

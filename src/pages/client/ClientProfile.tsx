@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { type RootState } from '../../redux/store';
 import { loginUser } from '../../redux/slices/user.slice';
@@ -11,6 +11,8 @@ import UserNavbar from '../../components/shared/Navbar';
 import FormModal from '../../components/ui/FormModal';
 import { ClientAxios } from '../../api/user.axios';
 import { validateUsername, validateEmail, validatePhone, validateBio } from '../../utils/validation';
+import UpgradeRoleModal, { UpgradeRoleSection } from '../../components/shared/UpgradeRoleModal';
+import { upgradeService, type UpgradeStatus } from '../../services/user/upgradeRole.service';
 
 const Profile = () => {
     const navigate = useNavigate();
@@ -31,6 +33,8 @@ const Profile = () => {
         phone: '',
         bio: '',
     });
+    const [upgradeRequests, setUpgradeRequests] = useState<UpgradeStatus[]>([]);
+    const [loadingUpgradeStatus, setLoadingUpgradeStatus] = useState(true);
     const validateProfileForm = () => {
         const errors = {
             username: '',
@@ -141,70 +145,27 @@ const Profile = () => {
             toast.error(errorMessage);
         }
     }
-    const handleUpgradeRole = async () => {
+    const fetchUpgradeStatus = async () => {
         try {
-            // TODO: Implement upgrade role API call
-            // Validation
-
-            if (!upgradeFormData.bio.trim()) {
-                toast.error('Please provide a bio');
-                return;
-                // toast.success('Upgrade request submitted! We will review and get back to you.', {
-                //     duration: 5000,
-                //     style: {
-                //         background: '#D1FAE5',
-                //         color: '#059669',
-                //         border: '1px solid #34D399'
-                //     }
-                // });
-                // setShowUpgradeModal(false);
-            }
-            if (!userData?.email) {
-                toast.error('User email not found. Please log in again.');
-                return;
-            }
-            const formData = new FormData();
-            // formData.append('danceStyles', JSON.stringify(upgradeFormData.danceStyles));
-            // formData.append('experienceYears', upgradeFormData.experienceYears);
-            formData.append('bio', upgradeFormData.bio);
-            formData.append('portfolioLinks', upgradeFormData.portfolioLinks);
-            formData.append('availableForWorkshops', String(upgradeFormData.availableForWorkshops));
-            formData.append('preferredLocation', upgradeFormData.preferredLocation);
-            formData.append('additionalMessage', upgradeFormData.additionalMessage);
-            formData.append('email', userData.email)
-            if (upgradeFormData.certificate) {
-                formData.append('certificate', upgradeFormData.certificate);
-            }
-            console.log('Upgrade request data:', upgradeFormData);
-            console.log('User email:', userData.email);
-            console.log('FormData contents:');
-            for (const [key, value] of formData.entries()) {
-                console.log(` ${key}:`, value);
-            }
-            const response = await UserAxios.post('/upgrade-role', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-
-            if (response.status === 201 || response.status === 200) {
-                toast.success('Upgrade request submitted! We will review and get back to you.', {
-                    duration: 5000,
-                    style: {
-                        background: '#D1FAE5',
-                        color: '#059669',
-                        border: '1px solid #34D399',
-                    },
-                });
-                setShowUpgradeModal(false);
-            }
-        } catch (error: any) {
-            // toast.error('Failed to submit upgrade request');
-            const errorMessage = error.response?.data?.message || 'Failed to submit upgrade request';
-            toast.error(errorMessage);
-            console.error('Upgrade role error:', error.response?.data);
+            const requests = await upgradeService.getUpgradeStatus();
+            setUpgradeRequests(requests);
+        } catch (error) {
+            console.error('Failed to fetch upgrade status:', error);
+        } finally {
+            setLoadingUpgradeStatus(false);
         }
     };
+
+    const handlePaymentClick = (request: UpgradeStatus) => {
+        localStorage.setItem('pendingUpgradeRequest', JSON.stringify(request));
+        navigate('/checkout', { state: { upgradeRequest: request } });
+    };
+
+    useEffect(() => {
+        if (userData) {
+            fetchUpgradeStatus();
+        }
+    }, [userData]);
 
     const currentRoles = Array.from(new Set(userData?.role || [])); // Remove duplicates
     const hasOrganizerRole = currentRoles.includes('organizer');
@@ -312,34 +273,16 @@ const Profile = () => {
                                 </div>
                             </div>
                         </div>
-                        {/* Upgrade Role Section */}
-                        {!hasOrganizerRole && (
-                            <div className="mt-6 bg-gradient-to-r from-yellow-400/20 to-orange-500/20 backdrop-blur-lg rounded-2xl p-6 border border-yellow-500/30">
-                                <div className="flex items-start">
-                                    <div className="flex-shrink-0">
-                                        <Crown className="text-yellow-400" size={32} />
-                                    </div>
-                                    <div className="ml-4 flex-1">
-                                        <h3 className="text-xl font-bold text-white mb-2">Upgrade to Organizer Role</h3>
-                                        <p className="text-purple-100 mb-4">
-                                            Unlock additional features by upgrading to a Organizer role. As a Organizer, you can:
-                                        </p>
-                                        <ul className="list-disc list-inside text-purple-100 space-y-1 mb-4">
-                                            <li>Create and conduct competitions</li>
-                                            <li>Teach dance classes and courses</li>
-                                            <li>Earn from your expertise</li>
-                                            <li>Build your student community</li>
-                                            <li>Access instructor-only features</li>
-                                        </ul>
-                                        <button
-                                            onClick={() => setShowUpgradeModal(true)}
-                                            className="px-6 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold rounded-lg hover:from-yellow-500 hover:to-orange-600 transition-all shadow-lg"
-                                        >
-                                            Request Upgrade
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+                        {!loadingUpgradeStatus && (
+                            <UpgradeRoleSection
+                                upgradeRequests={upgradeRequests}
+                                onRequestUpgrade={() => setShowUpgradeModal(true)}
+                                onPaymentClick={handlePaymentClick}
+                                onRefreshStatus={fetchUpgradeStatus}
+                                roleType="organizer"
+                                userType="client"
+                                hasRole={hasOrganizerRole}
+                            />
                         )}
                     </div>
                 </main>
@@ -432,145 +375,12 @@ const Profile = () => {
                     )}
                 </div>
             </FormModal>
-            {/* Upgrade Modal */}
-            {showUpgradeModal && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
-                    <div className="bg-purple-900 rounded-2xl p-6 max-w-2xl w-full border border-purple-500 my-8">
-                        <div className="flex items-center justify-between mb-6">
-                            <div className="flex items-center">
-                                <Crown className="text-yellow-400 mr-3" size={32} />
-                                <h3 className="text-2xl font-bold text-white">Upgrade to Instructor</h3>
-                            </div>
-                            <button onClick={() => setShowUpgradeModal(false)} className="text-white hover:text-gray-300 text-2xl">
-                                ×
-                            </button>
-                        </div>
-                        <form className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
-                            {/* Dance Styles */}
-                            {/* <div>
-                                <label className="block text-white font-medium mb-2">Dance Styles *</label>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                                    {danceStyleOptions.map(style => (
-                                        <button
-                                            key={style}
-                                            type="button"
-                                            onClick={() => handleDanceStyleToggle(style)}
-                                            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${upgradeFormData.danceStyles.includes(style)
-                                                ? 'bg-yellow-500 text-white'
-                                                : 'bg-purple-700 text-purple-200 hover:bg-purple-600'
-                                                }`}
-                                        >
-                                            {style}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div> */}
-                            {/* Experience Years */}
-
-                            {/* <div>
- <label className="block text-white font-medium mb-2">Years of Experience *</label>
- <input type="number" min="0" max="50" value={upgradeFormData.experienceYears} onChange={(e) => handleExperienceYearsChange(e.target.value)} className="w-full bg-purple-700 text-white rounded-lg py-2 px-4 focus:outline-none" />
- </div>
- </form>
- </div>
- </div> */}
-                            {/* <div>
-                                <label className="block text-white font-medium mb-2">Years of Experience *</label>
-                                <input
-                                    type="number"
-                                    min="0"
-                                    value={upgradeFormData.experienceYears}
-                                    onChange={(e) => setUpgradeFormData(prev => ({ ...prev, experienceYears: e.target.value }))}
-                                    className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                                    placeholder="e.g., 5"
-                                />
-                            </div> */}
-                            {/* Bio */}
-                            <div>
-                                <label className="block text-white font-medium mb-2">Bio *</label>
-                                <textarea
-                                    value={upgradeFormData.bio}
-                                    onChange={(e) => setUpgradeFormData(prev => ({ ...prev, bio: e.target.value }))}
-                                    className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 h-24"
-                                    placeholder="Tell us about your dance journey and teaching goals..."
-                                />
-                            </div>
-                            {/* Portfolio Links */}
-                            <div>
-                                <label className="block text-white font-medium mb-2">Portfolio Links (Optional)</label>
-                                <input
-                                    type="text"
-                                    value={upgradeFormData.portfolioLinks}
-                                    onChange={(e) => setUpgradeFormData(prev => ({ ...prev, portfolioLinks: e.target.value }))}
-                                    className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                                    placeholder="Instagram, YouTube, etc. (comma separated)"
-                                />
-                            </div>
-                            {/* Certificate Upload */}
-                            <div>
-                                <label className="block text-white font-medium mb-2">Certificate (Optional)</label>
-                                <input
-                                    type="file"
-                                    accept=".pdf,.jpg,.jpeg,.png"
-                                    onChange={handleFileChange}
-                                    className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-yellow-500 file:text-white file:cursor-pointer"
-                                />
-                                {upgradeFormData.certificate && (
-                                    <p className="text-sm text-green-400 mt-1">✓ {upgradeFormData.certificate.name}</p>
-                                )}
-                            </div>
-                            {/* Available for Workshops */}
-                            <div className="flex items-center">
-                                <input
-                                    type="checkbox"
-                                    id="availableForWorkshops"
-                                    checked={upgradeFormData.availableForWorkshops}
-                                    onChange={(e) => setUpgradeFormData(prev => ({ ...prev, availableForWorkshops: e.target.checked }))}
-                                    className="w-5 h-5 text-yellow-500 bg-purple-800 border-purple-600 rounded focus:ring-yellow-500"
-                                />
-                                <label htmlFor="availableForWorkshops" className="ml-2 text-white font-medium">
-                                    Available to conduct workshops
-                                </label>
-                            </div>
-                            {/* Preferred Location */}
-                            <div>
-                                <label className="block text-white font-medium mb-2">Preferred Location</label>
-                                <input
-                                    type="text"
-                                    value={upgradeFormData.preferredLocation}
-                                    onChange={(e) => setUpgradeFormData(prev => ({ ...prev, preferredLocation: e.target.value }))}
-                                    className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                                    placeholder="City / Region"
-                                />
-                            </div>
-                            {/* Additional Message */}
-                            <div>
-                                <label className="block text-white font-medium mb-2">Additional Message (Optional)</label>
-                                <textarea
-                                    value={upgradeFormData.additionalMessage}
-                                    onChange={(e) => setUpgradeFormData(prev => ({ ...prev, additionalMessage: e.target.value }))}
-                                    className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 h-20"
-                                    placeholder="Any note for the admin..."
-                                />
-                            </div>
-                        </form>
-                        <div className="flex gap-3 mt-6">
-                            <button
-                                onClick={() => setShowUpgradeModal(false)}
-                                className="flex-1 px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleUpgradeRole}
-                                className="flex-1 px-4 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white rounded-lg font-bold transition-all"
-                            >
-                                Submit Request
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <UpgradeRoleModal
+                show={showUpgradeModal}
+                onClose={() => setShowUpgradeModal(false)}
+                upgradeType="organizer"
+                userData={userData}
+            />
 
 
         </div>

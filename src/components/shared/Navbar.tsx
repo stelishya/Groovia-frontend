@@ -77,19 +77,8 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ onSearch, title, subTitle }) =>
         if (notification.type === 'upgrade_approved' && userData) {
             // Only add instructor role if it doesn't already exist
             const currentRoles = userData.role || [];
-            const updatedRoles = hasRole(userData.role, Role.INSTRUCTOR)
-                ? currentRoles
-                : [...currentRoles, Role.INSTRUCTOR];
-
-            const updatedUser = {
-                ...userData,
-                role: updatedRoles
-            };
-            dispatch(loginUser({ user: updatedUser, token: token || '' }));
-            toast.success(notification.title, {
-                duration: 5000,
-                icon: '🎉',
-            });
+            console.log("currentRoles in handleNewNotification : ", currentRoles)
+            
         }
         // Handle upgrade rejected
         else if (notification.type === 'upgrade_rejected') {

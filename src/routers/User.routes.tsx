@@ -10,6 +10,10 @@ import HomePage from "../pages/authorization/Home";
 import ProfilePage from "../pages/authorization/Profile";
 import BookingsPage from "../pages/authorization/Bookings";
 import LandingPage from "../pages/LandingPage";
+import CheckoutPageClient from "../pages/client/CheckoutPageClient";
+import CheckoutPageDancer from "../pages/dancer/CheckoutPageDancer";
+import CheckoutPage from "../pages/authorization/Checkout";
+import { Role } from "../utils/constants/roles";
 // import BookingsPage from "../pages/dancer/Bookings-Dancer";
 
 // import Home from "../pages/dancer/Home";
@@ -76,6 +80,16 @@ const UserRoutes = () => {
                 </PublicRoute>
             }
             /> */}
+            {/* Checkout Routes */}
+            <Route path="/checkout" element={
+                <PrivateRoute 
+                    userType="user"
+                    // allowedRoles={[Role.DANCER, Role.CLIENT]}
+                    >
+                    <CheckoutPage />
+                </PrivateRoute>
+            } />
+            
             <Route path='/logout' element={<Login />} />
         </Routes>
     )

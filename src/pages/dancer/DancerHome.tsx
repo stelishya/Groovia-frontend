@@ -87,7 +87,7 @@ const Dashboard = ({userData}:{userData:any}) => (
 
         <div className="mt-12 p-6 bg-purple-800/50 rounded-xl flex items-center justify-between">
             <div className="flex items-center">
-                <img src="https://i.pravatar.cc/80?img=32" alt="Elena Petrova" className="w-16 h-16 rounded-full border-2 border-purple-400" />
+                {/* <img src="https://i.pravatar.cc/80?img=32" alt="Elena Petrova" className="w-16 h-16 rounded-full border-2 border-purple-400" /> */}
                 <div className="ml-4">
                     <div className="flex items-center">
                         <h3 className="text-xl font-bold">{userData?.username?.charAt(0).toUpperCase() + userData?.username?.slice(1)}</h3>

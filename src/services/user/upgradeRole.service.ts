@@ -21,6 +21,26 @@ export interface OrganizerUpgradeRequest {
     licenseDocument?: File;
 }
 
+export interface UpgradeStatus {
+    id: string;
+    type: 'instructor' | 'organizer';
+    status: 'pending' | 'approved' | 'rejected' | 'payment_pending' | 'completed';
+    paymentStatus: 'pending' | 'paid';
+    approvedAt?: string;
+    rejectedAt?: string;
+    paymentCompletedAt?: string;
+    adminMessage?: string;
+}
+
+export interface PaymentRequest {
+    upgradeRequestId: string;
+    amount: number;
+    currency: string;
+}
+
+// Single price for all role upgrades
+export const ROLE_UPGRADE_PRICE = 499;
+
 export const upgradeService = {
     // Upgrade to instructor
     upgradeToInstructor: async (data: InstructorUpgradeRequest) => {
@@ -57,5 +77,35 @@ export const upgradeService = {
         return await UserAxios.post('/upgrade-role-organizer', formData, {
             headers: { 'Content-Type': 'multipart/form-data' }
         });
+    },
+
+    // Get upgrade status for current user
+    getUpgradeStatus: async (): Promise<UpgradeStatus[]> => {
+        const response = await UserAxios.get('/upgrade-status');
+        console.log('upgrade status response in upgradeRole.service.ts:', response);
+        return response.data;
+    },
+
+    // Get specific upgrade request details
+    getUpgradeRequest: async (requestId: string): Promise<UpgradeStatus> => {
+        const response = await UserAxios.get(`/upgrade-request/${requestId}`);
+        console.log('upgrade request response in upgradeRole.service.ts:', response);
+        return response.data;
+    },
+
+    // Complete payment for approved upgrade
+    // completeUpgradePayment: async (data: PaymentRequest) => {
+    //     return await UserAxios.post('/upgrade-payment', data);
+    // },
+
+    // Confirm payment completion (called after successful payment)
+    confirmPaymentCompletion: async (upgradeRequestId: string, paymentId: string,amount:number,currency:string) => {
+        const response = await UserAxios.post('/upgrade-payment-confirm', {
+            upgradeRequestId,
+            paymentId,
+            amount,
+            currency
+        });
+        return response.data;
     }
 };

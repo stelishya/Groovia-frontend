@@ -1,5 +1,5 @@
-import { Crown, Building2 } from 'lucide-react';
-import { useState } from 'react';
+import { Crown, Building2, CheckCircle, CreditCard } from 'lucide-react';
+import React, { useState } from 'react';
 
 import { toast } from 'react-hot-toast';
 // import UserAxios from '../../services/user/axios.service';
@@ -132,7 +132,9 @@ const UpgradeRoleModal = ({ show, onClose, upgradeType, userData }: UpgradeRoleM
                 });
 
                 if (response.status === 201 || response.status === 200) {
-                    toast.success('Upgrade request submitted!');
+                    toast.success('Upgrade request submitted!',{
+                        duration: 5000
+                    });
                     onClose();
                 }
             } else {
@@ -181,6 +183,9 @@ const UpgradeRoleModal = ({ show, onClose, upgradeType, userData }: UpgradeRoleM
                     onClose();
                 }
             }
+            setTimeout(()=>{
+                window.location.reload();
+            },3000)
         } catch (error: any) {
             toast.error(error.response?.data?.message || 'Failed to submit');
         } finally {
@@ -199,8 +204,8 @@ const UpgradeRoleModal = ({ show, onClose, upgradeType, userData }: UpgradeRoleM
         }
         : {
             title: 'Upgrade to Organizer',
-            icon: <Building2 className="text-blue-400" size={32} />,
-            submitButtonClass: 'bg-gradient-to-r from-blue-400 to-indigo-500 hover:from-blue-500 hover:to-indigo-600'
+            icon: <Building2 className="text-purple-400" size={32} />,
+            submitButtonClass: 'bg-gradient-to-r from-purple-400 to-indigo-500 hover:from-purple-500 hover:to-indigo-600'
         };
     return (
         // <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
@@ -430,7 +435,7 @@ const OrganizerForm = ({
                 type="text"
                 value={upgradeFormData.organizationName}
                 onChange={e => setUpgradeFormData((prev: any) => ({ ...prev, organizationName: e.target.value }))}
-                className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 placeholder="Event company or group name"
             />
         </div>
@@ -443,7 +448,7 @@ const OrganizerForm = ({
                 min="0"
                 value={upgradeFormData.experienceYears}
                 onChange={e => setUpgradeFormData((prev: any) => ({ ...prev, experienceYears: e.target.value }))}
-                className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 placeholder="Years organizing events"
             />
         </div>
@@ -455,7 +460,7 @@ const OrganizerForm = ({
                 type="text"
                 value={upgradeFormData.pastEvents}
                 onChange={e => setUpgradeFormData((prev: any) => ({ ...prev, pastEvents: e.target.value }))}
-                className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 placeholder="Links or details of past events (comma separated)"
             />
         </div>
@@ -466,7 +471,7 @@ const OrganizerForm = ({
             <textarea
                 value={upgradeFormData.description}
                 onChange={e => setUpgradeFormData((prev: any) => ({ ...prev, description: e.target.value }))}
-                className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-24"
+                className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 h-24"
                 placeholder="Brief about what kind of events you organize..."
             />
         </div>
@@ -478,7 +483,7 @@ const OrganizerForm = ({
                 type="file"
                 accept=".pdf,.jpg,.jpeg,.png"
                 onChange={handleFileChange}
-                className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-500 file:text-white file:cursor-pointer"
+                className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-purple-500 file:text-white file:cursor-pointer"
             />
             {upgradeFormData.licenseDocument && (
                 <p className="text-sm text-green-400 mt-1">✓ {upgradeFormData.licenseDocument.name}</p>
@@ -491,12 +496,230 @@ const OrganizerForm = ({
             <textarea
                 value={upgradeFormData.message}
                 onChange={e => setUpgradeFormData((prev: any) => ({ ...prev, message: e.target.value }))}
-                className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 h-20"
+                className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 h-20"
                 placeholder="Why do you want to become an organizer?"
             />
         </div>
     </>
 );
+
+// Reusable UpgradeRoleSection Component
+interface UpgradeRoleSectionProps {
+    upgradeRequests: any[]; // Array of upgrade requests
+    onRequestUpgrade: () => void; // Callback to open upgrade modal
+    onPaymentClick: (request: any) => void; // Callback to handle payment
+    onRefreshStatus: () => void; // Callback to refresh upgrade status
+    roleType: 'instructor' | 'organizer'; // Specify which role this section is for
+    userType?: 'dancer' | 'client'; // Optional: for role-specific messaging
+    hasRole?: boolean; // Whether user already has this role
+}
+
+export const UpgradeRoleSection: React.FC<UpgradeRoleSectionProps> = ({
+    upgradeRequests,
+    onRequestUpgrade,
+    onPaymentClick,
+    onRefreshStatus,
+    roleType,
+    userType,
+    hasRole = false
+}) => {
+    // Don't show if user already has the role
+    if (hasRole) return null;
+
+    console.log('upgradeRequests array:', upgradeRequests);
+    console.log('roleType in UpgradeRoleSection:', roleType);
+
+    // Find the specific upgrade request for this role type
+    const upgradeRequest = upgradeRequests.find(req => req.type === roleType);
+    console.log("found upgradeRequest in upgrade role section in UpgradeRoleModal : ", upgradeRequest);
+
+    // Get role-specific configuration
+    const getRoleConfig = () => {
+        if (roleType === 'instructor') {
+            return {
+                title: 'Upgrade to Instructor Role',
+                description: `Unlock additional features by upgrading to an Instructor role. As an Instructor, you can:`,
+                benefits: [
+                    'Create and host workshops',
+                    'Teach dance classes and courses',
+                    'Earn from your expertise',
+                    'Build your student community',
+                    'Access instructor-only features'
+                ],
+                icon: <Crown className="text-yellow-400" size={32} />,
+                colors: {
+                    initial: 'from-yellow-400/20 to-orange-500/20 border-yellow-500/30',
+                    pending: 'from-blue-400/20 to-blue-600/20 border-blue-500/30',
+                    approved: 'from-green-400/20 to-green-600/20 border-green-500/30',
+                    rejected: 'from-red-400/20 to-red-600/20 border-red-500/30'
+                },
+                buttonColors: 'from-yellow-600 to-orange-600 hover:from-yellow-600 hover:to-orange-600'
+            };
+        } else {
+            return {
+                title: 'Upgrade to Organizer Role',
+                description: `Unlock additional features by upgrading to an Organizer role. As an Organizer, you can:`,
+                benefits: [
+                    'Create and manage dance events',
+                    'Host competitions and showcases',
+                    'Build event communities',
+                    'Access event management tools',
+                    'Monetize your events'
+                ],
+                icon: <Building2 className="text-yellow-400" size={32} />,
+                colors: {
+                    initial: 'from-yellow-400/20 to-orange-500/20 border-yellow-500/30',
+                    pending: 'from-blue-400/20 to-blue-600/20 border-blue-500/30',
+                    approved: 'from-green-400/20 to-green-600/20 border-green-500/30',
+                    rejected: 'from-red-400/20 to-red-600/20 border-red-500/30'
+                },
+                buttonColors: 'from-orange-500 to-yellow-600 hover:from-yellow-600 hover:to-orange-700'
+            };
+        }
+    };
+
+    const config = getRoleConfig();
+    const ROLE_UPGRADE_PRICE = 499; // You can import this constant
+
+    // If no request exists, show the initial upgrade prompt
+    if (!upgradeRequest) {
+        return (
+            <div className={`mt-6 bg-gradient-to-r ${config.colors.initial} backdrop-blur-lg rounded-2xl p-6 border`}>
+                <div className="flex items-start">
+                    <div className="flex-shrink-0">
+                        {config.icon}
+                    </div>
+                    <div className="ml-4 flex-1">
+                        <h3 className="text-xl font-bold text-white mb-2">{config.title}</h3>
+                        <p className="text-purple-100 mb-4">
+                            {config.description}
+                        </p>
+                        <ul className="list-disc list-inside text-purple-100 space-y-1 mb-4">
+                            {config.benefits.map((benefit, index) => (
+                                <li key={index}>{benefit}</li>
+                            ))}
+                        </ul>
+                        <div className="flex items-center space-x-4">
+                            <button
+                                onClick={onRequestUpgrade}
+                                className={`px-6 py-3 bg-gradient-to-r ${config.buttonColors} text-white font-bold rounded-lg transition-all shadow-lg`}
+                            >
+                                Request Upgrade
+                            </button>
+                            <span className="text-purple-200 text-sm">
+                                One-time payment: ₹{ROLE_UPGRADE_PRICE}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Show status based on request state
+    if (upgradeRequest.status === 'pending') {
+        return (
+            <div className={`mt-6 bg-gradient-to-r ${config.colors.pending} backdrop-blur-lg rounded-2xl p-6 border`}>
+                <div className="flex items-start">
+                    <div className="flex-shrink-0">
+                        {React.cloneElement(config.icon, { className: 'text-blue-400', size: 32 })}
+                    </div>
+                    <div className="ml-4 flex-1">
+                        <h3 className="text-xl font-bold text-white mb-2">
+                            {roleType.charAt(0).toUpperCase() + roleType.slice(1)} Upgrade Request Submitted
+                        </h3>
+                        <p className="text-blue-100 mb-4">
+                            Your {roleType} upgrade request is under admin review. We'll notify you once it's approved.
+                        </p>
+                        <div className="flex items-center space-x-2">
+                            <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                            <span className="text-blue-200 text-sm">Pending Admin Review</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (upgradeRequest.status === 'approved' || upgradeRequest.status === 'payment_pending') {
+        return (
+            <div className={`mt-6 bg-gradient-to-r ${config.colors.approved} backdrop-blur-lg rounded-2xl p-6 border`}>
+                <div className="flex items-start">
+                    <div className="flex-shrink-0">
+                        <CheckCircle className="text-green-400" size={32} />
+                    </div>
+                    <div className="ml-4 flex-1">
+                        <h3 className="text-xl font-bold text-white mb-2">
+                            🎉 Upgrade Request Approved by Admin!
+                        </h3>
+                        <p className="text-green-100 mb-4">
+                            Congratulations! Your {roleType} upgrade has been approved.
+                            Complete the payment to activate your {roleType} role.
+                        </p>
+
+                        {upgradeRequest.adminMessage && (
+                            <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 mb-4">
+                                <p className="text-sm text-green-200">
+                                    <span className="font-medium text-white">Admin Message:</span> {upgradeRequest.adminMessage}
+                                </p>
+                            </div>
+                        )}
+
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-green-200 text-sm mb-2">One-time payment required:</p>
+                                <p className="text-2xl font-bold text-white">₹{ROLE_UPGRADE_PRICE}</p>
+                            </div>
+                            <button
+                                onClick={() => onPaymentClick(upgradeRequest)}
+                                className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white font-bold rounded-lg hover:from-green-600 hover:to-green-700 transition-all shadow-lg flex items-center space-x-2"
+                            >
+                                <CreditCard className="w-5 h-5" />
+                                <span>Continue with Payment</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (upgradeRequest.status === 'rejected') {
+        return (
+            <div className={`mt-6 bg-gradient-to-r ${config.colors.rejected} backdrop-blur-lg rounded-2xl p-6 border`}>
+                <div className="flex items-start">
+                    <div className="flex-shrink-0">
+                        {React.cloneElement(config.icon, { className: 'text-red-400', size: 32 })}
+                    </div>
+                    <div className="ml-4 flex-1">
+                        <h3 className="text-xl font-bold text-white mb-2">Upgrade Request Rejected</h3>
+                        <p className="text-red-100 mb-4">
+                            Unfortunately, your {roleType} upgrade request was not approved.
+                        </p>
+
+                        {upgradeRequest.adminMessage && (
+                            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 mb-4">
+                                <p className="text-sm text-red-200">
+                                    <span className="font-medium text-white">Admin Message:</span> {upgradeRequest.adminMessage}
+                                </p>
+                            </div>
+                        )}
+
+                        <button
+                            onClick={onRequestUpgrade}
+                            className={`px-6 py-3 bg-gradient-to-r ${config.buttonColors} text-white font-bold rounded-lg transition-all shadow-lg`}
+                        >
+                            Request Again
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // If status is completed, this section won't show because hasRole will be true
+    return null;
+};
 
 export default UpgradeRoleModal;
 export type { InstructorFormData, OrganizerFormData, UpgradeType };

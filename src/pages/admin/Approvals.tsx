@@ -17,6 +17,7 @@ interface UpgradeRequest {
     preferredLocation?: string;
     additionalMessage?: string;
     status: 'pending' | 'approved' | 'rejected';
+    paymentStatus: 'pending' | 'paid';
     createdAt: string;
 }
 
@@ -74,10 +75,11 @@ const Approvals = () => {
 
     const handleApprove = async (id: string) => {
         try {
-            await axios.patch(`http://localhost:5000/users/upgrade-requests/${id}/approve`, {
+            const response = await axios.patch(`http://localhost:5000/users/upgrade-requests/${id}/approve`, {
                 adminNote
             });
-            toast.success('Request approved! User upgraded to instructor role.', {
+            console.log("Approve response",response.data);
+            toast.success('Request approved!', {
                 duration: 5000,
                 style: {
                     background: '#D1FAE5',
