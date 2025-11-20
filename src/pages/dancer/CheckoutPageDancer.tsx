@@ -11,20 +11,20 @@ const CheckoutPageDancer: React.FC = () => {
   // Get user email from localStorage or context
   // const userEmail = localStorage.getItem('userEmail') || 'dancer@example.com';
   const { userData } = useSelector((state: RootState) => state.user);
-const userEmail = userData?.email || 'dancer@example.com';
+  const userEmail = userData?.email || 'dancer@example.com';
 
   const handleUpgradeSuccess = () => {
-    toast.success('🎉 Successfully upgraded to Premium! Your dance profile is now featured.');
-    // Redirect to dancer dashboard or profile
+    toast.success('Successfully upgraded to Premium! Your dance profile is now featured.');
+    // Redirect to profile
     navigate('/profile');
   };
 
   const handleCancel = () => {
-    navigate('/profile'); // or wherever you want to redirect
+    navigate('/profile'); 
   };
 
   return (
-    <Payment 
+    <Payment
       userEmail={userEmail}
       onUpgrade={handleUpgradeSuccess}
       onCancel={handleCancel}

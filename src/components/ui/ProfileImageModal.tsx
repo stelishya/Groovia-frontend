@@ -176,7 +176,9 @@ const ProfileImageModal: React.FC<ProfileImageModalProps> = ({
             <div className="bg-gradient-to-br from-purple-900 to-gray-900 rounded-lg shadow-2xl w-full max-w-4xl mx-4 max-h-[90vh] flex flex-col border border-purple-500/30">
                 {/* Header */}
                 <div className="flex items-center justify-between p-4 border-b border-purple-500/30">
-                    <h2 className="text-xl font-semibold text-white">Edit Profile Picture</h2>
+                    <h2 className="text-xl font-semibold text-white">
+                        {imageUrl ? 'Edit Profile Picture' : 'Add Profile Picture'}
+                    </h2>
                     <div className="flex items-center gap-2">
                         {imageToCrop && (
                             <button

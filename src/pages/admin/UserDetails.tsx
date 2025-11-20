@@ -144,8 +144,8 @@ const handleToggleUserStatus = async (): Promise<void> => {
       });
     } finally {
       setUpdateLoading(null);
-       setShowBlockModal(false);
- setSelectedUser(null);
+      setShowBlockModal(false);
+      setSelectedUser(null);
     }
   };
 const openBlockModal = (user: User) => {

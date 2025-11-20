@@ -18,8 +18,8 @@ export const validateUsername = (username: string): ValidationResult => {
     return { isValid: false, error: 'Username is required' };
   }
   
-  if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-    return { isValid: false, error: 'Username can only contain letters, numbers, and underscores' };
+  if (!/^[a-zA-Z\s]+$/.test(username)) {
+    return { isValid: false, error: 'Username can only contain letters and spaces' };
   }
   
   if (username.length < 3 || username.length > 30) {

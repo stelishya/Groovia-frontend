@@ -158,6 +158,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
             if (response.success && response.data) {
                 setDancers(response.data.dancers || []);
                 setTotalDancers(response.data.total || 0);
+                console.log("totalDancers", response.data.total)
 
                 // Update liked dancers set
                 const liked = new Set<string>();
@@ -268,11 +269,14 @@ const Dashboard = ({ userData }: { userData: any }) => {
             handleCloseRequestModal();
             fetchSentRequests(); // Refetch requests to ensure UI is up-to-date
             if(response.success){
-                toast.success(response.data?.message);
+                toast.success(`Event request sent to ${selectedDancer.username}! 🎉`);
+            } else {
+                toast.error(response.data?.message || 'Failed to send request');
             }
 
         } catch (error) {
             console.error("Send request failed", error);
+            toast.error('Failed to send event request');
         }
     };
 

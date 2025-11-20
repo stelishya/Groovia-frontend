@@ -74,7 +74,7 @@ export const upgradeService = {
             formData.append('licenseDocument', data.licenseDocument);
         }
 
-        return await UserAxios.post('/upgrade-role-organizer', formData, {
+        return await UserAxios.post('/upgrade-role', formData, {
             headers: { 'Content-Type': 'multipart/form-data' }
         });
     },

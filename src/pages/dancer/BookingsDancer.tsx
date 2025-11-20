@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Search, Bell, X, MapPin } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { getEventRequests } from '../../services/dancer/dancer.service';
 import { fetchMyProfile } from '../../services/user/auth.service';
 import Sidebar from '../../components/shared/Sidebar';
@@ -60,7 +61,7 @@ const RequestCard = ({ request, onAcceptClick, onDeclineClick, onViewMap }: { re
             <img src={request.clientId?.profileImage || 'https://i.pravatar.cc/40'} alt={request.clientId?.username || 'Unknown'} className="w-12 h-12 rounded-full mr-4" />
             <div>
                 <h3 className="font-bold text-white">{request.clientId?.username || 'Unknown Client'}</h3>
-                <p className="text-sm text-gray-400">{request.event}</p>
+                <h2 className="text-md text-gray-200">{request.event}</h2>
                 <div className="flex items-center text-sm text-gray-400">
                     <MapPin className="inline mr-1" size={14} />
                     <span className="mr-2">{request.venue}</span>
@@ -128,9 +129,19 @@ const BookingsPage = () => {
                 setRequests(prevRequests => 
                     prevRequests.map(req => req._id === id ? { ...req, status: updatedRequest.status } : req)
                 );
+                
+                // Show notification based on status
+                if (status === 'accepted') {
+                    toast.success('Request accepted! 🎉');
+                } else if (status === 'rejected') {
+                    toast.error('Request rejected');
+                } else if (status === 'cancelled') {
+                    toast.success('Request cancelled');
+                }
             }
         } catch (error) {
             console.error("Failed to update status", error);
+            toast.error('Failed to update request status');
         }
     };
 
@@ -150,10 +161,10 @@ const BookingsPage = () => {
         if (selectedRequestId && actionType) {
             const status = actionType === 'accept' ? 'accepted' : 'rejected';
             handleUpdateStatus(selectedRequestId, status);
+            setModalOpen(false);
+            setSelectedRequestId(null);
+            setActionType(null);
         }
-        setModalOpen(false);
-        setSelectedRequestId(null);
-        setActionType(null);
     };
 
     const handleViewMap = async (venue: string) => {

@@ -21,7 +21,7 @@ export const createBaseAxios = (basePath: string): AxiosInstance => {
         config.headers.Authorization = `Bearer ${token}`;
       }
       
-      // Store axios instance reference for retry mechanism
+      // store instance on config so errorHandler can retry on the same instance
       (config as any).__axiosInstance = instance;
       
       console.log("token in base axios:", token)

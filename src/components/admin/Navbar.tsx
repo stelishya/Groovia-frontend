@@ -31,6 +31,12 @@ const Navbar: React.FC<NavbarProps> = ({
     onSearch?.(searchQuery)
   }
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setSearchQuery(value)
+    onSearch?.(value)
+  }
+
   const handleClearSearch = () => {
     setSearchQuery('')
     onSearch?.('')
@@ -61,7 +67,7 @@ const Navbar: React.FC<NavbarProps> = ({
               type="text"
               placeholder="Search here"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={handleSearchChange}
               className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent bg-gray-800 text-white"
             />
             {searchQuery && (

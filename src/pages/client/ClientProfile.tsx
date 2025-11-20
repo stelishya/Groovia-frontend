@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { type RootState } from '../../redux/store';
 import { loginUser } from '../../redux/slices/user.slice';
-import { User, Settings, ArrowLeft, Crown, Edit2 } from 'lucide-react';
+import { User, Settings, ArrowLeft, Crown, Edit2, Camera } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { UserAxios } from '../../api/auth.axios';
@@ -13,6 +13,8 @@ import { ClientAxios } from '../../api/user.axios';
 import { validateUsername, validateEmail, validatePhone, validateBio } from '../../utils/validation';
 import UpgradeRoleModal, { UpgradeRoleSection } from '../../components/shared/UpgradeRoleModal';
 import { upgradeService, type UpgradeStatus } from '../../services/user/upgradeRole.service';
+import ProfileImageModal from '../../components/ui/ProfileImageModal';
+import { uploadClientProfilePicture } from '../../services/client/client.service';
 
 const Profile = () => {
     const navigate = useNavigate();
@@ -21,6 +23,7 @@ const Profile = () => {
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
+    const [showImageModal, setShowImageModal] = useState(false);
     const [profileData, setProfileData] = useState({
         username: userData?.username || '',
         email: userData?.email || '',
@@ -101,6 +104,34 @@ const Profile = () => {
             setUpgradeFormData(prev => ({ ...prev, certificate: e.target.files![0] }));
         }
     };
+
+    const handleImageClick = () => {
+        setShowImageModal(true);
+    };
+
+    const handleImageChange = () => {
+        setShowImageModal(true);
+    };
+
+    const handleUploadComplete = async (croppedBlob: Blob) => {
+        try {
+            const croppedFile = new File([croppedBlob], 'profile.jpg', {
+                type: 'image/jpeg',
+            });
+
+            const response = await uploadClientProfilePicture(croppedFile);
+            toast.success('Profile picture uploaded successfully!');
+
+            const { user } = response;
+            dispatch(loginUser({ user, token: localStorage.getItem('token') || '' }));
+        } catch (error: any) {
+            const errorMessage = error.message || 'Failed to upload profile image';
+            toast.error(errorMessage);
+            console.error('Upload error:', error);
+            throw error;
+        }
+    };
+
     const handleProfileUpdate = async () => {
         // Validate form before submission
         if (!validateProfileForm()) {
@@ -201,14 +232,23 @@ const Profile = () => {
                             <div className="px-6 pb-6">
                                 <div className="flex flex-col sm:flex-row items-center sm:items-end -mt-16 sm:-mt-12">
                                     {/* Avatar */}
-                                    <div className="relative">
-                                        <div className="w-32 h-32 rounded-full border-4 border-white bg-purple-200 flex items-center justify-center overflow-hidden">
+                                    <div className="relative group">
+                                        <div
+                                            className="w-32 h-32 rounded-full border-4 border-white bg-purple-200 flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                                            onClick={handleImageClick}
+                                        >
                                             {userData?.profileImage ? (
                                                 <img src={userData.profileImage} alt="Profile" className="w-full h-full object-cover" />
                                             ) : (
                                                 <User size={64} className="text-purple-600" />
                                             )}
                                         </div>
+                                        <button
+                                            onClick={handleImageChange}
+                                            className="absolute bottom-0 right-0 bg-purple-600 hover:bg-purple-700 text-white rounded-full p-2 cursor-pointer transition-colors shadow-lg"
+                                        >
+                                            <Camera size={20} />
+                                        </button>
                                     </div>
 
                                     {/* User Info */}
@@ -375,6 +415,13 @@ const Profile = () => {
                     )}
                 </div>
             </FormModal>
+            <ProfileImageModal
+                isOpen={showImageModal}
+                imageUrl={userData?.profileImage}
+                userName={userData?.username}
+                onClose={() => setShowImageModal(false)}
+                onUploadComplete={handleUploadComplete}
+            />
             <UpgradeRoleModal
                 show={showUpgradeModal}
                 onClose={() => setShowUpgradeModal(false)}

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Search, Bell, X, MapPin, DollarSign, Calendar } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { getClientEventRequests, updateEventBookingStatus } from '../../services/client/client.service';
 import Sidebar from '../../components/shared/Sidebar';
 import ConfirmationModal from '../../components/ui/ConfirmationModal';
@@ -173,8 +174,10 @@ const BookingsPage = () => {
             setRequests(prevRequests =>
                 prevRequests.map(req => req._id === id ? { ...req, status: updatedRequest.request.status } : req)
             );
+            toast.success('Request cancelled successfully');
         } catch (error) {
             console.error("Failed to update status", error);
+            toast.error('Failed to cancel request');
         }
     };
 
@@ -186,9 +189,9 @@ const BookingsPage = () => {
     const confirmCancel = () => {
         if (selectedRequestId) {
             handleUpdateStatus(selectedRequestId, 'cancelled');
+            setModalOpen(false);
+            setSelectedRequestId(null);
         }
-        setModalOpen(false);
-        setSelectedRequestId(null);
     };
 
     const handleViewMap = async (venue: string) => {

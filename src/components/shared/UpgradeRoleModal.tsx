@@ -366,7 +366,7 @@ const InstructorForm = ({
         </div>
 
         {/* Certificate Upload */}
-        <div>
+        {/* <div>
             <label className="block text-white font-medium mb-2">Certificate (Optional)</label>
             <input
                 type="file"
@@ -375,7 +375,7 @@ const InstructorForm = ({
                 className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-yellow-500 file:text-white file:cursor-pointer"
             />
             {upgradeFormData.certificate && <p className="text-sm text-green-400 mt-1">✓ {upgradeFormData.certificate.name}</p>}
-        </div>
+        </div> */}
 
         {/* Available for Workshops */}
         {/* <div className="flex items-center">
@@ -477,7 +477,7 @@ const OrganizerForm = ({
         </div>
 
         {/* License Document */}
-        <div>
+        {/* <div>
             <label className="block text-white font-medium mb-2">License Document (Optional)</label>
             <input
                 type="file"
@@ -488,7 +488,7 @@ const OrganizerForm = ({
             {upgradeFormData.licenseDocument && (
                 <p className="text-sm text-green-400 mt-1">✓ {upgradeFormData.licenseDocument.name}</p>
             )}
-        </div>
+        </div> */}
 
         {/* Message to Admin */}
         <div>
