@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { fetchMyProfile } from '../../services/user/auth.service';
 import { loginUser } from '../../redux/slices/user.slice';
 import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 interface PaymentProps {
   userEmail?: string;
@@ -26,6 +27,7 @@ const Payment: React.FC<PaymentProps> = ({
     return ROLE_UPGRADE_PRICE; // Single price for all role upgrades
   };
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Check if there's a pending upgrade request in localStorage
@@ -61,57 +63,179 @@ const Payment: React.FC<PaymentProps> = ({
   };
 
   const paymentDetails = getPaymentDetails();
+  // Load Razorpay SDK dynamically
+  const loadRazorpay = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => {
+        resolve(true);
+      };
+      script.onerror = () => {
+        resolve(false);
+      };
+      document.body.appendChild(script);
+    });
+  };
 
   const handleUpgrade = async () => {
     setIsProcessing(true);
+
+    // Load Razorpay SDK
+    const res = await loadRazorpay();
+    if (!res) {
+      toast.error('Razorpay SDK failed to load. Please check your internet connection.');
+      setIsProcessing(false);
+      return;
+    }
+
     try {
       if (currentUpgradeRequest) {
-        // Handle role upgrade payment
-        // await upgradeService.completeUpgradePayment({
-        //   upgradeRequestId: currentUpgradeRequest.id,
-        //   amount: getRoleUpgradeAmount(currentUpgradeRequest.type),
-        //   currency: 'INR'
-        // });
+        // 1. Create Razorpay Order via backend
+        const order = await upgradeService.createPaymentOrder({
+          upgradeRequestId: currentUpgradeRequest.id,
+          amount: getRoleUpgradeAmount(currentUpgradeRequest.type),
+          currency: 'INR'
+        });
 
-        // Simulate payment processing
-        setTimeout(async () => {
-          try {
-            // Confirm payment completion
-            await upgradeService.confirmPaymentCompletion(
-              currentUpgradeRequest.id,
-              'payment_' + Date.now(), // Mock payment ID
-              getRoleUpgradeAmount(currentUpgradeRequest.type),
-              'INR'
-            );
-            // toast.success('Payment completed!', {
-            //   duration: 5000,
-            //   icon: '🎉',
-            // });
-            // Clear stored request
-            localStorage.removeItem('pendingUpgradeRequest');
-
-            setIsProcessing(false);
-            // Refetch user profile to get updated roles
+        // 2. Configure Razorpay Checkout options
+        const options = {
+          key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+          amount: order.amount,
+          currency: order.currency,
+          name: "Groovia",
+          description: `${currentUpgradeRequest.type.charAt(0).toUpperCase() + currentUpgradeRequest.type.slice(1)} Role Upgrade`,
+          order_id: order.id,
+          handler: async function (response: any) {
             try {
-              const response = await fetchMyProfile();
-              const freshUser = response.profile;
-              const token = localStorage.getItem('token') || '';
-              dispatch(loginUser({ user: freshUser, token }));
-            } catch (err) {
-              console.error('Failed to refetch profile after payment:', err);
+              // 3. Verify payment and confirm upgrade
+              await upgradeService.confirmPaymentCompletion(
+                currentUpgradeRequest.id,
+                response.razorpay_payment_id,
+                getRoleUpgradeAmount(currentUpgradeRequest.type),
+                'INR',
+                response.razorpay_order_id,
+                response.razorpay_signature
+              );
+
+              toast.success('Payment Successful! Your role has been upgraded.', {
+                duration: 5000,
+                icon: '🎉',
+              });
+
+              // Clear stored request
+              localStorage.removeItem('pendingUpgradeRequest');
+
+              setIsProcessing(false);
+
+              // Refetch user profile to get updated roles
+              try {
+                const profileResponse = await fetchMyProfile();
+                const freshUser = profileResponse.profile;
+                const token = localStorage.getItem('token') || '';
+                dispatch(loginUser({ user: freshUser, token }));
+              } catch (err) {
+                console.error('Failed to refetch profile after payment:', err);
+              }
+
+              onUpgrade?.();
+            } catch (error) {
+              setIsProcessing(false);
+              toast.error('Payment verification failed. Please contact support.');
+              console.error('Payment verification failed:', error);
             }
-            onUpgrade?.();
-          } catch (error) {
-            setIsProcessing(false);
-            console.error('Payment confirmation failed:', error);
+          },
+          prefill: {
+            name: userEmail.split('@')[0],
+            email: userEmail,
+          },
+          theme: {
+            color: "#9333ea" // Purple color matching the UI
+          },
+          modal: {
+            ondismiss: async function () {
+              setIsProcessing(false);
+              try {
+                await upgradeService.upgradePaymentFailed(currentUpgradeRequest.id);
+              } catch (error) {
+                console.error('Failed to mark payment as failed:', error);
+              }
+              toast.error('Payment Failed! Please try again.');
+              // Redirect to dancer profile to show retry payment button
+              setTimeout(() => {
+                navigate('/profile');
+              }, 1500);
+            }
           }
-        }, 2000);
+        };
+
+        // 3. Open Razorpay Checkout
+        const paymentObject = new (window as any).Razorpay(options);
+        paymentObject.open();
       }
-    } catch (error) {
+    } catch (error: any) {
       setIsProcessing(false);
-      console.error('Payment failed:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to initiate payment. Please try again.';
+      toast.error(errorMessage);
+      console.error('Payment initiation failed:', error);
     }
   };
+  // const handleUpgrade = async () => {
+  // setIsProcessing(true);
+  // try {
+  //   if (currentUpgradeRequest) {
+  //     // Handle role upgrade payment
+  //     // await upgradeService.completeUpgradePayment({
+  //     //   upgradeRequestId: currentUpgradeRequest.id,
+  //     //   amount: getRoleUpgradeAmount(currentUpgradeRequest.type),
+  //     //   currency: 'INR'
+  //     // });
+
+  // Simulate payment processing
+  // setTimeout(async () => {
+  //       try {
+  //         // Mock Razorpay details for simulated payment
+  //         const mockOrderId = 'order_mock_' + Date.now();
+  //         const mockSignature = 'sig_mock_' + Date.now();
+
+  //         // Confirm payment completion
+  //         await upgradeService.confirmPaymentCompletion(
+  //           currentUpgradeRequest.id,
+  //           'payment_' + Date.now(), // Mock payment ID
+  //           getRoleUpgradeAmount(currentUpgradeRequest.type),
+  //           'INR',
+  //           mockOrderId,
+  //           mockSignature
+  //         );
+  //         // toast.success('Payment completed!', {
+  //         //   duration: 5000,
+  //         //   icon: '🎉',
+  //         // });
+  //         // Clear stored request
+  //         localStorage.removeItem('pendingUpgradeRequest');
+
+  //         setIsProcessing(false);
+  //         // Refetch user profile to get updated roles
+  //         try {
+  //           const response = await fetchMyProfile();
+  //           const freshUser = response.profile;
+  //           const token = localStorage.getItem('token') || '';
+  //           dispatch(loginUser({ user: freshUser, token }));
+  //         } catch (err) {
+  //           console.error('Failed to refetch profile after payment:', err);
+  //         }
+  //         onUpgrade?.();
+  //       } catch (error) {
+  //         setIsProcessing(false);
+  //         console.error('Payment confirmation failed:', error);
+  //       }
+  //       // }, 2000);
+  //     }
+  //   } catch (error) {
+  //     setIsProcessing(false);
+  //     console.error('Payment failed:', error);
+  //   }
+  // };
 
   const benefits = [
     {

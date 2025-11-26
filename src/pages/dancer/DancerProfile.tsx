@@ -106,15 +106,24 @@ const Profile = () => {
         setShowImageModal(true);
     };
 
-
-
     const currentRoles = Array.from(new Set(userData?.role || [])); // Remove duplicates
     const hasApprovedPaymentPending = upgradeRequests.some(r => r.status === 'approved' && r.paymentStatus === 'pending');
-
     const hasInstructorRole = hasRole(userData?.role, Role.INSTRUCTOR) && !hasApprovedPaymentPending;
-    console.log("hasInstructorRole in dancer profile : ", hasInstructorRole);
-    console.log("userData in dancer profile : ", userData);
+
+    const fetchUpgradeStatus = async () => {
+        try {
+            const requests = await upgradeService.getUpgradeStatus();
+            setUpgradeRequests(requests);
+            console.log('upgradeRequests in dancer profile:', requests);
+        } catch (error) {
+            console.error('Failed to fetch upgrade status:', error);
+        } finally {
+            setLoadingUpgradeStatus(false);
+        }
+    };
+
     const isDancer = hasAnyRole(userData?.role, [Role.DANCER, Role.INSTRUCTOR]);
+
     useEffect(() => {
         if (userData && !didClean) {
             setProfileData({
@@ -128,45 +137,18 @@ const Profile = () => {
                 availableForPrograms: userData.availableForPrograms || false
             });
             fetchUpgradeStatus().then(() => {
-            const hasApprovedPending = upgradeRequests.some(r => r.status === 'approved' && r.paymentStatus === 'pending');
-            console.log("hasApprovedPending in dancer profile : ", hasApprovedPending)
-            if (hasApprovedPending && userData.role.includes('instructor')) {
-                console.log("USERDATA.ROLE in dancer profile : ", userData.role)
-                const cleanedUser = {
-                    ...userData,
-                    role: userData.role.filter(r => r !== 'instructor')
-                };
-                console.log("cleanedUser in dancer profile : ", cleanedUser)
-                dispatch(loginUser({ user: cleanedUser, token: localStorage.getItem('token') || '' }));
-                setDidClean(true);
-            }
-        });
-            // const interval = setInterval(() => {
-            //     const shouldPoll = upgradeRequests.some(r =>
-            //         r.status === 'pending' ||
-            //         (r.status === 'approved' && r.paymentStatus === 'pending')
-            //     );
-            //     if (shouldPoll) {
-            //         fetchUpgradeStatus();
-            //     } else {
-            //         clearInterval(interval);
-            //     }
-            // }, 5000);
-            // return () => clearInterval(interval);
+                const hasApprovedPending = upgradeRequests.some(r => r.status === 'approved' && r.paymentStatus === 'pending');
+                if (hasApprovedPending && userData.role.includes('instructor')) {
+                    const cleanedUser = {
+                        ...userData,
+                        role: userData.role.filter(r => r !== 'instructor')
+                    };
+                    dispatch(loginUser({ user: cleanedUser, token: localStorage.getItem('token') || '' }));
+                    setDidClean(true);
+                }
+            });
         }
-    }, [userData,didClean]);
-
-    // const fetchUpgradeStatus = async () => {
-    //     try {
-    //         const requests = await upgradeService.getUpgradeStatus();
-    //         setUpgradeRequests(requests);
-    //     } catch (error) {
-    //         console.error('Failed to fetch upgrade status:', error);
-    //     } finally {
-    //         setLoadingUpgradeStatus(false);
-    //     }
-    // };
-
+    }, [userData, didClean]);
 
     const handleProfileUpdate = async () => {
         try {
@@ -258,17 +240,17 @@ const Profile = () => {
             : typeof userData?.likes === 'number' ? userData.likes
                 : 0;
 
-    const fetchUpgradeStatus = async () => {
-        try {
-            const requests = await upgradeService.getUpgradeStatus();
-            setUpgradeRequests(requests);
-            console.log('upgradeRequests in dancer profile:', upgradeRequests);
-        } catch (error) {
-            console.error('Failed to fetch upgrade status:', error);
-        } finally {
-            setLoadingUpgradeStatus(false);
-        }
-    };
+    // const fetchUpgradeStatus = async () => {
+    //     try {
+    //         const requests = await upgradeService.getUpgradeStatus();
+    //         setUpgradeRequests(requests);
+    //         console.log('upgradeRequests in dancer profile:', upgradeRequests);
+    //     } catch (error) {
+    //         console.error('Failed to fetch upgrade status:', error);
+    //     } finally {
+    //         setLoadingUpgradeStatus(false);
+    //     }
+    // };
     const handlePaymentClick = (request: UpgradeStatus) => {
         // Store upgrade request in localStorage for checkout page
         localStorage.setItem('pendingUpgradeRequest', JSON.stringify(request));
@@ -341,31 +323,6 @@ const Profile = () => {
                                             ))}
                                         </div>
                                     </div>
-
-                                    {/* Settings Button */}
-                                    {/* <button className="mt-4 sm:mt-0 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center transition-colors">
-                                        <Settings size={18} className="mr-2" />
-                                        Edit Profile
-                                    </button> */}
-                                    {/* Action Buttons */}
-                                    {/* <div className="mt-4 sm:mt-0 flex gap-2">
- {isDancer && (
- <button
- onClick={handleLike}
- className="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg flex items-center transition-colors"
- >
- <Heart size={18} className="mr-2" />
- {userData?.likes || 0}
- </button>
- )}
- <button
- onClick={() => setShowEditModal(true)}
- className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center transition-colors"
- >
- <Edit2 size={18} className="mr-2" />
- Edit Profile
- </button>
- </div> */}
 
                                     {/* Like Button */}
                                     {isDancer && (
@@ -453,16 +410,6 @@ const Profile = () => {
                                     <label className="text-purple-200 text-sm">Available for Programs</label>
                                     <p className="text-white text-lg">{userData?.availableForPrograms ? 'Yes' : 'No'}</p>
                                 </div>
-                                {/* <div>
-                                    <label className="text-purple-200 text-sm">Account Status</label>
-                                    <p className="text-white text-lg">
-                                        {userData?.isVerified ? (
-                                            <span className="text-green-400">✓ Verified</span>
-                                        ) : (
-                                            <span className="text-yellow-400">⚠ Not Verified</span>
-                                        )}
-                                    </p>
-                                </div> */}
                             </div>
                         </div>
 

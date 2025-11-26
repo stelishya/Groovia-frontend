@@ -1,4 +1,4 @@
-import { Crown, Building2, CheckCircle, CreditCard } from 'lucide-react';
+import { Crown, Building2, CheckCircle, CreditCard, OctagonAlert } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { toast } from 'react-hot-toast';
@@ -132,7 +132,7 @@ const UpgradeRoleModal = ({ show, onClose, upgradeType, userData }: UpgradeRoleM
                 });
 
                 if (response.status === 201 || response.status === 200) {
-                    toast.success('Upgrade request submitted!',{
+                    toast.success('Upgrade request submitted!', {
                         duration: 5000
                     });
                     onClose();
@@ -183,9 +183,9 @@ const UpgradeRoleModal = ({ show, onClose, upgradeType, userData }: UpgradeRoleM
                     onClose();
                 }
             }
-            setTimeout(()=>{
+            setTimeout(() => {
                 window.location.reload();
-            },3000)
+            }, 3000)
         } catch (error: any) {
             toast.error(error.response?.data?.message || 'Failed to submit');
         } finally {
@@ -641,7 +641,7 @@ export const UpgradeRoleSection: React.FC<UpgradeRoleSectionProps> = ({
         );
     }
 
-    if (upgradeRequest.status === 'approved' || upgradeRequest.status === 'payment_pending') {
+    if (upgradeRequest.status === 'approved' && upgradeRequest.paymentStatus === 'pending') {
         return (
             <div className={`mt-6 bg-gradient-to-r ${config.colors.approved} backdrop-blur-lg rounded-2xl p-6 border`}>
                 <div className="flex items-start">
@@ -717,6 +717,35 @@ export const UpgradeRoleSection: React.FC<UpgradeRoleSectionProps> = ({
         );
     }
 
+    if (upgradeRequest.paymentStatus === 'failed' && upgradeRequest.status === 'approved') {
+        console.log("payment fail aay, please retry")
+        return (
+            <div className={`mt-6 bg-gradient-to-r ${config.colors.rejected} backdrop-blur-lg rounded-2xl p-6 border`}>
+                <div className="flex items-start">
+                    <div className="flex-shrink-0">
+                        <OctagonAlert className="text-orange-400" size={32} />
+                    </div>
+                    <div className="ml-4 flex-1">
+                        <h3 className="text-xl font-bold text-white mb-2">
+                            Retry Payment!
+                        </h3>
+                        <p className="text-gray-200 mb-3">
+                            Your payment could not be processed. Please try again.
+                        </p>
+                    </div>
+                    <button
+                        onClick={() => onPaymentClick(upgradeRequest)}
+                        className="mt-2 px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors flex items-center gap-2"
+                    >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Retry Payment
+                    </button>
+                </div>
+            </div>
+        )
+    }
     // If status is completed, this section won't show because hasRole will be true
     return null;
 };

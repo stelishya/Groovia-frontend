@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux"
 import { useNavigate } from "react-router-dom"
 
-import { MoreVertical , ChevronLeft, ChevronRight, Badge, Phone, Mail, Download} from "lucide-react"
+import { MoreVertical , ChevronLeft, ChevronRight, Badge, Phone, Mail, Download, BadgeCheck, Landmark} from "lucide-react"
 
 import Sidebar from "../../components/admin/Sidebar"
 import { getAllUsers ,updateUserStatus} from "../../services/admin/admin.service";
@@ -57,7 +57,8 @@ const UserDetails: React.FC = () => {
         username: user.username,
         email: user.email,
         phone: user.phone || '',
-        role: Array.isArray(user.role) ? user.role[0] : user.role,
+        // role: Array.isArray(user.role) ? user.role[0] : user.role,
+        role:user.role,
         profileImage: user.profileImage || '',
         isActive: !user.isBlocked,
         // isGoogleUser: user.isGoogleUser ?? false,
@@ -274,8 +275,12 @@ const filteredAndSortedData = useMemo(() => {
       render: (_value: unknown, record: User) => (
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-sm text-gray-900 dark:text-gray-100">
-            <Mail className="h-3 sm:h-4 w-3 sm:w-4 text-gray-400" />
-            <span className="truncate">{record.role}</span>
+            <BadgeCheck className="h-3 sm:h-4 w-3 sm:w-4 text-gray-400" />
+            <span className="truncate">{record.role[0]}</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-gray-900 dark:text-gray-100">
+            <Landmark className="h-3 sm:h-4 w-3 sm:w-4 text-gray-400"/>
+            <span className="truncate">{record.role[1]}</span>
           </div>
           {/* {record.phone && (
             <div className="flex items-center gap-2 text-sm text-gray-900 dark:text-gray-100">
