@@ -5,11 +5,11 @@ export const getEventRequests = async (params: URLSearchParams) => {
     try {
         const response = await DancerAxios.get(`/event-requests?${params.toString()}`);
         // return response.data;
-         const raw = response.data;
- const payload = raw?.data ?? raw; // support ApiResponse envelope or plain
- const requests = payload?.requests ?? payload?.data ?? (Array.isArray(payload) ? payload : []);
- const total = payload?.total ?? (Array.isArray(requests) ? requests.length : 0);
- return { requests, total };
+        const raw = response.data;
+        const payload = raw?.data ?? raw; // support ApiResponse envelope or plain
+        const requests = payload?.requests ?? payload?.data ?? (Array.isArray(payload) ? payload : []);
+        const total = payload?.total ?? (Array.isArray(requests) ? requests.length : 0);
+        return { requests, total };
     } catch (error) {
         console.error('Failed to fetch event requests:', error);
         if (axios.isAxiosError(error)) {
@@ -102,6 +102,34 @@ export const uploadProfilePicture = async (file: File) => {
         console.error('Failed to upload profile image:', error);
         if (axios.isAxiosError(error)) {
             const message = error.response?.data?.message || 'Failed to upload profile image';
+            throw new Error(message);
+        }
+        throw error;
+    }
+};
+
+/**
+ * Upload certificate
+ */
+export const uploadCertificate = async (file: File, name?: string) => {
+    try {
+        const formData = new FormData();
+        formData.append('certificate', file);
+        if (name) {
+            formData.append('name', name);
+        }
+
+        const response = await DancerAxios.post('/profile/upload-certificate', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+
+        return response.data;
+    } catch (error) {
+        console.error('Failed to upload certificate:', error);
+        if (axios.isAxiosError(error)) {
+            const message = error.response?.data?.message || 'Failed to upload certificate';
             throw new Error(message);
         }
         throw error;

@@ -31,7 +31,7 @@ export const handleAxiosError = async (error: AxiosError) => {
   if (!error.response) {
     return Promise.reject(error);
   }
-
+  console.log("error.response",error.response)
   const { status, data } = error.response;
   const message = (data as any)?.message || 'An unexpected error occurred';
   const isAccessTokenExpired = (data as any)?.isAccessTokenExpired;

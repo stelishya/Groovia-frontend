@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { type RootState } from '../../redux/store';
-import { User, Settings, ArrowLeft, Crown, Edit2, Heart, Instagram, Linkedin, Facebook, LinkIcon, Youtube, Twitter, Camera, CreditCard, CheckCircle } from 'lucide-react';
+import { User, Settings, ArrowLeft, Crown, Edit2, Heart, Instagram, Linkedin, Facebook, LinkIcon, Youtube, Twitter, Camera, CreditCard, CheckCircle, FileImage, Eye, Minus, Trash2, ShieldCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { UserAxios } from '../../api/auth.axios';
 import { loginUser } from '../../redux/slices/user.slice';
@@ -13,10 +13,10 @@ import UserNavbar from '../../components/shared/Navbar';
 import FormModal from '../../components/ui/FormModal';
 import UpgradeRoleModal, { UpgradeRoleSection } from '../../components/shared/UpgradeRoleModal';
 import ProfileImageModal from '../../components/ui/ProfileImageModal';
-import { uploadProfilePicture } from '../../services/dancer/dancer.service';
+import { uploadProfilePicture, uploadCertificate } from '../../services/dancer/dancer.service';
 import { DancerAxios } from '../../api/user.axios';
 import { upgradeService, type UpgradeStatus, ROLE_UPGRADE_PRICE } from '../../services/user/upgradeRole.service';
-import { fetchMyProfile } from '../../services/user/auth.service';
+import { changePassword } from '../../services/user/auth.service';
 
 const Profile = () => {
     const navigate = useNavigate();
@@ -39,11 +39,15 @@ const Profile = () => {
         experienceYears: userData?.experienceYears || 0,
         portfolioLinks: userData?.portfolioLinks || [],
         danceStyles: userData?.danceStyles || [],
-        // preferredLocation: userData?.preferredLocation || '',
+        preferredLocation: userData?.preferredLocation || '',
+        gender: userData?.gender || '',
+        danceStyleLevels: userData?.danceStyleLevels || {},
+        achievements: userData?.achievements || [],
+        certificates: userData?.certificates || [],
         availableForPrograms: userData?.availableForPrograms || false
     });
     const [didClean, setDidClean] = useState(false);
-
+    console.log("profileData certificates : ", profileData.certificates);
     // const [upgradeFormData, setUpgradeFormData] = useState({
     //     danceStyles: [] as string[],
     //     experienceYears: '',
@@ -101,6 +105,76 @@ const Profile = () => {
         }
     };
 
+    const handleCertificateUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            // Validate file type
+            if (!file.type.match(/(pdf|image\/.*)/)) {
+                toast.error('Only PDF and image files are allowed');
+                return;
+            }
+
+            // Validate file size (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                toast.error('File size must be less than 5MB');
+                return;
+            }
+
+            // Create a temporary certificate object for preview
+            // We store the raw file in the 'file' property to upload later
+            const tempCertificate = {
+                name: file.name,
+                url: URL.createObjectURL(file), // Local preview URL
+                file: file // Raw file for S3 upload
+            };
+            console.log("tempCertificate : ", tempCertificate);
+            setProfileData(prev => ({
+                ...prev,
+                certificates: [...(prev.certificates || []), tempCertificate]
+            }));
+
+            // Reset input
+            e.target.value = '';
+        }
+    };
+
+    const [passwordData, setPasswordData] = useState({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+    });
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+
+    const handleChangePassword = async () => {
+        if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+            toast.error('Please fill in all password fields');
+            return;
+        }
+
+        if (passwordData.newPassword !== passwordData.confirmPassword) {
+            toast.error('New passwords do not match');
+            return;
+        }
+
+        if (passwordData.newPassword.length < 6) {
+            toast.error('Password must be at least 6 characters long');
+            return;
+        }
+
+        try {
+            await changePassword({
+                currentPassword: passwordData.currentPassword,
+                newPassword: passwordData.newPassword
+            });
+            setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+            setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+            setShowPasswordModal(false);
+            // toast.success('Password changed successfully');
+        } catch (error) {
+            // Error handled in service
+        }
+    };
+
     const handleImageClick = () => {
         // Open modal (will show preview if imageUrl exists, edit mode otherwise)
         setShowImageModal(true);
@@ -125,22 +199,27 @@ const Profile = () => {
                 experienceYears: userData.experienceYears || 0,
                 portfolioLinks: userData.portfolioLinks || [],
                 danceStyles: userData.danceStyles || [],
+                preferredLocation: userData.preferredLocation || '',
+                gender: userData.gender || '',
+                danceStyleLevels: userData.danceStyleLevels || {},
+                achievements: userData.achievements || [],
+                certificates: userData.certificates || [],
                 availableForPrograms: userData.availableForPrograms || false
             });
             fetchUpgradeStatus().then(() => {
-            const hasApprovedPending = upgradeRequests.some(r => r.status === 'approved' && r.paymentStatus === 'pending');
-            console.log("hasApprovedPending in dancer profile : ", hasApprovedPending)
-            if (hasApprovedPending && userData.role.includes('instructor')) {
-                console.log("USERDATA.ROLE in dancer profile : ", userData.role)
-                const cleanedUser = {
-                    ...userData,
-                    role: userData.role.filter(r => r !== 'instructor')
-                };
-                console.log("cleanedUser in dancer profile : ", cleanedUser)
-                dispatch(loginUser({ user: cleanedUser, token: localStorage.getItem('token') || '' }));
-                setDidClean(true);
-            }
-        });
+                const hasApprovedPending = upgradeRequests.some(r => r.status === 'approved' && r.paymentStatus === 'pending');
+                console.log("hasApprovedPending in dancer profile : ", hasApprovedPending)
+                if (hasApprovedPending && userData.role.includes('instructor')) {
+                    console.log("USERDATA.ROLE in dancer profile : ", userData.role)
+                    const cleanedUser = {
+                        ...userData,
+                        role: userData.role.filter(r => r !== 'instructor')
+                    };
+                    console.log("cleanedUser in dancer profile : ", cleanedUser)
+                    dispatch(loginUser({ user: cleanedUser, token: localStorage.getItem('token') || '' }));
+                    setDidClean(true);
+                }
+            });
             // const interval = setInterval(() => {
             //     const shouldPoll = upgradeRequests.some(r =>
             //         r.status === 'pending' ||
@@ -154,7 +233,7 @@ const Profile = () => {
             // }, 5000);
             // return () => clearInterval(interval);
         }
-    }, [userData,didClean]);
+    }, [userData, didClean]);
 
     // const fetchUpgradeStatus = async () => {
     //     try {
@@ -177,27 +256,59 @@ const Profile = () => {
                 return;
             }
 
-            // Validation: Check if required fields are filled
-            // if (!profileData.bio.trim() || profileData.experienceYears === 0 || profileData.danceStyles.length === 0) {
-            //     toast.error('Please fill in all required fields (bio, experience, dance styles)');
-            //     return;
-            // }
+            const toastId = toast.loading('Updating profile...');
 
-            const token = localStorage.getItem('token');
-            console.log("profileData : ", profileData)
+            // Handle deferred certificate uploads
+            const updatedCertificates = await Promise.all(
+                (profileData.certificates || []).map(async (cert: any) => {
+                    if (!cert) return null; // Skip null certificates
+                    if (cert.file) {
+                        // This is a new certificate that needs uploading
+                        try {
+                            const response = await uploadCertificate(cert.file);
+                            // response is { success: true, data: { certificate: ... } }
+                            // or sometimes just the data depending on backend/axios interceptor
+                            // Based on logs: {success: true, data: { certificate: ... }}
+                            // And dancer.service.ts returns response.data
 
-            const response = await DancerAxios.patch('/profile', profileData);
-            console.log("response  in handleProfileUpdate in dancer profile : ", response)
+                            // Check structure
+                            const uploadedCert = response.data?.certificate || response.certificate;
+
+                            if (!uploadedCert) {
+                                console.error('Unexpected upload response structure:', response);
+                                return null;
+                            }
+                            return uploadedCert;
+                        } catch (error) {
+                            console.error('Failed to upload certificate:', error);
+                            toast.error(`Failed to upload certificate: ${cert.name}`);
+                            return null; // Skip failed uploads
+                        }
+                    }
+                    return cert; // Return existing certificate as is
+                })
+            );
+            console.log("updatedCertificates : ", updatedCertificates);
+            // Filter out any failed uploads (nulls)
+            const finalCertificates = updatedCertificates.filter(cert => cert !== null);
+
+            // Prepare data for update
+            const dataToUpdate = {
+                ...profileData,
+                certificates: finalCertificates
+            };
+
+            const response = await DancerAxios.patch('/profile', dataToUpdate);
+
             if (response.status === 200) {
                 if (response.data?.token) {
                     localStorage.setItem('token', response.data.token);
                 }
-                toast.success('Profile updated successfully!');
+                toast.success('Profile updated successfully!', { id: toastId });
 
                 const { user } = response.data;
                 dispatch(loginUser({ user, token: localStorage.getItem('token') || '' }));
                 setShowEditModal(false);
-                console.log('Profile update completed, modal closed, staying on profile page');
             }
         } catch (error: any) {
             const errorMessage = error.response?.data?.message || 'Failed to update profile';
@@ -342,38 +453,13 @@ const Profile = () => {
                                         </div>
                                     </div>
 
-                                    {/* Settings Button */}
-                                    {/* <button className="mt-4 sm:mt-0 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center transition-colors">
-                                        <Settings size={18} className="mr-2" />
-                                        Edit Profile
-                                    </button> */}
-                                    {/* Action Buttons */}
-                                    {/* <div className="mt-4 sm:mt-0 flex gap-2">
- {isDancer && (
- <button
- onClick={handleLike}
- className="px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg flex items-center transition-colors"
- >
- <Heart size={18} className="mr-2" />
- {userData?.likes || 0}
- </button>
- )}
- <button
- onClick={() => setShowEditModal(true)}
- className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center transition-colors"
- >
- <Edit2 size={18} className="mr-2" />
- Edit Profile
- </button>
- </div> */}
-
                                     {/* Like Button */}
                                     {isDancer && (
                                         <button
-                                            onClick={handleLike}
-                                            className="mt-4 sm:mt-0 px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg flex items-center transition-colors"
+                                            // onClick={handleLike}
+                                            className="mt-4 sm:mt-0 px-4 py-2 text-white rounded-lg flex items-center transition-colors text-lg"
                                         >
-                                            <Heart size={18} className="mr-2" />
+                                            <Heart size={24} className="text-pink-600 fill-pink-600 mr-2" />
                                             {likeCount}
                                         </button>
                                     )}
@@ -385,13 +471,22 @@ const Profile = () => {
                             {/* <h2 className="text-2xl font-bold text-white mb-4">Account Details</h2> */}
                             <div className="flex items-center justify-between mb-4">
                                 <h2 className="text-2xl font-bold text-white">Account Details</h2>
-                                <button
-                                    onClick={() => setShowEditModal(true)}
-                                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center transition-colors"
-                                >
-                                    <Edit2 size={18} className="mr-2" />
-                                    Edit Profile
-                                </button>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => setShowEditModal(true)}
+                                        className="px-4 py-2 bg-purple-600/50 hover:bg-purple-600 text-white rounded-lg flex items-center transition-colors border border-purple-500"
+                                    >
+                                        <Edit2 size={18} className="mr-2" />
+                                        Edit Profile
+                                    </button>
+                                    <button
+                                        onClick={() => setShowPasswordModal(true)}
+                                        className="px-4 py-2 bg-purple-600/50 hover:bg-purple-600 text-white rounded-lg flex items-center transition-colors border border-purple-500"
+                                    >
+                                        <Settings size={18} className="mr-2" />
+                                        Change Password
+                                    </button>
+                                </div>
                             </div>
                             {/* <div className="space-y-4"> */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -406,10 +501,6 @@ const Profile = () => {
                                 <div>
                                     <label className="text-purple-200 text-sm">Email</label>
                                     <p className="text-white text-lg">{userData?.email}</p>
-                                </div>
-                                <div>
-                                    <label className="text-purple-200 text-sm">Dance Styles</label>
-                                    <p className="text-white text-lg">{userData?.danceStyles?.join(', ') || 'Not provided'}</p>
                                 </div>
                                 <div>
                                     <label className="text-purple-200 text-sm">Phone</label>
@@ -450,20 +541,73 @@ const Profile = () => {
                                     </div>
                                 </div>
                                 <div>
+                                    <label className="text-purple-200 text-sm">Preferred Location</label>
+                                    <p className="text-white text-lg">{userData?.preferredLocation || 'Not provided'}</p>
+                                </div>
+                                <div>
+                                    <label className="text-purple-200 text-sm">Gender</label>
+                                    <p className="text-white text-lg">{userData?.gender || 'Not provided'}</p>
+                                </div>
+                                <div>
                                     <label className="text-purple-200 text-sm">Available for Programs</label>
                                     <p className="text-white text-lg">{userData?.availableForPrograms ? 'Yes' : 'No'}</p>
                                 </div>
-                                {/* <div>
-                                    <label className="text-purple-200 text-sm">Account Status</label>
-                                    <p className="text-white text-lg">
-                                        {userData?.isVerified ? (
-                                            <span className="text-green-400">✓ Verified</span>
-                                        ) : (
-                                            <span className="text-yellow-400">⚠ Not Verified</span>
-                                        )}
-                                    </p>
-                                </div> */}
                             </div>
+
+                            {/* Dance Styles & Levels Section */}
+                            {userData?.danceStyles && userData.danceStyles.length > 0 && (
+                                <div className="mt-6">
+                                    <h3 className="text-xl font-bold text-white mb-4">Dance Styles & Proficiency Levels</h3>
+                                    <div className="flex flex-wrap gap-3">
+                                        {userData.danceStyles.map((style, index) => (
+                                            <div key={index} className="bg-purple-900/30 px-4 py-3 rounded-lg border border-purple-500/20">
+                                                <p className="text-white font-semibold text-base">{style}</p>
+                                                {userData.danceStyleLevels?.[style] && (
+                                                    <p className="text-purple-300 text-sm mt-1">{userData.danceStyleLevels[style]}</p>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Certificates Section */}
+                            {userData?.certificates && userData.certificates.length > 0 && (
+                                <div className="mt-6 max-w-6xl">
+                                    <h3 className="text-xl font-bold text-white mb-4">Certificates</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+                                        {userData.certificates.map((cert: any, index: number) => {
+                                            if (!cert) return null;
+                                            return (
+                                                <div key={index} className="bg-purple-900/30 p-4 rounded-lg border border-purple-500/20">
+                                                    <h4 className="text-white font-semibold text-lg">{cert.name}</h4>
+                                                    {cert.url && (
+                                                        <a href={cert.url} target="_blank" rel="noopener noreferrer" className="text-purple-300 hover:text-purple-200 text-sm mt-2 inline-block">
+                                                            View Certificate →
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Achievements Section */}
+                            {userData?.achievements && userData.achievements.length > 0 && (
+                                <div className="mt-6 max-w-6xl">
+                                    <h3 className="text-xl font-bold text-white mb-4">Achievements</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                        {userData.achievements.map((achievement: any, index: number) => (
+                                            <div key={index} className="bg-purple-900/30 p-4 rounded-lg border border-purple-500/20">
+                                                <h4 className="text-white font-semibold text-lg">{achievement.awardName}</h4>
+                                                <p className="text-purple-200 text-sm mt-1">{achievement.position}</p>
+                                                <p className="text-purple-300 text-sm mt-1">{achievement.year}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Upgrade Role Section */}
@@ -508,7 +652,7 @@ const Profile = () => {
                         )}
                     </div>
                 </main>
-            </div>
+            </div >
             <FormModal
                 isOpen={showEditModal}
                 onClose={() => setShowEditModal(false)}
@@ -603,6 +747,33 @@ const Profile = () => {
                             </button>
                         ))}
                     </div>
+
+                    {/* Selected Dance Styles with Level Selection */}
+                    {profileData.danceStyles.filter(s => danceStyleOptions.includes(s) && s !== 'Other').length > 0 && (
+                        <div className="mt-4 space-y-3">
+                            <p className="text-purple-300 text-sm font-medium">Set proficiency level for each style:</p>
+                            {profileData.danceStyles.filter(s => danceStyleOptions.includes(s) && s !== 'Other').map((style, idx) => (
+                                <div key={idx} className="flex items-center justify-between bg-purple-900/50 p-3 rounded-lg">
+                                    <span className="text-white font-medium">{style}</span>
+                                    <select
+                                        value={(profileData.danceStyleLevels as any)?.[style] || 'Beginner'}
+                                        onChange={(e) => {
+                                            const newLevels = { ...(profileData.danceStyleLevels as any) || {} };
+                                            newLevels[style] = e.target.value;
+                                            setProfileData({ ...profileData, danceStyleLevels: newLevels });
+                                        }}
+                                        className="px-3 py-1.5 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                                    >
+                                        <option value="Beginner">Beginner</option>
+                                        <option value="Intermediate">Intermediate</option>
+                                        <option value="Advanced">Advanced</option>
+                                        <option value="Professional">Professional</option>
+                                    </select>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
                     {showCustomInput && (
                         <div className="mt-3 flex gap-2">
                             <input
@@ -654,6 +825,188 @@ const Profile = () => {
                     />
                     <p className="text-purple-300 text-sm mt-1">Separate multiple links with commas</p>
                 </div>
+
+                {/* Preferred Location */}
+                <div>
+                    <label className="block text-white font-medium mb-2">Preferred Location</label>
+                    <input
+                        type="text"
+                        value={profileData.preferredLocation}
+                        onChange={(e) => setProfileData({ ...profileData, preferredLocation: e.target.value })}
+                        className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        placeholder="e.g., New York, Los Angeles"
+                    />
+                </div>
+
+                {/* Gender */}
+                <div>
+                    <label className="block text-white font-medium mb-2">Gender</label>
+                    <select
+                        value={profileData.gender}
+                        onChange={(e) => setProfileData({ ...profileData, gender: e.target.value })}
+                        className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    >
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Non-binary">Non-binary</option>
+                        <option value="Prefer not to say">Prefer not to say</option>
+                    </select>
+                </div>
+
+                {/* Achievements */}
+                <div>
+                    <label className="block text-white font-medium mb-2">Achievements</label>
+                    <div className="space-y-2">
+                        {(profileData.achievements as any[] || []).map((achievement: any, index: number) => (
+                            <div key={index} className="bg-purple-900/50 p-2 rounded-lg flex items-center gap-2">
+                                <div className="grid grid-cols-3 gap-2 flex-1">
+                                    <input
+                                        type="text"
+                                        value={achievement.awardName || ''}
+                                        onChange={(e) => {
+                                            const newAchievements = [...(profileData.achievements as any[])];
+                                            newAchievements[index] = { ...newAchievements[index], awardName: e.target.value };
+                                            setProfileData({ ...profileData, achievements: newAchievements });
+                                        }}
+                                        className="px-3 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                                        placeholder="Award Name"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={achievement.position || ''}
+                                        onChange={(e) => {
+                                            const newAchievements = [...(profileData.achievements as any[])];
+                                            newAchievements[index] = { ...newAchievements[index], position: e.target.value };
+                                            setProfileData({ ...profileData, achievements: newAchievements });
+                                        }}
+                                        className="px-3 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                                        placeholder="Position"
+                                    />
+                                    <input
+                                        type="number"
+                                        value={achievement.year || ''}
+                                        onChange={(e) => {
+                                            const newAchievements = [...(profileData.achievements as any[])];
+                                            newAchievements[index] = { ...newAchievements[index], year: parseInt(e.target.value) || '' };
+                                            setProfileData({ ...profileData, achievements: newAchievements });
+                                        }}
+                                        className="px-3 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                                        placeholder="Year"
+                                        min="1900"
+                                        max={new Date().getFullYear()}
+                                    />
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const newAchievements = (profileData.achievements as any[]).filter((_: any, i: number) => i !== index);
+                                        setProfileData({ ...profileData, achievements: newAchievements });
+                                    }}
+                                    className="p-2 bg-red-500/20 text-red-300 rounded-lg hover:bg-red-500/30 transition-colors"
+                                    title="Remove Achievement"
+                                >
+                                    <Minus size={18} />
+                                </button>
+                            </div>
+                        ))}
+                        <button
+                            type="button"
+                            onClick={() => {
+                                const newAchievements = [...(profileData.achievements as any[]), { awardName: '', position: '', year: '' }];
+                                setProfileData({ ...profileData, achievements: newAchievements });
+                            }}
+                            className="w-full px-4 py-2 bg-purple-700 text-white rounded-lg hover:bg-purple-600 transition-colors"
+                        >
+                            + Add Achievement
+                        </button>
+                    </div>
+                </div>
+
+                {/* Certificates */}
+                <div>
+                    <label className="block text-white font-medium mb-2">Certificates</label>
+                    <div className="space-y-3">
+                        {/* List of uploaded certificates */}
+                        {(profileData.certificates as any[] || []).map((certificate: any, index: number) => {
+                            if (!certificate) return null;
+                            console.log("certificate : ", certificate);
+                            return (
+                                <div key={index} className="bg-purple-900/50 p-3 rounded-lg">
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <FileImage className="h-4 w-4 text-purple-400" />
+                                        </div>
+                                        <input
+                                            type="text"
+                                            value={certificate.name || ''}
+                                            onChange={(e) => {
+                                                const newCertificates = [...(profileData.certificates as any[])];
+                                                newCertificates[index] = { ...newCertificates[index], name: e.target.value };
+                                                setProfileData({ ...profileData, certificates: newCertificates });
+                                            }}
+                                            className="w-full pl-10 pr-20 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                                            placeholder="Certificate Name"
+                                        />
+                                        <div className="absolute inset-y-0 right-0 flex items-center pr-1 gap-1">
+                                            <a
+                                                href={certificate.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="p-1.5 text-purple-300 hover:text-white hover:bg-purple-700 rounded-md transition-colors"
+                                                title="View Certificate"
+                                            >
+                                                <Eye className="w-4 h-4" />
+                                            </a>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    const newCertificates = (profileData.certificates as any[]).filter((_: any, i: number) => i !== index);
+                                                    setProfileData({ ...profileData, certificates: newCertificates });
+                                                }}
+                                                className="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-md transition-colors"
+                                                title="Remove Certificate"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+
+                        {/* Upload New Certificate */}
+                        <div className="mt-4">
+                            {/* <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-purple-500/30 border-dashed rounded-lg cursor-pointer bg-purple-900/30 hover:bg-purple-900/50 transition-colors">
+                                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                    <svg className="w-8 h-8 mb-4 text-purple-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2" />
+                                    </svg>
+                                    <p className="mb-2 text-sm text-purple-300"><span className="font-semibold">Click to upload certificate</span></p>
+                                    <p className="text-xs text-purple-400">PDF, JPG, PNG (MAX. 5MB)</p>
+                                </div>
+                                <input
+                                    type="file"
+                                    className="bg-purple-900/50 p-3 rounded-lg"
+                                    accept=".pdf,image/*"
+                                    onChange={handleCertificateUpload}
+                                />
+                            </label> */}
+                            <input
+                                type="file"
+                                accept=".pdf,image/*"
+                                onChange={handleCertificateUpload}
+                                className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-purple-500 file:text-white file:cursor-pointer"
+                            />
+                        </div>
+                        {/* Certificate Upload */}
+                        {/* <div> */}
+                        {/* <label className="block text-white font-medium mb-2">Certificate (Optional)</label> */}
+                        {/* {profileData.certificates && <p className="text-sm text-green-400 mt-1">✓ {profileData.certificates[profileData.certificates.length - 1].name}</p>} */}
+                        {/* </div> */}
+                    </div>
+                </div>
+
                 {/* Available for Programs */}
                 <div>
                     <div className="flex items-center">
@@ -681,6 +1034,8 @@ const Profile = () => {
                         </p>
                     )}
                 </div>
+
+
             </FormModal>
 
 
@@ -692,6 +1047,48 @@ const Profile = () => {
                 userData={profileData}
             />
 
+            {/* Change Password Modal */}
+            <FormModal
+                isOpen={showPasswordModal}
+                onClose={() => setShowPasswordModal(false)}
+                title="Change Password"
+                icon={<Settings className="text-purple-300" size={32} />}
+                onSubmit={handleChangePassword}
+                submitText="Update Password"
+                submitButtonClass="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+            >
+                <div>
+                    <label className="block text-white font-medium mb-2">Current Password</label>
+                    <input
+                        type="password"
+                        value={passwordData.currentPassword}
+                        onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                        className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        placeholder="Enter current password"
+                    />
+                </div>
+                <div>
+                    <label className="block text-white font-medium mb-2">New Password</label>
+                    <input
+                        type="password"
+                        value={passwordData.newPassword}
+                        onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                        className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        placeholder="Enter new password (min 6 chars)"
+                    />
+                </div>
+                <div>
+                    <label className="block text-white font-medium mb-2">Confirm New Password</label>
+                    <input
+                        type="password"
+                        value={passwordData.confirmPassword}
+                        onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                        className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        placeholder="Confirm new password"
+                    />
+                </div>
+            </FormModal>
+
             {/* Unified Profile Image Modal */}
             <ProfileImageModal
                 isOpen={showImageModal}
@@ -702,7 +1099,7 @@ const Profile = () => {
                 aspectRatio={1}
             />
 
-        </div>
+        </div >
     );
 
 };

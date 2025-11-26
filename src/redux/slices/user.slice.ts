@@ -17,6 +17,10 @@ interface UserData {
   danceStyles?: string[];
   likes?: number;
   preferredLocation?: string;
+  gender?: string;
+  danceStyleLevels?: { [key: string]: string };
+  achievements?: Array<{ awardName: string; position: string; year: number | string }>;
+  certificates?: Array<{ name: string; url: string }>;
   availableForPrograms?: boolean;
 }
 interface UserState {

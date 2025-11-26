@@ -1,6 +1,8 @@
 import {
     House, MessageSquare, Calendar, Briefcase, Trophy, CreditCard,
-    User as UserIcon, LogOut, Settings, Search, Bell, X
+    User as UserIcon, LogOut, Settings, Search, Bell, X,
+    ChevronLeft,
+    ChevronRight
 } from "lucide-react"
 import { useDispatch, useSelector } from "react-redux";
 // import { useNavigate } from "react-router-dom";
@@ -268,7 +270,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
             setRequestedDancerIds(prevIds => new Set(prevIds).add(selectedDancer._id));
             handleCloseRequestModal();
             fetchSentRequests(); // Refetch requests to ensure UI is up-to-date
-            if(response.success){
+            if (response.success) {
                 toast.success(`Event request sent to ${selectedDancer.username}! 🎉`);
             } else {
                 toast.error(response.data?.message || 'Failed to send request');
@@ -284,7 +286,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
         try {
             const response = await toggleLike(dancerId);
             const updatedDancer = response.data?.dancer || response.dancer;
-            if(!updatedDancer){
+            if (!updatedDancer) {
                 console.log("no dancer data in response")
                 toast.error('Failed to update like status');
                 return;
@@ -347,7 +349,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
             </div>
             
         </div> */}
-            <div className="min-h-screen mt-12  p-6  border border-purple-500/50 rounded-xl">
+            <div className="min-h-screen mt-12  p-6">
                 <h1 className="text-3xl font-semibold  mb-8 text-purple-500/70">
                     💃🏻 Browse Dancers
                 </h1>
@@ -410,7 +412,6 @@ const Dashboard = ({ userData }: { userData: any }) => {
                             <DancerCard
                                 key={dancer._id}
                                 dancer={dancer}
-                                onSendRequest={handleOpenRequestModal}
                                 isRequested={requestedDancerIds.has(dancer._id)}
                                 onLike={handleLike}
                                 isLiked={likedDancers.has(dancer._id)}
@@ -424,22 +425,27 @@ const Dashboard = ({ userData }: { userData: any }) => {
                 </div>
 
                 {/* Pagination */}
-                <div className="flex justify-end items-center mt-8 space-x-4">
-                    <button
-                        onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
-                        disabled={currentPage === 1}
-                        className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        Previous
-                    </button>
-                    <span className="text-white">Page {currentPage} of {Math.ceil(totalDancers / pageSize)}</span>
-                    <button
-                        onClick={() => setCurrentPage(p => p + 1)}
-                        disabled={currentPage >= Math.ceil(totalDancers / pageSize)}
-                        className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        Next
-                    </button>
+                <div className='flex justify-between items-center mt-8 space-x-4'>
+                    <div className="flex justify-end items-center mt-8 space-x-4">
+                        <h3>Showing {dancers.length} of {totalDancers} dancers</h3>
+                    </div>
+                    <div className="flex justify-end items-center mt-8 space-x-4">
+                        <button
+                            onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+                            disabled={currentPage === 1}
+                            className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <ChevronLeft />
+                        </button>
+                        <span className="text-white">Page {currentPage} of {Math.ceil(totalDancers / pageSize)}</span>
+                        <button
+                            onClick={() => setCurrentPage(p => p + 1)}
+                            disabled={currentPage >= Math.ceil(totalDancers / pageSize)}
+                            className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <ChevronRight />
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -462,9 +468,8 @@ const Dashboard = ({ userData }: { userData: any }) => {
                                 setRequestData({ ...requestData, event: e.target.value });
                                 if (formErrors.event) setFormErrors({ ...formErrors, event: '' });
                             }}
-                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                                formErrors.event ? 'border-2 border-red-500' : ''
-                            }`}
+                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.event ? 'border-2 border-red-500' : ''
+                                }`}
                             placeholder="Event Name"
                         />
                         {formErrors.event && (
@@ -476,14 +481,13 @@ const Dashboard = ({ userData }: { userData: any }) => {
                         <input
                             type="date"
                             value={requestData.date}
-                             min={new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]}
+                            min={new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]}
                             onChange={(e) => {
                                 setRequestData({ ...requestData, date: e.target.value });
                                 if (formErrors.date) setFormErrors({ ...formErrors, date: '' });
                             }}
-                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                                formErrors.date ? 'border-2 border-red-500' : ''
-                            }`}
+                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.date ? 'border-2 border-red-500' : ''
+                                }`}
                         />
                         {formErrors.date && (
                             <p className="text-red-400 text-sm mt-1">{formErrors.date}</p>
@@ -498,9 +502,8 @@ const Dashboard = ({ userData }: { userData: any }) => {
                                 setRequestData({ ...requestData, venue: e.target.value });
                                 if (formErrors.venue) setFormErrors({ ...formErrors, venue: '' });
                             }}
-                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                                formErrors.venue ? 'border-2 border-red-500' : ''
-                            }`}
+                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.venue ? 'border-2 border-red-500' : ''
+                                }`}
                             placeholder="Enter venue address"
                             readOnly={showVenueMap}
                         />
@@ -535,9 +538,8 @@ const Dashboard = ({ userData }: { userData: any }) => {
                                 setRequestData({ ...requestData, budget: e.target.value });
                                 if (formErrors.budget) setFormErrors({ ...formErrors, budget: '' });
                             }}
-                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                                formErrors.budget ? 'border-2 border-red-500' : ''
-                            }`}
+                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.budget ? 'border-2 border-red-500' : ''
+                                }`}
                             placeholder="e.g., $500 - $1000"
                         />
                         {formErrors.budget && (

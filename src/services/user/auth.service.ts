@@ -20,10 +20,10 @@ const getErrorMessage = (error: any): string => {
   return 'An unexpected error occurred. Please try again.';
 };
 
-export const signup = async(data:SignupForm | VerificationData)=>{
+export const signup = async (data: SignupForm | VerificationData) => {
   const isVerification = 'otp' in data;
-  const loadingMessage = isVerification 
-    ? 'Verifying OTP and creating account...' 
+  const loadingMessage = isVerification
+    ? 'Verifying OTP and creating account...'
     : 'Sending OTP...';
 
   const loadingToast = toast.loading(loadingMessage, {
@@ -65,26 +65,26 @@ export const signup = async(data:SignupForm | VerificationData)=>{
 //     position: 'top-right',
 //   });
 
-  // try {
-  //   console.log("Frontend - data in registerUser from auth service:",data)
-  //   const response = await AuthAxios.post('/signup', data, {
-  //     headers: {
-  //       "Content-Type": "application/json"
-  //     }
-  //   });
+// try {
+//   console.log("Frontend - data in registerUser from auth service:",data)
+//   const response = await AuthAxios.post('/signup', data, {
+//     headers: {
+//       "Content-Type": "application/json"
+//     }
+//   });
 
-  //   localStorage.setItem('pendingSignupData', JSON.stringify(data));
+//   localStorage.setItem('pendingSignupData', JSON.stringify(data));
 
-  //   toast.dismiss(loadingToast);
-  //   toast.success('OTP sent successfully! Please check your email. ', {
-  //     position: 'top-right',
-  //     duration: 5000,
-  //     style: {
-  //       background: '#DCFCE7',
-  //       color: '#16A34A',
-  //       border: '1px solid #BBF7D0',
-  //     },
-  //   });
+//   toast.dismiss(loadingToast);
+//   toast.success('OTP sent successfully! Please check your email. ', {
+//     position: 'top-right',
+//     duration: 5000,
+//     style: {
+//       background: '#DCFCE7',
+//       color: '#16A34A',
+//       border: '1px solid #BBF7D0',
+//     },
+//   });
 
 //     return response.data;
 //   } catch (error) {
@@ -146,11 +146,11 @@ export const signup = async(data:SignupForm | VerificationData)=>{
 //   }
 // }
 
-export const userLogin = async(data: { email: string; password: string; role?: string },dispatch:AppDispatch)=>{
+export const userLogin = async (data: { email: string; password: string; role?: string }, dispatch: AppDispatch) => {
   try {
     const response = await AuthAxios.post('/login', data);
 
-    const {user,accessToken} = response.data;
+    const { user, accessToken } = response.data;
 
     // Store user data if needed
     if (accessToken) {
@@ -160,7 +160,7 @@ export const userLogin = async(data: { email: string; password: string; role?: s
     //   localStorage.setItem('user', JSON.stringify(response.data.user));
     // }
 
-    dispatch(loginUser({user,token:accessToken}))
+    dispatch(loginUser({ user, token: accessToken }))
 
     return response.data;
   } catch (error) {
@@ -206,7 +206,7 @@ export const logoutUser = async () => {
     throw error;
   }
 };
-export const userSendResetLink = async (email: string) => { 
+export const userSendResetLink = async (email: string) => {
   const loadingToast = toast.loading('Sending reset link...', {
     position: 'top-right',
   });
@@ -215,7 +215,7 @@ export const userSendResetLink = async (email: string) => {
     const response = await AuthAxios.post('/forgot-password', { email }, {
       withCredentials: true
     });
-    
+
     toast.dismiss(loadingToast);
     // toast.success('Reset link sent to your email! ', {
     //   position: 'top-right',
@@ -248,7 +248,7 @@ export const userSendResetLink = async (email: string) => {
 };
 
 
-export const userResetPassword = async (data: { 
+export const userResetPassword = async (data: {
   token: string;
   password: string;
   confirmPassword: string;
@@ -258,7 +258,7 @@ export const userResetPassword = async (data: {
   });
 
   try {
-    console.log("sending reset password request in userResetPassword in auth.service.ts",data)
+    console.log("sending reset password request in userResetPassword in auth.service.ts", data)
     const response = await AuthAxios.post('/reset-password', {
       token: data.token,
       password: data.password,
@@ -277,7 +277,7 @@ export const userResetPassword = async (data: {
         border: '1px solid #BBF7D0',
       },
     });
-    console.log("reset password response in userResetPassword in auth.service.ts",response.data)
+    console.log("reset password response in userResetPassword in auth.service.ts", response.data)
     return response.data;
   } catch (error) {
     toast.dismiss(loadingToast);
@@ -294,6 +294,49 @@ export const userResetPassword = async (data: {
     });
 
     console.error('Reset password error:', error);
+    throw error;
+  }
+  // console.error('Reset password error:', error);
+  // throw error;
+}
+// };
+
+export const changePassword = async (data: { currentPassword: string; newPassword: string }) => {
+  const loadingToast = toast.loading('Changing password...', {
+    position: 'top-right',
+  });
+
+  try {
+    const response = await AuthAxios.post('/change-password', data);
+
+    toast.dismiss(loadingToast);
+    // toast.success('Password changed successfully!', {
+    //   position: 'top-right',
+    //   duration: 5000,
+    //   style: {
+    //     background: '#DCFCE7',
+    //     color: '#16A34A',
+    //     border: '1px solid #BBF7D0',
+    //   },
+    // });
+    toast.success('Password changed successfully!')
+
+    return response.data;
+  } catch (error) {
+    toast.dismiss(loadingToast);
+    const errorMessage = getErrorMessage(error);
+
+    toast.error(errorMessage, {
+      position: 'top-right',
+      duration: 5000,
+      style: {
+        background: '#FEE2E2',
+        color: '#DC2626',
+        border: '1px solid #FECACA',
+      },
+    });
+
+    console.error('Change password error:', error);
     throw error;
   }
 };
