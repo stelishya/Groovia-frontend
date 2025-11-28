@@ -185,16 +185,23 @@ const CreateWorkshopModal: React.FC<CreateWorkshopModalProps> = ({ isOpen, onClo
         reader.onloadend = () => {
             const result = reader.result as string;
             setTempImageSrc(result);
-            setShowCropModal(true);
+            setImagePreview(result);
+            setFormData(prev => ({ ...prev, posterImage: result }));
+            setErrors(prev => ({ ...prev, posterImage: '' }));
         };
         reader.readAsDataURL(file);
     };
 
-    const handleCropComplete = (croppedImage: string) => {
-        setImagePreview(croppedImage);
-        setFormData(prev => ({ ...prev, posterImage: croppedImage }));
-        setErrors(prev => ({ ...prev, posterImage: '' }));
-        setShowCropModal(false);
+    const handleCropComplete = (croppedImageBlob: Blob) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const result = reader.result as string;
+            setImagePreview(result);
+            setFormData(prev => ({ ...prev, posterImage: result }));
+            setErrors(prev => ({ ...prev, posterImage: '' }));
+            setShowCropModal(false);
+        };
+        reader.readAsDataURL(croppedImageBlob);
     };
 
     const handleDragOver = (e: React.DragEvent) => {

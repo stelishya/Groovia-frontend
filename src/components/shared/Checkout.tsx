@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronRight, Check, Star, TrendingUp, Search, MessageCircle, BarChart3 } from 'lucide-react';
-import { upgradeService, type UpgradeStatus, ROLE_UPGRADE_PRICE } from '../../services/user/upgradeRole.service';
+import { Star, TrendingUp, Search, MessageCircle, BarChart3, Calendar, MapPin, Clock } from 'lucide-react';
+import { upgradeService, ROLE_UPGRADE_PRICE } from '../../services/user/upgradeRole.service';
+import type { UpgradeStatus } from '../../services/user/upgradeRole.service';
+import { createBookingOrder, verifyBookingPayment } from '../../services/workshop/workshop.service';
+import type { Workshop } from '../../types/workshop.type';
 import toast from 'react-hot-toast';
 import { fetchMyProfile } from '../../services/user/auth.service';
 import { loginUser } from '../../redux/slices/user.slice';
@@ -12,18 +15,20 @@ interface PaymentProps {
   onUpgrade?: () => void;
   onCancel?: () => void;
   upgradeRequest?: UpgradeStatus; // For role upgrade payments
+  workshop?: Workshop; // For workshop booking payments
 }
 
 const Payment: React.FC<PaymentProps> = ({
   userEmail = 'user@example.com',
   onUpgrade,
   onCancel,
-  upgradeRequest
+  upgradeRequest,
+  workshop
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentUpgradeRequest, setCurrentUpgradeRequest] = useState(upgradeRequest);
 
-  const getRoleUpgradeAmount = (type: string) => {
+  const getRoleUpgradeAmount = () => {
     return ROLE_UPGRADE_PRICE; // Single price for all role upgrades
   };
   const dispatch = useDispatch();
@@ -40,8 +45,18 @@ const Payment: React.FC<PaymentProps> = ({
   }, [upgradeRequest]);
 
   const getPaymentDetails = () => {
-    if (currentUpgradeRequest) {
-      const amount = getRoleUpgradeAmount(currentUpgradeRequest.type);
+    if (workshop) {
+      return {
+        title: `Register for ${workshop.title}`,
+        subtitle: `Complete your registration for this workshop with a one-time payment of ₹${workshop.fee}.`,
+        planName: workshop.title,
+        billing: 'One-time payment',
+        amount: workshop.fee,
+        icon: <Calendar className="w-8 h-8 text-purple-400 mr-3" />,
+        workshopDetails: workshop
+      };
+    } else if (currentUpgradeRequest) {
+      const amount = getRoleUpgradeAmount();
       return {
         title: `Upgrade to ${currentUpgradeRequest.type.charAt(0).toUpperCase() + currentUpgradeRequest.type.slice(1)}`,
         subtitle: `Complete your ${currentUpgradeRequest.type} role upgrade with a one-time payment of ₹${amount}.`,
@@ -63,6 +78,7 @@ const Payment: React.FC<PaymentProps> = ({
   };
 
   const paymentDetails = getPaymentDetails();
+
   // Load Razorpay SDK dynamically
   const loadRazorpay = () => {
     return new Promise((resolve) => {
@@ -90,11 +106,70 @@ const Payment: React.FC<PaymentProps> = ({
     }
 
     try {
-      if (currentUpgradeRequest) {
-        // 1. Create Razorpay Order via backend
+      if (workshop) {
+        // Handle workshop booking payment
+        const orderRes = await createBookingOrder(workshop._id, workshop.fee);
+
+        if (!orderRes.success) {
+          throw new Error(orderRes.message);
+        }
+
+        const order = orderRes.data;
+
+        const options = {
+          key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+          amount: order.amount,
+          currency: order.currency,
+          name: "Groovia",
+          description: `Workshop: ${workshop.title}`,
+          order_id: order.id,
+          handler: async function (response: any) {
+            try {
+              const verifyRes = await verifyBookingPayment({
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_signature: response.razorpay_signature,
+                workshopId: workshop._id
+              });
+
+              if (verifyRes.success) {
+                toast.success('Registration Successful! See you at the workshop.', {
+                  duration: 5000,
+                  icon: '🎉',
+                });
+                setIsProcessing(false);
+                onUpgrade?.();
+              } else {
+                throw new Error(verifyRes.message);
+              }
+            } catch (error) {
+              setIsProcessing(false);
+              toast.error('Payment verification failed. Please contact support.');
+              console.error('Payment verification failed:', error);
+            }
+          },
+          prefill: {
+            name: userEmail.split('@')[0],
+            email: userEmail,
+          },
+          theme: {
+            color: "#9333ea"
+          },
+          modal: {
+            ondismiss: function () {
+              setIsProcessing(false);
+              toast.error('Payment Cancelled');
+            }
+          }
+        };
+
+        const paymentObject = new (window as any).Razorpay(options);
+        paymentObject.open();
+      } else if (currentUpgradeRequest) {
+        // Handle role upgrade payment
         const order = await upgradeService.createPaymentOrder({
           upgradeRequestId: currentUpgradeRequest.id,
-          amount: getRoleUpgradeAmount(currentUpgradeRequest.type),
+          amount: getRoleUpgradeAmount(),
           currency: 'INR'
         });
 
@@ -108,11 +183,10 @@ const Payment: React.FC<PaymentProps> = ({
           order_id: order.id,
           handler: async function (response: any) {
             try {
-              // 3. Verify payment and confirm upgrade
               await upgradeService.confirmPaymentCompletion(
                 currentUpgradeRequest.id,
                 response.razorpay_payment_id,
-                getRoleUpgradeAmount(currentUpgradeRequest.type),
+                getRoleUpgradeAmount(),
                 'INR',
                 response.razorpay_order_id,
                 response.razorpay_signature
@@ -150,7 +224,7 @@ const Payment: React.FC<PaymentProps> = ({
             email: userEmail,
           },
           theme: {
-            color: "#9333ea" // Purple color matching the UI
+            color: "#9333ea"
           },
           modal: {
             ondismiss: async function () {
@@ -237,31 +311,56 @@ const Payment: React.FC<PaymentProps> = ({
   //   }
   // };
 
-  const benefits = [
-    {
-      icon: <TrendingUp className="w-5 h-5 text-purple-400" />,
-      text: "Post unlimited ads and artworks"
-    },
-    {
-      icon: <Search className="w-5 h-5 text-purple-400" />,
-      text: "Get featured in search results"
-    },
-    {
-      icon: <MessageCircle className="w-5 h-5 text-purple-400" />,
-      text: "Priority customer support"
-    },
-    {
-      icon: <BarChart3 className="w-5 h-5 text-purple-400" />,
-      text: "Access advanced analytics"
+  const getBenefits = () => {
+    if (workshop) {
+      return [
+        {
+          icon: <Calendar className="w-5 h-5 text-purple-400" />,
+          text: "Access to all workshop sessions"
+        },
+        {
+          icon: <TrendingUp className="w-5 h-5 text-purple-400" />,
+          text: "Learn from certified instructors"
+        },
+        {
+          icon: <MessageCircle className="w-5 h-5 text-purple-400" />,
+          text: "Interactive learning experience"
+        },
+        {
+          icon: <BarChart3 className="w-5 h-5 text-purple-400" />,
+          text: "Certificate upon completion"
+        }
+      ];
+    } else {
+      return [
+        {
+          icon: <TrendingUp className="w-5 h-5 text-purple-400" />,
+          text: "Post unlimited ads and artworks"
+        },
+        {
+          icon: <Search className="w-5 h-5 text-purple-400" />,
+          text: "Get featured in search results"
+        },
+        {
+          icon: <MessageCircle className="w-5 h-5 text-purple-400" />,
+          text: "Priority customer support"
+        },
+        {
+          icon: <BarChart3 className="w-5 h-5 text-purple-400" />,
+          text: "Access advanced analytics"
+        }
+      ];
     }
-  ];
+  };
+
+  const benefits = getBenefits();
 
   return (
     <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
       <div className="w-full max-w-6xl bg-gray-800 rounded-2xl border-2 border-purple-500 shadow-2xl overflow-hidden">
         {/* {onBack && ( */}
         <button
-          // onClick={onBack}
+          onClick={() => navigate(-1)}
           className="absolute top-8 left-8 w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-all duration-200 z-10"
         >
           <svg
@@ -302,9 +401,9 @@ const Payment: React.FC<PaymentProps> = ({
                   <h3 className="text-xl font-semibold text-white">
                     {paymentDetails.planName}
                   </h3>
-                  <span className="bg-green-600 text-white px-3 py-1 rounded-full text-sm font-medium">
+                  {/* <span className="bg-green-600 text-white px-3 py-1 rounded-full text-sm font-medium">
                     Approved
-                  </span>
+                  </span> */}
                 </div>
                 <p className="text-gray-400 mb-2">{paymentDetails.billing}</p>
                 <div className="flex items-baseline">
@@ -312,18 +411,42 @@ const Payment: React.FC<PaymentProps> = ({
                 </div>
               </div>
 
-              {/* Benefits */}
-              <div>
-                <h4 className="text-xl font-semibold text-white mb-3">What you'll get:</h4>
-                <div className="space-y-4">
-                  {benefits.map((benefit, index) => (
-                    <div key={index} className="flex items-center space-x-3">
-                      {benefit.icon}
-                      <span className="text-gray-300">{benefit.text}</span>
+              {/* Benefits or Workshop Details */}
+              {workshop ? (
+                <div>
+                  <h4 className="text-xl font-semibold text-white mb-3">Workshop Details:</h4>
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-3">
+                      <Calendar className="w-5 h-5 text-purple-400" />
+                      <span className="text-gray-300">{new Date(workshop.startDate).toLocaleDateString()} - {new Date(workshop.endDate).toLocaleDateString()}</span>
                     </div>
-                  ))}
+                    <div className="flex items-center space-x-3">
+                      <Clock className="w-5 h-5 text-purple-400" />
+                      <span className="text-gray-300">{workshop.sessions.length} Sessions</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <MapPin className="w-5 h-5 text-purple-400" />
+                      <span className="text-gray-300">{workshop.mode === 'online' ? 'Online Workshop' : workshop.location}</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <Star className="w-5 h-5 text-purple-400" />
+                      <span className="text-gray-300">Instructor: {workshop.instructor.username}</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div>
+                  <h4 className="text-xl font-semibold text-white mb-3">What you'll get:</h4>
+                  <div className="space-y-4">
+                    {benefits.map((benefit, index) => (
+                      <div key={index} className="flex items-center space-x-3">
+                        {benefit.icon}
+                        <span className="text-gray-300">{benefit.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Terms */}
               <div className="bg-gray-700/30 rounded-lg p-4 border border-purple-400/20">

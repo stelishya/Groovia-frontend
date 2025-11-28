@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import type { RootState } from '../../redux/store';
 import { getWorkshopById } from '../../services/workshop/workshop.service';
 import type { Workshop } from '../../types/workshop.type';
-import WorkshopCheckout from '../../components/shared/WorkshopCheckout';
+import Checkout from '../../components/shared/Checkout';
 import toast from 'react-hot-toast';
 
 const WorkshopCheckoutPage = () => {
@@ -49,10 +49,10 @@ const WorkshopCheckoutPage = () => {
     }
 
     return (
-        <WorkshopCheckout
+        <Checkout
             workshop={workshop}
             userEmail={user?.email || ''}
-            onSuccess={() => navigate('/bookings')}
+            onUpgrade={() => navigate('/bookings')}
             onCancel={() => navigate(-1)}
         />
     );
