@@ -2,8 +2,6 @@ import axios, { type AxiosInstance } from 'axios';
 import { handleAxiosError } from './errorHandler';
 
 export const createBaseAxios = (basePath: string): AxiosInstance => {
-  console.log("HI!! from base axios in base.axios.ts")
-  console.log("basePath:", basePath)
   const instance = axios.create({
     baseURL: `${import.meta.env.VITE_SERVER_URL}${basePath}`,
     withCredentials: true,
@@ -23,9 +21,6 @@ export const createBaseAxios = (basePath: string): AxiosInstance => {
       
       // store instance on config so errorHandler can retry on the same instance
       (config as any).__axiosInstance = instance;
-      
-      console.log("token in base axios:", token)
-      console.log("config in base axios:", config)
       return config;
     },
     (error) => {

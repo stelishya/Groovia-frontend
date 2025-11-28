@@ -20,9 +20,9 @@ import UserNavbar from '../../components/shared/Navbar';
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconUrl: markerIcon,
-  iconRetinaUrl: markerIcon2x,
-  shadowUrl: markerShadow,
+    iconUrl: markerIcon,
+    iconRetinaUrl: markerIcon2x,
+    shadowUrl: markerShadow,
 });
 
 interface Client {
@@ -65,7 +65,7 @@ const RequestCard = ({ request, onAcceptClick, onDeclineClick, onViewMap }: { re
                 <div className="flex items-center text-sm text-gray-400">
                     <MapPin className="inline mr-1" size={14} />
                     <span className="mr-2">{request.venue}</span>
-                    <button 
+                    <button
                         onClick={() => onViewMap(request.venue)}
                         className="text-purple-300 hover:text-purple-100 underline text-xs"
                     >
@@ -77,11 +77,10 @@ const RequestCard = ({ request, onAcceptClick, onDeclineClick, onViewMap }: { re
             </div>
         </div>
         <div className="flex flex-col items-end">
-            <span className={`text-xs px-2 py-1 rounded-full mb-2 ${
-                request.status === 'pending' ? 'bg-yellow-500 text-black' : 
-                request.status === 'rejected' ? 'bg-red-500 text-white' : 
-                'bg-green-500 text-white'
-            }`}>
+            <span className={`text-xs px-2 py-1 rounded-full mb-2 ${request.status === 'pending' ? 'bg-yellow-500 text-black' :
+                    request.status === 'rejected' ? 'bg-red-500 text-white' :
+                        'bg-green-500 text-white'
+                }`}>
                 {request.status}
             </span>
             <div className="flex space-x-2">
@@ -126,10 +125,10 @@ const BookingsPage = () => {
             // Backend returns: { success: true, data: { message, request } }
             const updatedRequest = response.data?.request;
             if (updatedRequest) {
-                setRequests(prevRequests => 
+                setRequests(prevRequests =>
                     prevRequests.map(req => req._id === id ? { ...req, status: updatedRequest.status } : req)
                 );
-                
+
                 // Show notification based on status
                 if (status === 'accepted') {
                     toast.success('Request accepted! 🎉');
@@ -150,7 +149,7 @@ const BookingsPage = () => {
         setActionType('accept');
         setModalOpen(true);
     };
-    
+
     const handleDeclineClick = (id: string) => {
         setSelectedRequestId(id);
         setActionType('decline');
@@ -171,7 +170,7 @@ const BookingsPage = () => {
         setSelectedVenue(venue);
         setMapModalOpen(true);
         setLoadingCoords(true);
-        
+
         try {
             // Geocode the venue address
             const response = await fetch(
@@ -236,7 +235,7 @@ const BookingsPage = () => {
     return (
         <div className="flex-grow p-8 bg-deep-purple text-white overflow-y-auto">
             {/* <Header user={user} /> */}
-            <UserNavbar title="Bookings Management" subTitle="Manage your client requests & workshop bookings"/>
+            <UserNavbar title="Bookings Management" subTitle="Manage your client requests & workshop bookings" />
             <div className="flex border-b border-purple-700 mb-6">
                 <button className="py-2 px-4 text-white border-b-2 border-purple-500 font-semibold">Client Requests ({requests.length})</button>
                 <button className="py-2 px-4 text-gray-400">Booked Workshops (0)</button>
@@ -258,9 +257,9 @@ const BookingsPage = () => {
                     <div className="flex items-center">
                         <span className="text-gray-400 mr-2">Sort by:</span>
                         <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-purple-700 text-white rounded-lg py-2 px-4 focus:outline-none">
-                        <option value="date">Sort by Date</option>
-                        <option value="budget">Sort by Budget</option>
-                    </select>
+                            <option value="date">Sort by Date</option>
+                            <option value="budget">Sort by Budget</option>
+                        </select>
                     </div>
                 </div>
             </div>
@@ -276,7 +275,7 @@ const BookingsPage = () => {
 
             {/* Pagination */}
             <div className="flex justify-end items-center mt-8 space-x-4">
-                <button 
+                <button
                     onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
                     disabled={currentPage === 1}
                     className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
@@ -284,7 +283,7 @@ const BookingsPage = () => {
                     Previous
                 </button>
                 <span className="text-white">Page {currentPage} of {Math.max(1, Math.ceil(totalRequests / pageSize))}</span>
-                <button 
+                <button
                     onClick={() => setCurrentPage(p => p + 1)}
                     disabled={currentPage >= Math.ceil(totalRequests / pageSize)}
                     className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
@@ -294,17 +293,17 @@ const BookingsPage = () => {
             </div>
             {modalOpen && (
                 <ConfirmationModal
-                show={modalOpen}
-                onClose={() => {
-                    setModalOpen(false);
-                    setActionType(null);
-                }}
-                onConfirm={confirmAction}
-                title={actionType === 'accept' ? 'Confirm Acceptance' : 'Confirm Decline'}
-                message={actionType === 'accept' 
-                    ? 'Are you sure you want to accept this booking request?' 
-                    : 'Are you sure you want to decline this booking request?'
-                }
+                    show={modalOpen}
+                    onClose={() => {
+                        setModalOpen(false);
+                        setActionType(null);
+                    }}
+                    onConfirm={confirmAction}
+                    title={actionType === 'accept' ? 'Confirm Acceptance' : 'Confirm Decline'}
+                    message={actionType === 'accept'
+                        ? 'Are you sure you want to accept this booking request?'
+                        : 'Are you sure you want to decline this booking request?'
+                    }
                 />
             )}
             {mapModalOpen && (
@@ -315,8 +314,8 @@ const BookingsPage = () => {
                                 <MapPin className="mr-2" />
                                 Venue Location
                             </h3>
-                            <button 
-                                onClick={() => setMapModalOpen(false)} 
+                            <button
+                                onClick={() => setMapModalOpen(false)}
                                 className="text-white hover:text-gray-300 text-2xl"
                             >
                                 ×
@@ -367,7 +366,7 @@ const BookingsPage = () => {
 const BookingsDancer = () => {
     return (
         <div className="flex h-screen bg-gray-900">
-            <Sidebar activeMenu='Bookings'/>
+            <Sidebar activeMenu='Bookings' />
             <BookingsPage />
         </div>
     );

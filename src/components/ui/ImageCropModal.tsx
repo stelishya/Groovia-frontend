@@ -1,223 +1,165 @@
-// import React, { useState, useCallback } from 'react';
-// import { X, ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
-// import Cropper from 'react-easy-crop';
-// import { type Point, type Area } from 'react-easy-crop';
+import { useState, useCallback } from 'react';
+import Cropper, { type Area } from 'react-easy-crop';
+import { X, RotateCw, ZoomIn } from 'lucide-react';
+import { getCroppedImg } from '../../utils/CropImage';
 
-// interface ImageCropModalProps {
-//     isOpen: boolean;
-//     imageSrc: string;
-//     onClose: () => void;
-//     onCropComplete: (croppedImageBlob: Blob) => Promise<void>;
-//     aspectRatio?: number;
-// }
+interface ImageCropModalProps {
+    isOpen: boolean;
+    imageSrc: string;
+    onClose: () => void;
+    onCropComplete: (croppedImageBlob: Blob) => void;
+    aspectRatio?: number;
+}
 
-// const ImageCropModal: React.FC<ImageCropModalProps> = ({
-//     isOpen,
-//     imageSrc,
-//     onClose,
-//     onCropComplete,
-//     aspectRatio = 1, // Default to square (1:1)
-// }) => {
-//     const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
-//     const [zoom, setZoom] = useState(1);
-//     const [rotation, setRotation] = useState(0);
-//     const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
-//     const [isProcessing, setIsProcessing] = useState(false);
+const ImageCropModal: React.FC<ImageCropModalProps> = ({
+    isOpen,
+    imageSrc,
+    onClose,
+    onCropComplete,
+    aspectRatio = 1, // Default to square (1:1)
+}) => {
+    const [crop, setCrop] = useState({ x: 0, y: 0 });
+    const [zoom, setZoom] = useState(1);
+    const [rotation, setRotation] = useState(0);
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
 
-//     const onCropChange = (location: Point) => {
-//         setCrop(location);
-//     };
+    const onCropChange = (location: { x: number; y: number }) => {
+        setCrop(location);
+    };
 
-//     const onZoomChange = (zoom: number) => {
-//         setZoom(zoom);
-//     };
+    const onCropAreaChange = useCallback((croppedArea: Area, croppedAreaPixels: Area) => {
+        setCroppedAreaPixels(croppedAreaPixels);
+    }, []);
 
-//     const onCropAreaComplete = useCallback((croppedArea: Area, croppedAreaPixels: Area) => {
-//         setCroppedAreaPixels(croppedAreaPixels);
-//     }, []);
+    const handleCropConfirm = async () => {
+        if (!croppedAreaPixels) return;
 
-//     const createImage = (url: string): Promise<HTMLImageElement> =>
-//         new Promise((resolve, reject) => {
-//             const image = new Image();
-//             image.addEventListener('load', () => resolve(image));
-//             image.addEventListener('error', (error) => reject(error));
-//             image.setAttribute('crossOrigin', 'anonymous');
-//             image.src = url;
-//         });
+        try {
+            const croppedBlob = await getCroppedImg(imageSrc, croppedAreaPixels, rotation);
+            onCropComplete(croppedBlob);
+            onClose();
+        } catch (error) {
+            console.error('Error cropping image:', error);
+        }
+    };
 
-//     const getCroppedImg = async (
-//         imageSrc: string,
-//         pixelCrop: Area,
-//         rotation = 0
-//     ): Promise<Blob> => {
-//         const image = await createImage(imageSrc);
-//         const canvas = document.createElement('canvas');
-//         const ctx = canvas.getContext('2d');
+    if (!isOpen) return null;
 
-//         if (!ctx) {
-//             throw new Error('No 2d context');
-//         }
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+            <div className="bg-gray-900 border border-purple-500/30 rounded-xl w-full max-w-3xl max-h-[90vh] overflow-hidden">
+                {/* Header */}
+                <div className="flex justify-between items-center p-4 border-b border-purple-500/30">
+                    <h2 className="text-xl font-bold text-white">Crop Image</h2>
+                    <button onClick={onClose} className="text-gray-400 hover:text-white">
+                        <X size={24} />
+                    </button>
+                </div>
 
-//         const maxSize = Math.max(image.width, image.height);
-//         const safeArea = 2 * ((maxSize / 2) * Math.sqrt(2));
+                {/* Cropper Area */}
+                <div className="relative h-96 bg-black">
+                    <Cropper
+                        image={imageSrc}
+                        crop={crop}
+                        zoom={zoom}
+                        rotation={rotation}
+                        aspect={aspectRatio}
+                        onCropChange={onCropChange}
+                        onCropComplete={onCropAreaChange}
+                        onZoomChange={setZoom}
+                        cropShape="rect"
+                        showGrid={true}
+                        style={{
+                            containerStyle: {
+                                backgroundColor: '#000',
+                            },
+                            cropAreaStyle: {
+                                border: '2px solid #a855f7',
+                            },
+                        }}
+                    />
+                </div>
 
-//         canvas.width = safeArea;
-//         canvas.height = safeArea;
+                {/* Controls */}
+                <div className="p-4 space-y-4 bg-purple-900/30">
+                    {/* Zoom Control */}
+                    <div>
+                        <div className="flex items-center justify-between mb-2">
+                            <label className="text-sm text-purple-200 flex items-center gap-2">
+                                <ZoomIn size={16} />
+                                Zoom
+                            </label>
+                            <span className="text-xs text-purple-300">{Math.round(zoom * 100)}%</span>
+                        </div>
+                        <input
+                            type="range"
+                            min={1}
+                            max={3}
+                            step={0.1}
+                            value={zoom}
+                            onChange={(e) => setZoom(parseFloat(e.target.value))}
+                            className="w-full h-2 bg-purple-700 rounded-lg appearance-none cursor-pointer slider"
+                        />
+                    </div>
 
-//         ctx.translate(safeArea / 2, safeArea / 2);
-//         ctx.rotate((rotation * Math.PI) / 180);
-//         ctx.translate(-safeArea / 2, -safeArea / 2);
+                    {/* Rotation Control */}
+                    {/* <div>
+                        <div className="flex items-center justify-between mb-2">
+                            <label className="text-sm text-purple-200 flex items-center gap-2">
+                                <RotateCw size={16} />
+                                Rotation
+                            </label>
+                            <span className="text-xs text-purple-300">{rotation}°</span>
+                        </div>
+                        <input
+                            type="range"
+                            min={0}
+                            max={360}
+                            step={1}
+                            value={rotation}
+                            onChange={(e) => setRotation(parseInt(e.target.value))}
+                            className="w-full h-2 bg-purple-700 rounded-lg appearance-none cursor-pointer slider"
+                        />
+                    </div> */}
 
-//         ctx.drawImage(
-//             image,
-//             safeArea / 2 - image.width * 0.5,
-//             safeArea / 2 - image.height * 0.5
-//         );
+                    {/* Action Buttons */}
+                    <div className="flex justify-end gap-3 pt-2">
+                        <button
+                            onClick={onClose}
+                            className="px-4 py-2 text-purple-200 hover:text-white transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleCropConfirm}
+                            className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
+                        >
+                            Apply Crop
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-//         const data = ctx.getImageData(0, 0, safeArea, safeArea);
+            <style>{`
+                .slider::-webkit-slider-thumb {
+                    appearance: none;
+                    width: 16px;
+                    height: 16px;
+                    border-radius: 50%;
+                    background: #a855f7;
+                    cursor: pointer;
+                }
+                .slider::-moz-range-thumb {
+                    width: 16px;
+                    height: 16px;
+                    border-radius: 50%;
+                    background: #a855f7;
+                    cursor: pointer;
+                    border: none;
+                }
+            `}</style>
+        </div>
+    );
+};
 
-//         canvas.width = pixelCrop.width;
-//         canvas.height = pixelCrop.height;
-
-//         ctx.putImageData(
-//             data,
-//             Math.round(0 - safeArea / 2 + image.width * 0.5 - pixelCrop.x),
-//             Math.round(0 - safeArea / 2 + image.height * 0.5 - pixelCrop.y)
-//         );
-
-//         return new Promise((resolve) => {
-//             canvas.toBlob((blob) => {
-//                 if (blob) {
-//                     resolve(blob);
-//                 }
-//             }, 'image/jpeg', 0.95);
-//         });
-//     };
-
-//     const handleCropConfirm = async () => {
-//         if (!croppedAreaPixels) return;
-
-//         setIsProcessing(true);
-//         try {
-//             const croppedImageBlob = await getCroppedImg(
-//                 imageSrc,
-//                 croppedAreaPixels,
-//                 rotation
-//             );
-//             // Call the async onCropComplete (which now handles upload)
-//             await onCropComplete(croppedImageBlob);
-//         } catch (error) {
-//             console.error('Error cropping/uploading image:', error);
-//         } finally {
-//             setIsProcessing(false);
-//         }
-//     };
-
-//     const handleRotate = () => {
-//         setRotation((prev) => (prev + 90) % 360);
-//     };
-
-//     if (!isOpen) return null;
-
-//     return (
-//         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
-//             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden">
-//                 {/* Header */}
-//                 <div className="bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-4 flex items-center justify-between">
-//                     <h2 className="text-xl font-bold text-white">Crop Profile Picture</h2>
-//                     <button
-//                         onClick={onClose}
-//                         className="text-white hover:bg-white/20 rounded-lg p-2 transition-colors"
-//                     >
-//                         <X size={24} />
-//                     </button>
-//                 </div>
-
-//                 {/* Crop Area */}
-//                 <div className="relative h-96 bg-gray-900">
-//                     <Cropper
-//                         image={imageSrc}
-//                         crop={crop}
-//                         zoom={zoom}
-//                         rotation={rotation}
-//                         aspect={aspectRatio}
-//                         onCropChange={onCropChange}
-//                         onZoomChange={onZoomChange}
-//                         onCropComplete={onCropAreaComplete}
-//                         cropShape="round"
-//                         showGrid={false}
-//                     />
-//                 </div>
-
-//                 {/* Controls */}
-//                 <div className="bg-gray-50 px-6 py-4 space-y-4">
-//                     {/* Zoom Control */}
-//                     <div>
-//                         <label className="text-sm font-medium text-gray-700 mb-2 flex items-center">
-//                             <ZoomIn size={16} className="mr-2" />
-//                             Zoom
-//                         </label>
-//                         <div className="flex items-center gap-3">
-//                             <ZoomOut size={18} className="text-gray-500" />
-//                             <input
-//                                 type="range"
-//                                 min={1}
-//                                 max={3}
-//                                 step={0.1}
-//                                 value={zoom}
-//                                 onChange={(e) => setZoom(Number(e.target.value))}
-//                                 className="flex-1 h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer"
-//                             />
-//                             <ZoomIn size={18} className="text-gray-500" />
-//                         </div>
-//                     </div>
-
-//                     {/* Rotation Control */}
-//                     {/* <div>
-//                         <label className="text-sm font-medium text-gray-700 mb-2 flex items-center">
-//                             <RotateCw size={16} className="mr-2" />
-//                             Rotation
-//                         </label>
-//                         <div className="flex items-center gap-3">
-//                             <input
-//                                 type="range"
-//                                 min={0}
-//                                 max={360}
-//                                 step={1}
-//                                 value={rotation}
-//                                 onChange={(e) => setRotation(Number(e.target.value))}
-//                                 className="flex-1 h-2 bg-purple-200 rounded-lg appearance-none cursor-pointer"
-//                             />
-//                             <button
-//                                 onClick={handleRotate}
-//                                 className="px-3 py-1 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition-colors text-sm font-medium"
-//                             >
-//                                 90°
-//                             </button>
-//                             <span className="text-sm text-gray-600 w-12 text-right">{rotation}°</span>
-//                         </div>
-//                     </div> */}
-//                 </div>
-
-//                 {/* Footer */}
-//                 <div className="bg-white px-6 py-4 flex justify-end gap-3 border-t border-gray-200">
-//                     <button
-//                         onClick={onClose}
-//                         className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
-//                     >
-//                         Cancel
-//                     </button>
-//                     <button
-//                         onClick={handleCropConfirm}
-//                         disabled={isProcessing}
-//                         className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-//                     >
-//                         {isProcessing ? 'Uploading...' : 'Crop & Upload'}
-//                     </button>
-//                 </div>
-//             </div>
-//         </div>
-//     );
-// };
-
-// export default ImageCropModal;
+export default ImageCropModal;

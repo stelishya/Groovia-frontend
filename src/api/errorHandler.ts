@@ -38,9 +38,6 @@ export const handleAxiosError = async (error: AxiosError) => {
   const isRefreshTokenExpired = (data as any)?.isRefreshTokenExpired;
   const isUserBlocked = (data as any)?.isUserBlocked;
 
-  console.log("isAccessTokenExpired",isAccessTokenExpired)
-  console.log("isRefreshTokenExpired",isRefreshTokenExpired)
-
   // Handle blocked user
   if (status === 401 && (isUserBlocked || message === 'User account is blocked')) {
     toast.error('Your account has been blocked. Please contact support.');
