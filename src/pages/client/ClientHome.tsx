@@ -21,6 +21,7 @@ import toast from "react-hot-toast";
 import UserNavbar from "../../components/shared/Navbar";
 
 
+
 const Header = () => (
     <header className="flex justify-end items-center p-4">
         {/* <div className="relative w-80 mr-6">
@@ -114,6 +115,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
             console.error("Failed to fetch sent requests:", error);
         }
     };
+
     useEffect(() => {
         fetchSentRequests();
     }, []);
@@ -449,6 +451,8 @@ const Dashboard = ({ userData }: { userData: any }) => {
                 </div>
             </div>
 
+            
+
             {selectedDancer && (
                 <FormModal
                     isOpen={isRequestModalOpen}
@@ -468,7 +472,8 @@ const Dashboard = ({ userData }: { userData: any }) => {
                                 setRequestData({ ...requestData, event: e.target.value });
                                 if (formErrors.event) setFormErrors({ ...formErrors, event: '' });
                             }}
-                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.event ? 'border-2 border-red-500' : ''
+                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                                formErrors.event ? 'border-2 border-red-500' : ''
                                 }`}
                             placeholder="Event Name"
                         />
@@ -486,7 +491,8 @@ const Dashboard = ({ userData }: { userData: any }) => {
                                 setRequestData({ ...requestData, date: e.target.value });
                                 if (formErrors.date) setFormErrors({ ...formErrors, date: '' });
                             }}
-                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.date ? 'border-2 border-red-500' : ''
+                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                                formErrors.date ? 'border-2 border-red-500' : ''
                                 }`}
                         />
                         {formErrors.date && (
@@ -502,7 +508,8 @@ const Dashboard = ({ userData }: { userData: any }) => {
                                 setRequestData({ ...requestData, venue: e.target.value });
                                 if (formErrors.venue) setFormErrors({ ...formErrors, venue: '' });
                             }}
-                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.venue ? 'border-2 border-red-500' : ''
+                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                                formErrors.venue ? 'border-2 border-red-500' : ''
                                 }`}
                             placeholder="Enter venue address"
                             readOnly={showVenueMap}
@@ -538,7 +545,8 @@ const Dashboard = ({ userData }: { userData: any }) => {
                                 setRequestData({ ...requestData, budget: e.target.value });
                                 if (formErrors.budget) setFormErrors({ ...formErrors, budget: '' });
                             }}
-                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.budget ? 'border-2 border-red-500' : ''
+                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                                formErrors.budget ? 'border-2 border-red-500' : ''
                                 }`}
                             placeholder="e.g., $500 - $1000"
                         />

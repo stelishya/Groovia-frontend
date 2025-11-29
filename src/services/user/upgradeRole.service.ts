@@ -93,19 +93,29 @@ export const upgradeService = {
         return response.data;
     },
 
-    // Complete payment for approved upgrade
-    // completeUpgradePayment: async (data: PaymentRequest) => {
-    //     return await UserAxios.post('/upgrade-payment', data);
-    // },
+    // Create payment order
+    createPaymentOrder: async (data: PaymentRequest) => {
+        const response = await UserAxios.post('/upgrade-payment', data);
+        console.log('payment order response in upgradeRole.service.ts:', response);
+        return response.data;
+    },
 
     // Confirm payment completion (called after successful payment)
-    confirmPaymentCompletion: async (upgradeRequestId: string, paymentId: string,amount:number,currency:string) => {
+    confirmPaymentCompletion: async (upgradeRequestId: string, paymentId: string, amount: number, currency: string, razorpayOrderId: string, razorpaySignature: string) => {
         const response = await UserAxios.post('/upgrade-payment-confirm', {
             upgradeRequestId,
             paymentId,
             amount,
-            currency
+            currency,
+            razorpayOrderId,
+            razorpaySignature
         });
+        return response.data;
+    },
+
+    upgradePaymentFailed: async (upgradeRequestId: string) => {
+        const response = await UserAxios.patch(`/upgrade-payment-failed/${upgradeRequestId}`);
+        console.log("response in upgradePaymentFailed in upgradeRole.service.ts:", response);
         return response.data;
     }
 };

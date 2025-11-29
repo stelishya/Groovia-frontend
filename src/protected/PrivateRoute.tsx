@@ -22,9 +22,7 @@ export const PrivateRoute: React.FC<PrivateRouteProps> = ({ children, userType }
     const [verifying, setVerifying] = useState(userType !== 'admin');
     const [denied, setDenied] = useState(false);
     
-    console.log("PrivateRoute !!")
     useEffect(() => {
-        console.log("PrivateRoute useEffect")
         if (userType === 'admin') { setVerifying(false); setDenied(false); return; }
         let cancelled = false;
         // reset before verifying this route
@@ -71,12 +69,9 @@ export const PrivateRoute: React.FC<PrivateRouteProps> = ({ children, userType }
     if (!isAuthenticated) {
         return <Navigate to={loginPath} state={{ from: location }} replace />;
     }
-    console.log("isAuthenticated : ",isAuthenticated)
-    console.log("userData.isBlocked : ",userData?.isBlocked)
 
     // Blocked user guard (for non-admin routes)
     if (userType !== 'admin' && userData?.isBlocked) {
-        console.log("blocked user guard")
         return <Navigate to={loginPath} state={{ from: location, reason: 'blocked' }} replace />;
     }
 

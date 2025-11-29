@@ -7,6 +7,12 @@ import UserNavbar from "../../components/shared/Navbar";
 import type { RootState } from "../../redux/store";
 import { Briefcase, Calendar, Trophy, TrophyIcon } from "lucide-react";
 
+import WorkshopCard from "../../components/ui/WorkshopCard";
+import { getAllWorkshops } from "../../services/workshop/workshop.service";
+import type { Workshop } from "../../types/workshop.type";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 // const Sidebar = () => {
 //     const dispatch = useDispatch();
 //     const navigate = useNavigate();
@@ -75,7 +81,24 @@ import { Briefcase, Calendar, Trophy, TrophyIcon } from "lucide-react";
 //     </header>
 // );
 
-const Dashboard = ({userData}:{userData:any}) => (
+const Dashboard = ({userData}:{userData:any}) =>{
+    const navigate = useNavigate();
+        const [workshops, setWorkshops] = useState<Workshop[]>([]);
+            const fetchWorkshops = async () => {
+                try {
+                    const response = await getAllWorkshops();
+                    if (response.success && response.data) {
+                        setWorkshops(response.data);
+                    }
+                } catch (error) {
+                    console.error("Failed to fetch workshops:", error);
+                }
+            };
+        
+            useEffect(() => {
+                fetchWorkshops();
+            }, []);
+    return (
     <main className="flex-grow p-8 bg-deep-purple text-white overflow-y-auto">
     <UserNavbar/>
         {/* <Header /> */}
@@ -85,9 +108,9 @@ const Dashboard = ({userData}:{userData:any}) => (
             <button className="mt-8 px-10 py-4 font-bold text-white rounded-full bg-gradient-to-r from-pink-500 to-orange-400 hover:opacity-90">Explore Oppurtunities</button>
         </div>
 
-        <div className="mt-12 p-6 bg-purple-800/50 rounded-xl flex items-center justify-between">
+        {/* <div className="mt-12 p-6 bg-purple-800/50 rounded-xl flex items-center justify-between">
             <div className="flex items-center">
-                {/* <img src="https://i.pravatar.cc/80?img=32" alt="Elena Petrova" className="w-16 h-16 rounded-full border-2 border-purple-400" /> */}
+                <img src="https://i.pravatar.cc/80?img=32" alt="Elena Petrova" className="w-16 h-16 rounded-full border-2 border-purple-400" />
                 <div className="ml-4">
                     <div className="flex items-center">
                         <h3 className="text-xl font-bold">{userData?.username?.charAt(0).toUpperCase() + userData?.username?.slice(1)}</h3>
@@ -96,13 +119,13 @@ const Dashboard = ({userData}:{userData:any}) => (
                     <p className="text-sm text-gray-300">{userData?.danceStyles?.join(', ')}</p>
                 </div>
             </div>
-            {/* <div className="flex space-x-12 text-center">
+            <div className="flex space-x-12 text-center">
                 <div><div className="text-2xl font-bold">24</div><div className="text-sm text-gray-300">Workshops</div></div>
                 <div><div className="text-2xl font-bold">156</div><div className="text-sm text-gray-300">Bookings</div></div>
                 <div><div className="text-2xl font-bold">4.8</div><div className="text-sm text-gray-300">Reviews</div></div>
                 <div><div className="text-2xl font-bold">8</div><div className="text-sm text-gray-300">Competitions</div></div>
-            </div> */}
-        </div>
+            </div>
+        </div> */}
 
         {/* <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="bg-purple-800/50 p-6 rounded-xl">
@@ -125,8 +148,59 @@ const Dashboard = ({userData}:{userData:any}) => (
                 <button className="mt-6 w-full py-3 bg-gray-700 text-white font-bold rounded-lg hover:bg-gray-600">View All Notifications</button>
             </div>
         </div> */}
+
+        {/* Workshops Feed Section */}
+            <div className="min-h-screen mt-12 p-6 rounded-xl">
+                <div className="flex justify-between items-center mb-8">
+                    <h1 className="text-3xl font-semibold text-purple-500">
+                        Upcoming Workshops
+                    </h1>
+
+                    {/* Workshop Filters */}
+                    <div className="flex gap-4">
+                        <select className="bg-[#a855f7] text-white px-4 py-2 rounded-lg focus:outline-none">
+                            <option>Dance Styles</option>
+                            <option>Ballet</option>
+                            <option>Hip Hop</option>
+                            <option>Jazz</option>
+                        </select>
+                        <select className="bg-[#a855f7] text-white px-4 py-2 rounded-lg focus:outline-none">
+                            <option>Location</option>
+                            <option>Online</option>
+                            <option>New York</option>
+                        </select>
+                        <select className="bg-[#a855f7] text-white px-4 py-2 rounded-lg focus:outline-none">
+                            <option>Date</option>
+                            <option>This Week</option>
+                            <option>Next Month</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                    {workshops.length > 0 ? (
+                        workshops.map((workshop) => (
+                            <WorkshopCard
+                                key={workshop._id}
+                                image={workshop.posterImage}
+                                title={workshop.title}
+                                category={workshop.style}
+                                price={workshop.fee}
+                                instructorName={workshop.instructor.username}
+                                studioName={workshop.location || 'Online'}
+                                date={new Date(workshop.startDate).toLocaleDateString()}
+                                onBook={() => navigate(`/workshop/${workshop._id}`)}
+                            />
+                        ))
+                    ) : (
+                        <p className="text-center col-span-full text-gray-500 fontSize-2xl">
+                            No upcoming workshops found 🎭
+                        </p>
+                    )}
+                </div>
+            </div>
     </main>
-);
+)};
 
 export default function Home() {
     const {userData} = useSelector((state: RootState)=> state.user)

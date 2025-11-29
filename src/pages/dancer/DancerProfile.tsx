@@ -180,15 +180,24 @@ const Profile = () => {
         setShowImageModal(true);
     };
 
-
-
     const currentRoles = Array.from(new Set(userData?.role || [])); // Remove duplicates
     const hasApprovedPaymentPending = upgradeRequests.some(r => r.status === 'approved' && r.paymentStatus === 'pending');
-
     const hasInstructorRole = hasRole(userData?.role, Role.INSTRUCTOR) && !hasApprovedPaymentPending;
-    console.log("hasInstructorRole in dancer profile : ", hasInstructorRole);
-    console.log("userData in dancer profile : ", userData);
+
+    const fetchUpgradeStatus = async () => {
+        try {
+            const requests = await upgradeService.getUpgradeStatus();
+            setUpgradeRequests(requests);
+            console.log('upgradeRequests in dancer profile:', requests);
+        } catch (error) {
+            console.error('Failed to fetch upgrade status:', error);
+        } finally {
+            setLoadingUpgradeStatus(false);
+        }
+    };
+
     const isDancer = hasAnyRole(userData?.role, [Role.DANCER, Role.INSTRUCTOR]);
+
     useEffect(() => {
         if (userData && !didClean) {
             setProfileData({
@@ -208,44 +217,17 @@ const Profile = () => {
             });
             fetchUpgradeStatus().then(() => {
                 const hasApprovedPending = upgradeRequests.some(r => r.status === 'approved' && r.paymentStatus === 'pending');
-                console.log("hasApprovedPending in dancer profile : ", hasApprovedPending)
                 if (hasApprovedPending && userData.role.includes('instructor')) {
-                    console.log("USERDATA.ROLE in dancer profile : ", userData.role)
                     const cleanedUser = {
                         ...userData,
                         role: userData.role.filter(r => r !== 'instructor')
                     };
-                    console.log("cleanedUser in dancer profile : ", cleanedUser)
                     dispatch(loginUser({ user: cleanedUser, token: localStorage.getItem('token') || '' }));
                     setDidClean(true);
                 }
             });
-            // const interval = setInterval(() => {
-            //     const shouldPoll = upgradeRequests.some(r =>
-            //         r.status === 'pending' ||
-            //         (r.status === 'approved' && r.paymentStatus === 'pending')
-            //     );
-            //     if (shouldPoll) {
-            //         fetchUpgradeStatus();
-            //     } else {
-            //         clearInterval(interval);
-            //     }
-            // }, 5000);
-            // return () => clearInterval(interval);
         }
     }, [userData, didClean]);
-
-    // const fetchUpgradeStatus = async () => {
-    //     try {
-    //         const requests = await upgradeService.getUpgradeStatus();
-    //         setUpgradeRequests(requests);
-    //     } catch (error) {
-    //         console.error('Failed to fetch upgrade status:', error);
-    //     } finally {
-    //         setLoadingUpgradeStatus(false);
-    //     }
-    // };
-
 
     const handleProfileUpdate = async () => {
         try {
@@ -369,17 +351,17 @@ const Profile = () => {
             : typeof userData?.likes === 'number' ? userData.likes
                 : 0;
 
-    const fetchUpgradeStatus = async () => {
-        try {
-            const requests = await upgradeService.getUpgradeStatus();
-            setUpgradeRequests(requests);
-            console.log('upgradeRequests in dancer profile:', upgradeRequests);
-        } catch (error) {
-            console.error('Failed to fetch upgrade status:', error);
-        } finally {
-            setLoadingUpgradeStatus(false);
-        }
-    };
+    // const fetchUpgradeStatus = async () => {
+    //     try {
+    //         const requests = await upgradeService.getUpgradeStatus();
+    //         setUpgradeRequests(requests);
+    //         console.log('upgradeRequests in dancer profile:', upgradeRequests);
+    //     } catch (error) {
+    //         console.error('Failed to fetch upgrade status:', error);
+    //     } finally {
+    //         setLoadingUpgradeStatus(false);
+    //     }
+    // };
     const handlePaymentClick = (request: UpgradeStatus) => {
         // Store upgrade request in localStorage for checkout page
         localStorage.setItem('pendingUpgradeRequest', JSON.stringify(request));

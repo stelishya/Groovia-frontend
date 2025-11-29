@@ -3,6 +3,7 @@ import './App.css'
 import UserRoutes from './routers/User.routes'
 import { Toaster } from 'react-hot-toast'
 import AdminRoutes from './routers/Admin.routes'
+import DancerRoutes from './routers/Dancer.routes'
 import ClientRoutes from './routers/Client.routes'
 
 function App() {
@@ -38,6 +39,7 @@ function App() {
         />
         <UserRoutes/>
         <AdminRoutes/>
+        <DancerRoutes/>
         <ClientRoutes/>
       </>
     </Router>

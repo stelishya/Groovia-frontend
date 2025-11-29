@@ -172,6 +172,15 @@ export default function VenueMap({ onVenueSelect, initialCenter = [20.5937, 78.9
         </div>
       )}
 
+      {/* No Results Message */}
+      {!isSearching && searchQuery && searchResults.length === 0 && (
+        <div className="bg-red-900/30 border border-red-500/50 rounded-lg px-4 py-3">
+          <p className="text-red-400 text-sm">
+            ❌ Location not found. Try a different search term or click on the map.
+          </p>
+        </div>
+      )}
+
       {isSearching && (
         <p className="text-yellow-400 text-xs">Searching...</p>
       )}
