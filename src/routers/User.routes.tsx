@@ -14,6 +14,7 @@ import CheckoutPageClient from "../pages/client/CheckoutPageClient";
 import CheckoutPageDancer from "../pages/dancer/CheckoutPageDancer";
 import CheckoutPage from "../pages/authorization/Checkout";
 import { Role } from "../utils/constants/roles";
+import PublicProfile from "../pages/public/PublicProfile";
 // import BookingsPage from "../pages/dancer/Bookings-Dancer";
 
 // import Home from "../pages/dancer/Home";
@@ -68,6 +69,12 @@ const UserRoutes = () => {
                 </PrivateRoute>
             }
             />
+            {/* <Route path="/dancers/:id" element={ */}
+            <Route path="/dancer-profile/:id" element={
+                <PrivateRoute userType="user">
+                    <PublicProfile />
+                </PrivateRoute>
+            } />
             <Route path="/bookings" element={
                 <PrivateRoute userType="user" >
                     <BookingsPage />
@@ -82,14 +89,14 @@ const UserRoutes = () => {
             /> */}
             {/* Checkout Routes */}
             <Route path="/checkout" element={
-                <PrivateRoute 
+                <PrivateRoute
                     userType="user"
-                    // allowedRoles={[Role.DANCER, Role.CLIENT]}
-                    >
+                // allowedRoles={[Role.DANCER, Role.CLIENT]}
+                >
                     <CheckoutPage />
                 </PrivateRoute>
             } />
-            
+
             <Route path='/logout' element={<Login />} />
         </Routes>
     )

@@ -110,3 +110,19 @@ export const uploadClientProfilePicture = async (file: File) => {
         throw error;
     }
 };
+
+export const getDancerProfile = async (dancerId: string) => {
+    try {
+        console.log('Fetching dancer profile for ID:', dancerId);
+        const response = await ClientAxios.get(`/dancer-profile/${dancerId}`);
+        console.log('Raw API Response in getDancerProfile in client.service.ts:', response.data);
+        return response.data;
+    } catch (error) {
+        console.error('Failed to fetch dancer profile:', error);
+        if (axios.isAxiosError(error)) {
+            const message = error.response?.data?.message || 'Failed to fetch profile';
+            throw new Error(message);
+        }
+        throw error;
+    }
+};

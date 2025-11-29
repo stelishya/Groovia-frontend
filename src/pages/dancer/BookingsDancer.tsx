@@ -1,7 +1,7 @@
 
 
 import React, { useEffect, useState } from 'react';
-import { Search, Bell, X, MapPin } from 'lucide-react';
+import { Search, Bell, X, MapPin, Calendar, IndianRupee, PersonStanding, User, PartyPopper, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getEventRequests } from '../../services/dancer/dancer.service';
 import { fetchMyProfile } from '../../services/user/auth.service';
@@ -56,12 +56,18 @@ const Header = ({ user }: { user: Client | null }) => (
 );
 
 const RequestCard = ({ request, onAcceptClick, onDeclineClick, onViewMap }: { request: EventRequest, onAcceptClick: (id: string) => void, onDeclineClick: (id: string) => void, onViewMap: (venue: string) => void }) => (
-    <div className="bg-purple-800 rounded-lg p-4 flex justify-between items-center">
+    <div className="bg-purple-700/50 rounded-lg p-4 flex justify-between items-center border border-purple-500">
         <div className="flex items-center">
-            <img src={request.clientId?.profileImage || 'https://i.pravatar.cc/40'} alt={request.clientId?.username || 'Unknown'} className="w-12 h-12 rounded-full mr-4" />
-            <div>
-                <h3 className="font-bold text-white">{request.clientId?.username || 'Unknown Client'}</h3>
-                <h2 className="text-md text-gray-200">{request.event}</h2>
+            <img src={request.clientId?.profileImage || 'https://img.icons8.com/?size=128&id=tZuAOUGm9AuS&format=png'} alt={request.clientId?.username || 'Unknown'} className="w-12 h-12 rounded-full mr-4" />
+            <div className="flex flex-col gap-1">
+                <div className='flex items-center'>
+                    <User className='inline mr-1 text-gray-200' size={14}/>
+                    <h3 className="font-bold text-white">{request.clientId?.username || 'Unknown Client'}</h3>
+                </div>
+                <div className='flex items-center'>
+                    <PartyPopper className='inline mr-1 text-gray-200' size={14}/>
+                    <h2 className="text-md text-gray-200">{request.event}</h2>
+                </div>
                 <div className="flex items-center text-sm text-gray-400">
                     <MapPin className="inline mr-1" size={14} />
                     <span className="mr-2">{request.venue}</span>
@@ -72,8 +78,14 @@ const RequestCard = ({ request, onAcceptClick, onDeclineClick, onViewMap }: { re
                         View on Map
                     </button>
                 </div>
-                <p className="text-sm text-gray-400">{new Date(request.date).toLocaleDateString()}</p>
-                <p className="text-sm text-gray-400">Budget: {request.budget}</p>
+                <div className='flex items-center'>
+                    <Calendar className="inline mr-1 text-gray-200" size={14} />
+                    <p className="text-sm text-gray-400">{new Date(request.date).toLocaleDateString()}</p>
+                </div>
+                <div className='flex items-center'>
+                    <IndianRupee className='inline mr-1 text-gray-200' size={14}/>
+                    <p className="text-sm text-gray-400">Budget: {request.budget}</p>
+                </div>
             </div>
         </div>
         <div className="flex flex-col items-end">
@@ -274,22 +286,28 @@ const BookingsPage = () => {
             </div>
 
             {/* Pagination */}
+            <div className='flex justify-between items-center mt-8 space-x-4'>
+                <div className="flex justify-end items-center mt-8 space-x-4">
+                    <h3>Showing {requests.length} of {totalRequests} requests</h3>
+                </div>
+
             <div className="flex justify-end items-center mt-8 space-x-4">
                 <button
                     onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
                     disabled={currentPage === 1}
                     className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    Previous
+                    <ChevronLeft />
                 </button>
                 <span className="text-white">Page {currentPage} of {Math.max(1, Math.ceil(totalRequests / pageSize))}</span>
                 <button
                     onClick={() => setCurrentPage(p => p + 1)}
                     disabled={currentPage >= Math.ceil(totalRequests / pageSize)}
                     className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    Next
+                    >
+                    <ChevronRight />
                 </button>
+            </div>
             </div>
             {modalOpen && (
                 <ConfirmationModal

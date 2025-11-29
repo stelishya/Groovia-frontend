@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Bell, X, MapPin, DollarSign, Calendar } from 'lucide-react';
+import { Search, Bell, X, MapPin, DollarSign, Calendar, ChevronRight, ChevronLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getClientEventRequests, updateEventBookingStatus } from '../../services/client/client.service';
 import Sidebar from '../../components/shared/Sidebar';
@@ -299,13 +299,17 @@ const BookingsPage = () => {
             </div>
 
             {/* Pagination */}
+            <div className='flex justify-between items-center mt-8 space-x-4'>
+                <div className="flex justify-end items-center mt-8 space-x-4">
+                    <h3>Showing {requests.length} of {totalRequests} requests</h3>
+                </div>
             <div className="flex justify-end items-center mt-8 space-x-4">
                 <button
                     onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
                     disabled={currentPage === 1}
                     className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    Previous
+                    <ChevronLeft/>
                 </button>
                 <span className="text-white">Page {currentPage} of {Math.max(1, Math.ceil(totalRequests / pageSize))}</span>
                 <button
@@ -313,8 +317,9 @@ const BookingsPage = () => {
                     disabled={currentPage >= Math.ceil(totalRequests / pageSize)}
                     className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    Next
+                    <ChevronRight/>
                 </button>
+            </div>
             </div>
             {modalOpen && (
                 <ConfirmationModal
