@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { type RootState } from '../../redux/store';
-import { User, Settings, ArrowLeft, Crown, Edit2, Heart, Instagram, Linkedin, Facebook, LinkIcon, Youtube, Twitter, Camera, CreditCard, CheckCircle, FileImage, Eye, Minus, Trash2, ShieldCheck } from 'lucide-react';
+import { User, Settings, ArrowLeft, Crown, Edit2, Heart, Instagram, Linkedin, Facebook, LinkIcon, Youtube, Twitter, Camera, CreditCard, CheckCircle, FileImage, Eye, Minus, Trash2, ShieldCheck, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { UserAxios } from '../../api/auth.axios';
 import { loginUser } from '../../redux/slices/user.slice';
@@ -144,6 +144,9 @@ const Profile = () => {
         confirmPassword: ''
     });
     const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const handleChangePassword = async () => {
         if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
@@ -1039,35 +1042,56 @@ const Profile = () => {
                 submitText="Update Password"
                 submitButtonClass="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
             >
-                <div>
-                    <label className="block text-white font-medium mb-2">Current Password</label>
+                <label className="block text-white font-medium mb-2">Current Password</label>
+                <div className="relative">
                     <input
-                        type="password"
+                        type={showCurrentPassword ? "text" : "password"}
                         value={passwordData.currentPassword}
                         onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
                         className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                         placeholder="Enter current password"
                     />
+                    <button
+                        type="button"
+                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-white transition-colors"
+                    >
+                        {showCurrentPassword ? <Eye className="w-5 h-5 text-white" /> : <EyeOff className="w-5 h-5 text-white" />}
+                    </button>
                 </div>
-                <div>
-                    <label className="block text-white font-medium mb-2">New Password</label>
+                <label className="block text-white font-medium mb-2">New Password</label>
+                <div className="relative">
                     <input
-                        type="password"
+                        type={showNewPassword ? "text" : "password"}
                         value={passwordData.newPassword}
                         onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
                         className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                         placeholder="Enter new password (min 6 chars)"
                     />
+                    <button
+                        type="button"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-white transition-colors"
+                    >
+                        {showNewPassword ? <Eye className="w-5 h-5 text-white" /> : <EyeOff className="w-5 h-5 text-white" />}
+                    </button>
                 </div>
-                <div>
-                    <label className="block text-white font-medium mb-2">Confirm New Password</label>
+                <label className="block text-white font-medium mb-2">Confirm New Password</label>
+                <div className="relative">
                     <input
-                        type="password"
+                        type={showConfirmPassword ? "text" : "password"}
                         value={passwordData.confirmPassword}
                         onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
                         className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                         placeholder="Confirm new password"
                     />
+                    <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-white transition-colors"
+                    >
+                        {showConfirmPassword ? <Eye className="w-5 h-5 text-white" /> : <EyeOff className="w-5 h-5 text-white" />}
+                    </button>
                 </div>
             </FormModal>
 

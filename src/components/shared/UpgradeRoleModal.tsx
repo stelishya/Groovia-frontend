@@ -530,7 +530,9 @@ export const UpgradeRoleSection: React.FC<UpgradeRoleSectionProps> = ({
     console.log('roleType in UpgradeRoleSection:', roleType);
 
     // Find the specific upgrade request for this role type
-    const upgradeRequest = upgradeRequests.find(req => req.type === roleType);
+    const upgradeRequest = upgradeRequests
+        .filter(req => req.type === roleType)
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
     console.log("found upgradeRequest in upgrade role section in UpgradeRoleModal : ", upgradeRequest);
 
     // Get role-specific configuration

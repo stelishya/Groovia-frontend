@@ -30,6 +30,7 @@ export interface UpgradeStatus {
     rejectedAt?: string;
     paymentCompletedAt?: string;
     adminMessage?: string;
+    createdAt: string;
 }
 
 export interface PaymentRequest {

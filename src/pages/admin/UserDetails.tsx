@@ -2,11 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux"
 import { useNavigate } from "react-router-dom"
 
-import { MoreVertical , ChevronLeft, ChevronRight, Badge, Phone, Mail, Download, BadgeCheck, Landmark} from "lucide-react"
+import { MoreVertical, ChevronLeft, ChevronRight, Badge, Phone, Mail, Download, BadgeCheck, Landmark } from "lucide-react"
 
 import Sidebar from "../../components/admin/Sidebar"
-import { getAllUsers ,updateUserStatus} from "../../services/admin/admin.service";
-import  {Table, type TableColumn } from "../../components/ui/Table";
+import { getAllUsers, updateUserStatus } from "../../services/admin/admin.service";
+import { Table, type TableColumn } from "../../components/ui/Table";
 import { Switch } from "../../components/ui/Switch";
 import toast from "react-hot-toast";
 import { Button } from "../../components/ui/Button";
@@ -19,7 +19,7 @@ interface User {
   username: string;
   email: string;
   phone?: string;
-  role:string;
+  role: string;
   profileImage?: string;
   isActive: boolean;
   isGoogleUser: boolean;
@@ -28,7 +28,7 @@ interface User {
 }
 const UserDetails: React.FC = () => {
   console.log("UserDetails page loaded")
-    // const navigate = useNavigate()
+  // const navigate = useNavigate()
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [searchTerm, setSearchTerm] = useState("")
@@ -37,52 +37,52 @@ const UserDetails: React.FC = () => {
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [updateLoading, setUpdateLoading] = useState<string | null>(null)
-   const [showBlockModal, setShowBlockModal] = useState(false)
- const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  const [showBlockModal, setShowBlockModal] = useState(false)
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
 
-    // const dispatch = useDispatch()
-    useEffect(() => {
+  // const dispatch = useDispatch()
+  useEffect(() => {
     fetchUsers()
   }, [])
 
- const fetchUsers = async (): Promise<void> => {
-  setLoading(true);
-  try {
-    const response = await getAllUsers();
-    console.log("response in fetchUsers in UserDetails.tsx",response)
-    if ( response.users&& Array.isArray(response.users)) {
-      const mappedUsers: User[] = response.users.map((user: any) => ({
-        // _id: user.id,
-        _id:user._id.toString(),
-        username: user.username,
-        email: user.email,
-        phone: user.phone || '',
-        // role: Array.isArray(user.role) ? user.role[0] : user.role,
-        role:user.role,
-        profileImage: user.profileImage || '',
-        isActive: !user.isBlocked,
-        // isGoogleUser: user.isGoogleUser ?? false,
-        isGoogleUser: !!user.googleId,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      }));
-      console.log("mappedUsers",mappedUsers)
-      setUsers(mappedUsers);
-    } else {
-      console.error('Failed to fetch users - Invalid response structure:', response.message);
+  const fetchUsers = async (): Promise<void> => {
+    setLoading(true);
+    try {
+      const response = await getAllUsers();
+      console.log("response in fetchUsers in UserDetails.tsx", response)
+      if (response.users && Array.isArray(response.users)) {
+        const mappedUsers: User[] = response.users.map((user: any) => ({
+          // _id: user.id,
+          _id: user._id.toString(),
+          username: user.username,
+          email: user.email,
+          phone: user.phone || '',
+          // role: Array.isArray(user.role) ? user.role[0] : user.role,
+          role: user.role,
+          profileImage: user.profileImage || '',
+          isActive: !user.isBlocked,
+          // isGoogleUser: user.isGoogleUser ?? false,
+          isGoogleUser: !!user.googleId,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+        }));
+        console.log("mappedUsers", mappedUsers)
+        setUsers(mappedUsers);
+      } else {
+        console.error('Failed to fetch users - Invalid response structure:', response.message);
+      }
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error('Error fetching users:', error);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
-// const handleToggleUserStatus = async (userId: string, currentStatus: boolean): Promise<void> => {
-const handleToggleUserStatus = async (): Promise<void> => {
- if (!selectedUser) return;
- const userId = selectedUser._id;
- const currentStatus = selectedUser.isActive;
+  // const handleToggleUserStatus = async (userId: string, currentStatus: boolean): Promise<void> => {
+  const handleToggleUserStatus = async (): Promise<void> => {
+    if (!selectedUser) return;
+    const userId = selectedUser._id;
+    const currentStatus = selectedUser.isActive;
 
     if (!userId || typeof userId !== 'string' || userId.trim() === '') {
       console.error('Invalid user ID:', userId);
@@ -149,11 +149,11 @@ const handleToggleUserStatus = async (): Promise<void> => {
       setSelectedUser(null);
     }
   };
-const openBlockModal = (user: User) => {
- setSelectedUser(user);
- setShowBlockModal(true);
-}
-const filteredAndSortedData = useMemo(() => {
+  const openBlockModal = (user: User) => {
+    setSelectedUser(user);
+    setShowBlockModal(true);
+  }
+  const filteredAndSortedData = useMemo(() => {
     const filtered = users.filter(
       (user) =>
         user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -206,18 +206,18 @@ const filteredAndSortedData = useMemo(() => {
 
   const handleSearch = (query: string): void => {
     setSearchTerm(query)
-    setCurrentPage(1) 
+    setCurrentPage(1)
   }
 
   const handleSort = (key: string, order: "asc" | "desc"): void => {
     setSortBy(key)
     setSortOrder(order)
   }
-    const handlePageChange = (page: number, newPageSize?: number): void => {
+  const handlePageChange = (page: number, newPageSize?: number): void => {
     setCurrentPage(page)
     if (newPageSize) {
       setPageSize(newPageSize)
-      setCurrentPage(1) 
+      setCurrentPage(1)
     }
   }
   const columns: TableColumn<User>[] = [
@@ -279,7 +279,7 @@ const filteredAndSortedData = useMemo(() => {
             <span className="truncate">{record.role[0]}</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-900 dark:text-gray-100">
-            <Landmark className="h-3 sm:h-4 w-3 sm:w-4 text-gray-400"/>
+            <Landmark className="h-3 sm:h-4 w-3 sm:w-4 text-gray-400" />
             <span className="truncate">{record.role[1]}</span>
           </div>
           {/* {record.phone && (
@@ -299,7 +299,7 @@ const filteredAndSortedData = useMemo(() => {
       // sortable: true,
       render: (_value: unknown, record: User) => (
         <div>
-        {/* <Badge
+          {/* <Badge
           className={
             record.isActive
               ? "bg-green-100 dark:bg-green-900/20 text-green-800 dark:text-green-400 border-green-200 dark:border-green-800 text-xs sm:text-sm"
@@ -308,7 +308,7 @@ const filteredAndSortedData = useMemo(() => {
         >
         </Badge> */}
           <p className={record.isActive ? "text-green-600" : "text-red-600"}>{record.isActive ? 'Active' : 'Blocked'}</p>
-          </div>
+        </div>
       ),
     },
     {
@@ -331,59 +331,59 @@ const filteredAndSortedData = useMemo(() => {
         </button>
       ),
     },]
-    return (
-        // <div className="flex h-screen bg-gray-900 text-white">
-        //     <Sidebar />
-        //     <div className="flex-1 flex flex-col overflow-hidden">
-        //         {/* <Header /> */}
-        //         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-900 p-8">
-        //             <h1 className="text-2xl font-semibold mb-6">User Management</h1>
-        //             {/* Dashboard content will go here */}
-        //             <div className="text-center py-20 bg-gray-800 rounded-lg">
-        //                 {/* <p>Dashboard components will be built here.</p> */}
-        //             </div>
-        //         </main>
-        //     </div>
-        // </div>
+  return (
+    // <div className="flex h-screen bg-gray-900 text-white">
+    //     <Sidebar />
+    //     <div className="flex-1 flex flex-col overflow-hidden">
+    //         {/* <Header /> */}
+    //         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-900 p-8">
+    //             <h1 className="text-2xl font-semibold mb-6">User Management</h1>
+    //             {/* Dashboard content will go here */}
+    //             <div className="text-center py-20 bg-gray-800 rounded-lg">
+    //                 {/* <p>Dashboard components will be built here.</p> */}
+    //             </div>
+    //         </main>
+    //     </div>
+    // </div>
 
 
-        //*********************************************************************************************************************** */
-//          <div className="flex h-screen bg-[#0D1117] text-white">
-//  <Sidebar />
-//  <div className="flex-1 flex flex-col overflow-hidden">
-//  <main className="flex-1 overflow-x-hidden overflow-y-auto p-8">
-//  <h1 className="text-3xl font-bold mb-8">User Management</h1>
-//  <div className="bg-[#161B22] rounded-xl p-6">
-//  <div className="flex justify-between items-center mb-6">
-//  <h2 className="text-xl font-semibold">Users</h2>
-//  <button className="text-gray-400 hover:text-white">
-//  <MoreVertical size={20} />
-//  </button>
-//  </div>
-//  </div>
-//  </main>
-//  </div>
-//  </div>
+    //*********************************************************************************************************************** */
+    //          <div className="flex h-screen bg-[#0D1117] text-white">
+    //  <Sidebar />
+    //  <div className="flex-1 flex flex-col overflow-hidden">
+    //  <main className="flex-1 overflow-x-hidden overflow-y-auto p-8">
+    //  <h1 className="text-3xl font-bold mb-8">User Management</h1>
+    //  <div className="bg-[#161B22] rounded-xl p-6">
+    //  <div className="flex justify-between items-center mb-6">
+    //  <h2 className="text-xl font-semibold">Users</h2>
+    //  <button className="text-gray-400 hover:text-white">
+    //  <MoreVertical size={20} />
+    //  </button>
+    //  </div>
+    //  </div>
+    //  </main>
+    //  </div>
+    //  </div>
 
 
-//*********************************************************************************************** */
+    //*********************************************************************************************** */
 
-<div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       {/* Sidebar */}
-      <Sidebar 
-        // activeItem={activeMenuItem} 
-        // onItemClick={handleMenuItemClick} 
-        // onLogout={handleLogout} 
-        // isOpen={isSidebarOpen}
-        // onClose={() => setIsSidebarOpen(false)}
+      <Sidebar
+      // activeItem={activeMenuItem} 
+      // onItemClick={handleMenuItemClick} 
+      // onLogout={handleLogout} 
+      // isOpen={isSidebarOpen}
+      // onClose={() => setIsSidebarOpen(false)}
       />
 
       {/* Navbar */}
-      <Navbar 
-        userName="Stelishya" 
-        onSearch={handleSearch} 
-        // onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-        // isSidebarOpen={isSidebarOpen}
+      <Navbar
+        userName="Stelishya"
+        onSearch={handleSearch}
+      // onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+      // isSidebarOpen={isSidebarOpen}
       />
 
       {/* Main Content */}
@@ -528,23 +528,23 @@ const filteredAndSortedData = useMemo(() => {
         <Footer />
       </div> */}
       <ConfirmationModal
-    show={showBlockModal}
-    onClose={() => {
-        setShowBlockModal(false);
-        setSelectedUser(null);
-    }}
-    onConfirm={handleToggleUserStatus}
-    title={selectedUser?.isActive ? "Block User" : "Unblock User"}
-    message={
-        selectedUser?.isActive
+        show={showBlockModal}
+        onClose={() => {
+          setShowBlockModal(false);
+          setSelectedUser(null);
+        }}
+        onConfirm={handleToggleUserStatus}
+        title={selectedUser?.isActive ? "Block User" : "Unblock User"}
+        message={
+          selectedUser?.isActive
             ? `Are you sure you want to block ${selectedUser?.username}?...`
             : `Are you sure you want to unblock ${selectedUser?.username}?...`
-    }
-    confirmText={selectedUser?.isActive ? "Block User" : "Unblock User"}
-    variant={selectedUser?.isActive ? "danger" : "info"}
-    isLoading={updateLoading === selectedUser?._id}
-/>
+        }
+        confirmText={selectedUser?.isActive ? "Block User" : "Unblock User"}
+        variant={selectedUser?.isActive ? "danger" : "info"}
+        isLoading={updateLoading === selectedUser?._id}
+      />
     </div>
-    )
+  )
 }
 export default UserDetails;
