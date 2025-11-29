@@ -3,6 +3,7 @@ import './App.css'
 import UserRoutes from './routers/User.routes'
 import { Toaster } from 'react-hot-toast'
 import AdminRoutes from './routers/Admin.routes'
+import ClientRoutes from './routers/Client.routes'
 
 function App() {
   return (
@@ -37,6 +38,7 @@ function App() {
         />
         <UserRoutes/>
         <AdminRoutes/>
+        <ClientRoutes/>
       </>
     </Router>
   )

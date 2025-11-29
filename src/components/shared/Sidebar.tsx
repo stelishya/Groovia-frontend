@@ -32,7 +32,7 @@ const Sidebar: React.FC<SidebarProps> = ({activeMenu = 'Home'}) => {
         { icon: <MessageSquare />, name: 'Messages' },
         { icon: <Calendar />, name: 'Bookings' ,action:()=>navigate('/bookings')},
         { icon: <Briefcase />, name: 'Workshops' },
-        { icon: <Trophy />, name: 'Competitions' },
+        { icon: <Trophy />, name: 'Competitions',action:()=>navigate('/competitions') },
         { icon: <CreditCard />, name: 'Payments' },
     ];
 
