@@ -93,7 +93,7 @@ const InstructorWorkshops = () => {
     const filteredWorkshops = workshops.filter(workshop =>
         workshop.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
-
+    
     return (
         <div className="flex h-screen bg-[#0f0f13] text-white overflow-hidden">
             <Sidebar activeMenu='Workshops'/>

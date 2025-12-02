@@ -357,7 +357,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
                 </h1>
 
                 {/* Filters */}
-                <div className="flex flex-wrap justify-end gap-4 mb-8">
+                <div className="flex flex-wrap justify-between gap-4 mb-8">
                     <div className="relative w-1/3">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-300" />
                         <input
@@ -369,6 +369,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
                         />
                         {search && <X className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-300 cursor-pointer" onClick={() => setSearch('')} />}
                     </div>
+                    <div className="relative space-x-4">
                     <select
                         className="border border-purple-300 bg-purple-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400"
                         value={style}
@@ -390,7 +391,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
                         <option value="likes">Sort by Likes</option>
                         <option value="name">Sort by Name</option>
                     </select>
-
+                    </div>
                     {/* <input
                         type="text"
                         placeholder="City"
@@ -428,15 +429,17 @@ const Dashboard = ({ userData }: { userData: any }) => {
 
                 {/* Pagination */}
                 <div className='flex justify-between items-center mt-8 space-x-4'>
-                    <div className="flex justify-end items-center mt-8 space-x-4">
-                        <h3>Showing {dancers.length} of {totalDancers} dancers</h3>
-                    </div>
+                    {dancers.length > 0 && (
+                        <>
+                        <div className="flex justify-start items-center mt-8 space-x-4">
+                            <h3>Showing {dancers.length} of {totalDancers} dancers</h3>
+                        </div>
                     <div className="flex justify-end items-center mt-8 space-x-4">
                         <button
                             onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
                             disabled={currentPage === 1}
                             className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
+                            >
                             <ChevronLeft />
                         </button>
                         <span className="text-white">Page {currentPage} of {Math.ceil(totalDancers / pageSize)}</span>
@@ -444,10 +447,12 @@ const Dashboard = ({ userData }: { userData: any }) => {
                             onClick={() => setCurrentPage(p => p + 1)}
                             disabled={currentPage >= Math.ceil(totalDancers / pageSize)}
                             className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
+                            >
                             <ChevronRight />
                         </button>
                     </div>
+                    </>
+                        )}
                 </div>
             </div>
 

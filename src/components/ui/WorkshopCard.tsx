@@ -40,7 +40,7 @@ const WorkshopCard: React.FC<WorkshopCardProps> = ({
             {/* Content */}
             <div className="p-5 flex flex-col flex-grow">
                 {/* Title */}
-                <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 leading-tight">
+                <h3 className="text-xl font-bold text-purple-300 mb-2 line-clamp-2 leading-tight">
                     {title}
                 </h3>
 
@@ -49,7 +49,7 @@ const WorkshopCard: React.FC<WorkshopCardProps> = ({
                     <span className="px-3 py-1 bg-white/30 backdrop-blur-sm text-white text-xs font-semibold rounded-full uppercase tracking-wide">
                         {category}
                     </span>
-                    <span className="text-2xl font-bold text-gray-900">
+                    <span className="text-2xl font-bold text-pink-200">
                         ₹{price}
                     </span>
                 </div>

@@ -141,20 +141,23 @@ export default function WorkshopDetails() {
               </h1>
 
               <div className="flex items-center gap-4 text-gray-200">
-                <div className="flex items-center gap-2">
+                <button
+                  className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer"
+                  onClick={() => navigate(`/dancer-profile/${workshop.instructor._id}`)}
+                >
                   <img
                     src={workshop.instructor.profileImage || `https://ui-avatars.com/api/?name=${workshop.instructor.username}`}
                     alt={workshop.instructor.username}
-                    className="w-12 h-12 rounded-full border-2 border-purple-400 object-cover"
+                    className="w-14 h-14 rounded-full border-2 border-purple-400 object-cover hover:border-purple-300 transition-colors"
                     onError={(e) => {
                       e.currentTarget.src = `https://ui-avatars.com/api/?name=${workshop.instructor.username}`;
                     }}
                   />
-                  <div>
-                    <p className="text-sm text-gray-300">Instructor</p>
-                    <p className="font-semibold text-lg">{workshop.instructor.username}</p>
+                  <div className="text-left">
+                    <p className="text-sm text-gray-400">Instructor</p>
+                    <p className="font-semibold text-lg hover:text-purple-300 transition-colors">{workshop.instructor.username}</p>
                   </div>
-                </div>
+                </button>
               </div>
             </div>
 
@@ -173,7 +176,7 @@ export default function WorkshopDetails() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-12 relative z-20">
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">

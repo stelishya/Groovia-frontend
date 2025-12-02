@@ -3,6 +3,7 @@ import { X, Plus, Trash, Upload, MapPin, Crop } from 'lucide-react';
 import { type CreateWorkshopData, WorkshopMode } from '../../types/workshop.type';
 import VenueMap from '../ui/VenueMap';
 import ImageCropModal from '../ui/ImageCropModal';
+import toast from 'react-hot-toast';
 
 interface CreateWorkshopModalProps {
     isOpen: boolean;
@@ -50,6 +51,7 @@ const CreateWorkshopModal: React.FC<CreateWorkshopModalProps> = ({ isOpen, onClo
     const [isDragging, setIsDragging] = useState(false);
     const [showCropModal, setShowCropModal] = useState(false);
     const [tempImageSrc, setTempImageSrc] = useState<string>('');
+
 
     useEffect(() => {
         if (isOpen) {
@@ -105,11 +107,35 @@ const CreateWorkshopModal: React.FC<CreateWorkshopModalProps> = ({ isOpen, onClo
         if (!formData.title.trim()) newErrors.title = 'Title is required';
         if (!formData.description.trim()) newErrors.description = 'Description is required';
         if (!formData.style && !customStyle) newErrors.style = 'Dance style is required';
-        if (formData.fee < 0) newErrors.fee = 'Fee cannot be negative';
-        if (formData.maxParticipants <= 0) newErrors.maxParticipants = 'Max participants must be greater than 0';
-        if (!formData.startDate) newErrors.startDate = 'Start date is required';
-        if (!formData.endDate) newErrors.endDate = 'End date is required';
-        if (!formData.deadline) newErrors.deadline = 'Registration deadline is required';
+        if (!formData.fee) {
+            newErrors.fee = 'Fee is required';
+        } else if (formData.fee < 0) {
+            newErrors.fee = 'Fee cannot be negative'
+        };
+        if (!formData.maxParticipants) {
+            newErrors.maxParticipants = 'Max participants is required';
+        } else if (formData.maxParticipants <= 0) {
+            newErrors.maxParticipants = 'Max participants must be greater than 0';
+        };
+
+        if (!formData.startDate) {
+            newErrors.startDate = 'Start date is required'
+        } else if (formData.startDate < new Date().toISOString().split('T')[0]) {
+            newErrors.startDate = 'Start date cannot be in the past';
+        }
+
+        if (!formData.endDate) {
+            newErrors.endDate = 'End date is required'
+        } else if (formData.endDate < formData.startDate) {
+            newErrors.endDate = 'End date cannot be before start date';
+        }
+
+        if (!formData.deadline) {
+            newErrors.deadline = 'Registration deadline is required'
+        } else if (formData.deadline > formData.startDate) {
+            newErrors.deadline = 'Registration deadline should be before start date';
+        }
+
         if (!formData.posterImage) newErrors.posterImage = 'Poster image is required';
 
         if (formData.mode === WorkshopMode.OFFLINE && !formData.location?.trim()) {
@@ -121,9 +147,23 @@ const CreateWorkshopModal: React.FC<CreateWorkshopModalProps> = ({ isOpen, onClo
         }
 
         formData.sessions.forEach((session, index) => {
-            if (!session.date) newErrors[`session_${index}_date`] = 'Date is required';
-            if (!session.startTime) newErrors[`session_${index}_startTime`] = 'Start time is required';
-            if (!session.endTime) newErrors[`session_${index}_endTime`] = 'End time is required';
+            if (!session.date) {
+                newErrors[`session_${index}_date`] = 'Date is required'
+            } else if (session.date < formData.startDate || session.date > formData.endDate) {
+                newErrors[`session_${index}_date`] = 'Date should be between start and end date'
+            };
+
+            if (!session.startTime) {
+                newErrors[`session_${index}_startTime`] = 'Start time is required'
+            } else if (session.startTime >= session.endTime) {
+                newErrors[`session_${index}_startTime`] = 'Start time should be before end time'
+            };
+
+            if (!session.endTime) {
+                newErrors[`session_${index}_endTime`] = 'End time is required'
+            } else if (session.endTime <= session.startTime) {
+                newErrors[`session_${index}_endTime`] = 'End time should be after start time'
+            };
         });
 
         setErrors(newErrors);
@@ -223,20 +263,68 @@ const CreateWorkshopModal: React.FC<CreateWorkshopModalProps> = ({ isOpen, onClo
         }
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!validateForm()) return;
-
-        const finalData = {
-            ...formData,
-            fee: Number(formData.fee),
-            maxParticipants: Number(formData.maxParticipants),
-            style: showCustomStyle ? customStyle : formData.style,
-            meetingLink: formData.mode === WorkshopMode.ONLINE ? formData.meetingLink : undefined,
-            location: formData.mode === WorkshopMode.OFFLINE ? formData.location : undefined,
+        if (!validateForm()) {
+            toast.error('Please enter valid data');
+            return
         };
 
-        onSubmit(finalData);
+        // Convert base64 image to Blob for file upload
+        const base64ToBlob = (base64: string): Blob | null => {
+            if (!base64 || !base64.includes(',')) return null;
+            const parts = base64.split(',');
+            const contentType = parts[0].match(/:(.*?);/)?.[1] || 'image/png';
+            const byteString = atob(parts[1]);
+            const arrayBuffer = new ArrayBuffer(byteString.length);
+            const uint8Array = new Uint8Array(arrayBuffer);
+            for (let i = 0; i < byteString.length; i++) {
+                uint8Array[i] = byteString.charCodeAt(i);
+            }
+            return new Blob([arrayBuffer], { type: contentType });
+        };
+
+        // Create FormData for file upload
+        const formDataToSend = new FormData();
+
+        // Add the poster image as a file
+        if (formData.posterImage) {
+            const imageBlob = base64ToBlob(formData.posterImage);
+            if (imageBlob) {
+                formDataToSend.append('posterImage', imageBlob, 'workshop-poster.png');
+            }
+        }
+        // Add other fields
+        formDataToSend.append('title', formData.title);
+        formDataToSend.append('description', formData.description);
+        formDataToSend.append('style', showCustomStyle ? customStyle : formData.style);
+        formDataToSend.append('mode', formData.mode);
+        formDataToSend.append('startDate', formData.startDate);
+        formDataToSend.append('endDate', formData.endDate);
+        formDataToSend.append('fee', String(formData.fee));
+        formDataToSend.append('maxParticipants', String(formData.maxParticipants));
+        formDataToSend.append('deadline', formData.deadline);
+
+        if (formData.mode === WorkshopMode.ONLINE && formData.meetingLink) {
+            formDataToSend.append('meetingLink', formData.meetingLink);
+        }
+        if (formData.mode === WorkshopMode.OFFLINE && formData.location) {
+            formDataToSend.append('location', formData.location);
+        }
+        // Add sessions as JSON string
+        formDataToSend.append('sessions', JSON.stringify(formData.sessions));
+
+        onSubmit(formDataToSend as any);
+        // const finalData = {
+        //     ...formData,
+        //     fee: Number(formData.fee),
+        //     maxParticipants: Number(formData.maxParticipants),
+        //     style: showCustomStyle ? customStyle : formData.style,
+        //     meetingLink: formData.mode === WorkshopMode.ONLINE ? formData.meetingLink : undefined,
+        //     location: formData.mode === WorkshopMode.OFFLINE ? formData.location : undefined,
+        // };
+
+        // onSubmit(finalData);
     };
 
     return (
@@ -319,7 +407,6 @@ const CreateWorkshopModal: React.FC<CreateWorkshopModalProps> = ({ isOpen, onClo
                             <input
                                 type="number"
                                 name="fee"
-                                min={0}
                                 value={formData.fee}
                                 onChange={handleChange}
                                 className={`w-full bg-purple-500 border-2 ${errors.fee ? 'border-red-500' : 'border-purple-800'} rounded-lg p-2 text-white`}
@@ -414,7 +501,6 @@ const CreateWorkshopModal: React.FC<CreateWorkshopModalProps> = ({ isOpen, onClo
                             <label className="block text-sm text-purple-200 mb-1">Max Participants *</label>
                             <input
                                 type="number"
-                                min={1}
                                 name="maxParticipants"
                                 value={formData.maxParticipants}
                                 onChange={handleChange}

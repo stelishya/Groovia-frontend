@@ -254,62 +254,7 @@ const Payment: React.FC<PaymentProps> = ({
       console.error('Payment initiation failed:', error);
     }
   };
-  // const handleUpgrade = async () => {
-  // setIsProcessing(true);
-  // try {
-  //   if (currentUpgradeRequest) {
-  //     // Handle role upgrade payment
-  //     // await upgradeService.completeUpgradePayment({
-  //     //   upgradeRequestId: currentUpgradeRequest.id,
-  //     //   amount: getRoleUpgradeAmount(currentUpgradeRequest.type),
-  //     //   currency: 'INR'
-  //     // });
 
-  // Simulate payment processing
-  // setTimeout(async () => {
-  //       try {
-  //         // Mock Razorpay details for simulated payment
-  //         const mockOrderId = 'order_mock_' + Date.now();
-  //         const mockSignature = 'sig_mock_' + Date.now();
-
-  //         // Confirm payment completion
-  //         await upgradeService.confirmPaymentCompletion(
-  //           currentUpgradeRequest.id,
-  //           'payment_' + Date.now(), // Mock payment ID
-  //           getRoleUpgradeAmount(currentUpgradeRequest.type),
-  //           'INR',
-  //           mockOrderId,
-  //           mockSignature
-  //         );
-  //         // toast.success('Payment completed!', {
-  //         //   duration: 5000,
-  //         //   icon: '🎉',
-  //         // });
-  //         // Clear stored request
-  //         localStorage.removeItem('pendingUpgradeRequest');
-
-  //         setIsProcessing(false);
-  //         // Refetch user profile to get updated roles
-  //         try {
-  //           const response = await fetchMyProfile();
-  //           const freshUser = response.profile;
-  //           const token = localStorage.getItem('token') || '';
-  //           dispatch(loginUser({ user: freshUser, token }));
-  //         } catch (err) {
-  //           console.error('Failed to refetch profile after payment:', err);
-  //         }
-  //         onUpgrade?.();
-  //       } catch (error) {
-  //         setIsProcessing(false);
-  //         console.error('Payment confirmation failed:', error);
-  //       }
-  //       // }, 2000);
-  //     }
-  //   } catch (error) {
-  //     setIsProcessing(false);
-  //     console.error('Payment failed:', error);
-  //   }
-  // };
 
   const getBenefits = () => {
     if (workshop) {

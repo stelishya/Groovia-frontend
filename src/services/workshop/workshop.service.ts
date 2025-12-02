@@ -58,6 +58,7 @@ export const getAllWorkshops = async (params?: URLSearchParams) => {
 export const getInstructorWorkshops = async () => {
     try {
         const response = await WorkshopAxios.get('/instructor');
+        console.log("response in get instructor workshops",response);
         return { success: true, data: response.data };
     } catch (error: any) {
         return {
