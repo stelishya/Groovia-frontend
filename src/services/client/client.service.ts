@@ -161,7 +161,7 @@ export interface Competition {
     createdAt: string;
     updatedAt: string;
   }
-export const getCompetitions = async (params?: { category?: string; style?: string }): Promise<Competition[]> => {
+export const getOrganizerCompetitions = async (params?: { category?: string; style?: string }): Promise<Competition[]> => {
     try {
                 const queryString = params ? `?${new URLSearchParams(params).toString()}` : '';
         const response = await ClientAxios.get(`/competitions${queryString}`);
@@ -177,19 +177,19 @@ export const getCompetitions = async (params?: { category?: string; style?: stri
     }
 }
 
-export const createCompetition = async (competitionData: CompetitionData) => {
-    try {
-        const response = await ClientAxios.post('/competitions', competitionData);
-        return response.data;
-    } catch (error) {
-        console.error('Failed to create competition:', error);
-        if (axios.isAxiosError(error)) {
-            const message = error.response?.data?.message || 'Failed to create competition';
-            throw new Error(message);
-        }
-        throw error;
-    }
-}
+// export const createCompetition = async (competitionData: CompetitionData) => {
+//     try {
+//         const response = await ClientAxios.post('/competitions', competitionData);
+//         return response.data;
+//     } catch (error) {
+//         console.error('Failed to create competition:', error);
+//         if (axios.isAxiosError(error)) {
+//             const message = error.response?.data?.message || 'Failed to create competition';
+//             throw new Error(message);
+//         }
+//         throw error;
+//     }
+// }
 
   
   interface ApiResponse<T> {
