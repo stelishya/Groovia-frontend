@@ -11,6 +11,7 @@ import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../redux/store';
+import { markWorkshopPaymentFailed } from '../../services/workshop/workshop.service';
 
 interface PaymentProps {
     userEmail?: string;
@@ -120,7 +121,7 @@ const Payment: React.FC<PaymentProps> = ({
                 amount: config.amount * 100, // Razorpay expects amount in paise
                 currency: config.currency,
                 name: 'Groovia',
-                description: config.description,
+                description: `Payment for ${config.type}`,
                 order_id: config.orderId,
                 handler: async function (response: any) {
                     try {
@@ -140,10 +141,26 @@ const Payment: React.FC<PaymentProps> = ({
                     color: '#9333ea'
                 },
                 modal: {
-                    ondismiss: function () {
+                    ondismiss: async function () {
+                        // Payment dismissed/cancelled
+                        if (config.type === PaymentType.WORKSHOP_BOOKING) {
+                            // Mark payment as failed
+                            await markWorkshopPaymentFailed(config.entityId);
+                            toast.error('Payment cancelled');
+                            // Redirect to workshop details
+                            // navigate(`/booked/${config.entityId}`, {
+                            //     state: {
+                            //         isRegistered: true,
+                            //         paymentStatus: 'failed'
+                            //     }
+                            // });
+                            navigate('/bookings');
+                        } else {
+                            toast.error('Payment cancelled');
+                        }
                         setIsProcessing(false);
-                        config.onFailure?.();
-                        toast.error('Payment cancelled');
+                        // config.onFailure?.();
+                        // toast.error('Payment cancelled');
                     }
                 }
             };
@@ -222,6 +239,15 @@ const Payment: React.FC<PaymentProps> = ({
                     await upgradeService.upgradePaymentFailed(entityId);
                     setTimeout(() => navigate('/profile'), 1500);
                 }
+                // else if (type === PaymentType.WORKSHOP_BOOKING) {
+                //     await markWorkshopPaymentFailed(entityId);
+                //     navigate(`/workshop/${entityId}`, {
+                //         state: {
+                //             isRegistered: true,
+                //             paymentStatus: 'failed'
+                //         }
+                //     });
+                // }
             }
         });
     };

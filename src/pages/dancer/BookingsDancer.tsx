@@ -379,6 +379,7 @@ const BookingsPage = () => {
                                         instructorName={workshop.instructor.username}
                                         studioName={workshop.mode === 'offline' ? workshop.location : 'Online'}
                                         date={workshop.startDate}
+                                        deadline={workshop.deadline} 
                                         onBook={() => navigate(`/workshop/${workshop._id}`, { state: { isRegistered: true, paymentStatus: workshop.userParticipant?.paymentStatus } })}
                                         actionLabel="View Details"
                                         paymentStatus={workshop.userParticipant?.paymentStatus}

@@ -177,6 +177,11 @@ const Dashboard = ({ userData }: { userData: any }) => {
                         <option value="Salsa">Salsa</option>
                         <option value="Bharatanatyam">Bharatanatyam</option>
                         <option value="Kathak">Kathak</option>
+                        <option value="Popping">Popping</option>
+                        <option value="Break">Break</option>
+                        <option value="Locking">Locking</option>
+                        <option value="Tap">Tap</option>
+                        <option value="Belly">Belly</option>
                     </select>
 
                     {/* Mode Filter */}
@@ -202,7 +207,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
                         <option value="startDate">Sort by Date</option>
                         <option value="fee">Sort by Price</option>
                         <option value="title">Sort by Title</option>
-                        <option value="popularity">Sort by Popularity</option>
+                        {/* <option value="popularity">Sort by Popularity</option> */}
                     </select>
                     {/* </div> */}
                 </div>
@@ -225,6 +230,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
                                         instructorName={workshop.instructor.username}
                                         studioName={workshop.location || 'Online'}
                                         date={workshop.startDate}
+                                        deadline={workshop.deadline} 
                                         onBook={() => navigate(`/workshop/${workshop._id}`)}
                                     />
                                 ))

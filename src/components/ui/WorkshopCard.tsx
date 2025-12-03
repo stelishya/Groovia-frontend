@@ -12,6 +12,7 @@ interface WorkshopCardProps {
     onBook: () => void;
     actionLabel?: string;
     paymentStatus?: 'paid' | 'failed';
+    deadline?: string;
 }
 
 const WorkshopCard: React.FC<WorkshopCardProps> = ({
@@ -24,8 +25,11 @@ const WorkshopCard: React.FC<WorkshopCardProps> = ({
     date,
     onBook,
     actionLabel = 'Book Now',
-    paymentStatus
+    paymentStatus,
+    deadline
 }) => {
+    const isDeadlinePassed = deadline ? new Date(deadline) < new Date() : false;
+
     return (
         <div className="border-[#a855f7] border-2 bg-purple-500/50 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col h-full relative group">
             {/* Image Container */}
@@ -59,12 +63,17 @@ const WorkshopCard: React.FC<WorkshopCardProps> = ({
                 </div>
                 {paymentStatus && (
                     <div className={`mt-2 px-3 py-1 rounded-full text-xs font-semibold text-center ${paymentStatus === 'paid'
-                            ? 'bg-green-500/20 text-green-400 border border-green-500'
-                            : paymentStatus === 'failed'
-                                ? 'bg-red-500/20 text-red-400 border border-red-500'
-                                : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500'
+                        ? 'bg-green-500/20 text-green-400 border border-green-500'
+                        : paymentStatus === 'failed'
+                            ? 'bg-red-500/20 text-red-400 border border-red-500'
+                            : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500'
                         }`}>
                         {paymentStatus === 'paid' ? '✓ Paid' : '✗ Payment Failed'}
+                    </div>
+                )}
+                {isDeadlinePassed && !paymentStatus && (
+                    <div className="mt-2 px-3 py-1 rounded-full text-xs font-semibold text-center bg-gray-500/20 text-gray-400 border border-gray-500">
+                        ⏰ Registration Closed
                     </div>
                 )}
 
@@ -92,7 +101,7 @@ const WorkshopCard: React.FC<WorkshopCardProps> = ({
                         onClick={onBook}
                         className="bg-[#c084fc] hover:bg-[#d8b4fe] text-white px-6 py-2 rounded-lg font-semibold flex items-center transition-colors duration-200 shadow-md"
                     >
-                        {actionLabel}
+                        {isDeadlinePassed && actionLabel === 'Book Now' ? 'Registration Closed' : actionLabel}
                         <ArrowUpRight size={18} className="ml-2" />
                     </button>
                 </div>

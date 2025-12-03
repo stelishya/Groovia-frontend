@@ -3,16 +3,18 @@ import Sidebar from '../../components/shared/Sidebar';
 import InstructorWorkshopCard from '../../components/ui/InstructorWorkshopCard';
 import CreateWorkshopModal from '../../components/ui/CreateWorkshopModal';
 import WorkshopDetailsModal from '../../components/ui/WorkshopDetailsModal';
-import { Search, Plus, ScanLine, Bell, Filter } from 'lucide-react';
+import { Search, Plus, ScanLine, Bell, Filter, X } from 'lucide-react';
 import { getInstructorWorkshops, createWorkshop, updateWorkshop, deleteWorkshop } from '../../services/workshop/workshop.service';
 import type { Workshop, CreateWorkshopData } from '../../types/workshop.type';
 import toast from 'react-hot-toast';
+import ConfirmationModal from '../../components/ui/ConfirmationModal';
 
 const InstructorWorkshops = () => {
     const [filter, setFilter] = useState('All Types');
     const [searchQuery, setSearchQuery] = useState('');
     const [workshops, setWorkshops] = useState<Workshop[]>([]);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [editingWorkshop, setEditingWorkshop] = useState<Workshop | null>(null);
     const [viewingWorkshop, setViewingWorkshop] = useState<Workshop | null>(null);
@@ -59,8 +61,7 @@ const InstructorWorkshops = () => {
         setIsCreateModalOpen(true);
     };
 
-    const handleDeleteClick = async (id: string) => {
-        if (window.confirm('Are you sure you want to delete this workshop?')) {
+    const handleDeleteWorkshop = async (id: string) => {
             const response = await deleteWorkshop(id);
             if (response.success) {
                 toast.success('Workshop deleted successfully');
@@ -68,7 +69,6 @@ const InstructorWorkshops = () => {
             } else {
                 toast.error(response.message || 'Failed to delete workshop');
             }
-        }
     };
 
     const handleViewDetails = (workshop: Workshop) => {
@@ -145,11 +145,18 @@ const InstructorWorkshops = () => {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
+                            {searchQuery && (
+                            <X
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-300 cursor-pointer hover:text-white"
+                                size={20}
+                                onClick={() => setSearchQuery('')}
+                            />
+                        )}
                         </div>
-                        <button className="flex items-center gap-2 px-4 py-2 bg-[#7c3aed] text-white rounded-lg hover:bg-[#6d28d9] transition-colors">
+                        {/* <button className="flex items-center gap-2 px-4 py-2 bg-[#7c3aed] text-white rounded-lg hover:bg-[#6d28d9] transition-colors">
                             <span>All Types</span>
                             <Filter size={16} />
-                        </button>
+                        </button> */}
                     </div>
                 </div>
 
@@ -165,14 +172,16 @@ const InstructorWorkshops = () => {
                                         key={workshop._id}
                                         title={workshop.title}
                                         status={getStatus(workshop)}
-                                        date={new Date(workshop.startDate).toLocaleDateString()}
+                                        date={workshop.startDate}
                                         time={workshop.sessions[0]?.startTime || 'TBA'}
                                         mode={workshop.mode}
                                         attendeesCount={workshop.participants?.length || 0}
                                         maxAttendees={workshop.maxParticipants}
                                         onViewDetails={() => handleViewDetails(workshop)}
                                         onEdit={() => handleEditClick(workshop)}
-                                        onDelete={() => handleDeleteClick(workshop._id)}
+                                        onDelete={() => {
+                                            setEditingWorkshop(workshop)
+                                            setIsDeleteModalOpen(true)}}
                                     />
                                 ))
                             ) : (
@@ -188,7 +197,21 @@ const InstructorWorkshops = () => {
                     </div>
                 </div>
             </div>
-
+            {isDeleteModalOpen && (
+                <ConfirmationModal
+                    show={isDeleteModalOpen}
+                    onClose={() => setIsDeleteModalOpen(false)}
+                    title="Delete Workshop"
+                    message="Are you sure you want to delete this workshop?"
+                    onConfirm={() => {
+                        if(editingWorkshop){
+                            handleDeleteWorkshop(editingWorkshop._id);
+                            setIsDeleteModalOpen(false);
+                            setEditingWorkshop(null);
+                        }}
+                        }
+                />
+            )}
             <CreateWorkshopModal
                 isOpen={isCreateModalOpen}
                 onClose={handleCloseModal}
