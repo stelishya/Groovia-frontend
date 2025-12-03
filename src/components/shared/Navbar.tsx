@@ -69,8 +69,6 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ title, subTitle }) => {
         if (notification.type === 'upgrade_approved' && userData) {
             // Only add instructor role if it doesn't already exist
             const currentRoles = userData.role || [];
-            console.log("currentRoles in handleNewNotification : ", currentRoles)
-
         }
         // Handle upgrade rejected
         else if (notification.type === 'upgrade_rejected') {

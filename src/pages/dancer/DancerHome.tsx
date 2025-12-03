@@ -13,73 +13,6 @@ import type { Workshop } from "../../types/workshop.type";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-// const Sidebar = () => {
-//     const dispatch = useDispatch();
-//     const navigate = useNavigate();
-//     const handleLogout = async()=>{
-//         console.log("handleLogout in dancer home")
-//         try {
-//             console.log("handleLogout")
-//             await logoutUserService()
-//         } catch (error) {
-//             console.error("Logout failed on the server",error)
-//         }finally{
-//             dispatch(logoutUserAction())
-//             navigate('/login')
-//         }
-//         }
-//     const navItems = [
-//         { icon: <House />, name: 'Home', active: true ,action:()=>navigate('/home')},
-//         { icon: <MessageSquare />, name: 'Messages' },
-//         { icon: <Calendar />, name: 'Bookings' },
-//         { icon: <Briefcase />, name: 'Workshops' },
-//         { icon: <Trophy />, name: 'Competitions' },
-//         { icon: <CreditCard />, name: 'Payments' },
-//     ];
-
-//     const bottomItems = [
-//         { icon: <User />, name: 'Profile' ,action:()=>navigate('/dancer/profile')},
-//         { icon: <LogOut />, name: 'Log Out', action: handleLogout },
-//         { icon: <Settings />, name: 'Settings' },
-//     ];
-
-//     return (
-//         <aside className="w-64 bg-purple-900 text-white flex flex-col p-4">
-//             <div className="text-3xl font-bold mb-10 ml-4">Groovia</div>
-//             <nav className="flex-grow">
-//                 <ul>
-//                     {navItems.map(item => (
-//                         <li key={item.name} className={`flex items-center p-3 my-1 rounded-lg cursor-pointer ${item.active ? 'bg-purple-700' : 'hover:bg-purple-800'}`}>
-//                             <span className="mr-4 text-xl">{item.icon}</span>
-//                             <span>{item.name}</span>
-//                         </li>
-//                     ))}
-//                 </ul>
-//             </nav>
-//             <nav>
-//                 <ul>
-//                     {bottomItems.map(item => (
-//                         <li key={item.name} onClick={item.action} className="flex items-center p-3 my-1 rounded-lg cursor-pointer hover:bg-purple-800">
-//                             <span className="mr-4 text-xl">{item.icon}</span>
-//                             <span>{item.name}</span>
-//                         </li>
-//                     ))}
-//                 </ul>
-//             </nav>
-//         </aside>
-//     );
-// };
-
-// const Header = () => (
-//     <header className="flex justify-end items-center p-4">
-//         <div className="relative w-80 mr-6">
-//             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-300" />
-//             <input type="text" placeholder="Search Workshops, Competitions..." className="w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg py-2 pl-10 focus:outline-none" />
-//         </div>
-//         <Bell className="text-white text-2xl mr-6 cursor-pointer" />
-//         <img src="https://i.pravatar.cc/40?img=32" alt="User" className="w-10 h-10 rounded-full cursor-pointer" />
-//     </header>
-// );
 
 const Dashboard = ({ userData }: { userData: any }) => {
     const navigate = useNavigate();
@@ -280,7 +213,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
                     </div>
                 ) : (
                     <>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                             {workshops.length > 0 ? (
                                 workshops.map((workshop) => (
                                     <WorkshopCard
@@ -291,11 +224,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
                                         price={workshop.fee}
                                         instructorName={workshop.instructor.username}
                                         studioName={workshop.location || 'Online'}
-                                        date={new Date(workshop.startDate).toLocaleDateString('en-GB', { 
-                                            day: '2-digit', 
-                                            month: '2-digit', 
-                                            year: 'numeric' 
-                                        })}
+                                        date={workshop.startDate}
                                         onBook={() => navigate(`/workshop/${workshop._id}`)}
                                     />
                                 ))

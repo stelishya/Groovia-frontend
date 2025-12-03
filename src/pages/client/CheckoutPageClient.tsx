@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
-import Payment from '../../components/shared/Checkout';
+import Payment from '../../components/shared/CheckoutPage';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../redux/store';
 
@@ -20,11 +20,11 @@ const CheckoutPageClient: React.FC = () => {
   };
 
   const handleCancel = () => {
-    navigate('/profile'); 
+    navigate('/profile');
   };
 
   return (
-    <Payment 
+    <Payment
       userEmail={userEmail}
       onUpgrade={handleUpgradeSuccess}
       onCancel={handleCancel}

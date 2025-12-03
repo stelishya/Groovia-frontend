@@ -1,6 +1,6 @@
 import { Calendar, Clock, MapPin, Users, Video, AlertCircle, ArrowLeft, X } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { getWorkshopById } from "../../services/workshop/workshop.service";
 import type { Workshop } from "../../types/workshop.type";
 import { WorkshopMode } from "../../types/workshop.type";
@@ -16,16 +16,19 @@ export default function WorkshopDetails() {
   const [loading, setLoading] = useState(true);
   const [venueCoords, setVenueCoords] = useState<[number, number]>([20.5937, 78.9629]);
   const [loadingCoords, setLoadingCoords] = useState(false);
+  const location = useLocation();
+  const isRegistered = location.state?.isRegistered;
+  const paymentStatus = location.state?.paymentStatus;
 
   useEffect(() => {
     const fetchWorkshop = async () => {
       if (!id) return;
-
       setLoading(true);
       const result = await getWorkshopById(id);
 
       if (result.success) {
         setWorkshop(result.data);
+        console.log("workshop result ahn", result.data)
       } else {
         console.error("Failed to fetch workshop:", result.message);
       }
@@ -313,12 +316,38 @@ export default function WorkshopDetails() {
               </div>
 
               <div className="space-y-3">
-                <button
-                  onClick={() => navigate(`/workshop/${workshop._id}/checkout`)}
-                  className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 hover:opacity-90 text-white font-semibold py-4 text-lg rounded-lg transition-all duration-300 hover:scale-105"
-                >
-                  Register Now
-                </button>
+                {isRegistered ? (
+                  paymentStatus === 'failed' ? (
+                    <button
+                      onClick={() => navigate(`/workshop/${workshop._id}/checkout`)}
+                      className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-4 text-lg rounded-lg transition-all duration-300 hover:scale-105"
+                    >
+                      Retry Payment
+                    </button>
+                  ) : (
+                    <button
+                      disabled
+                      className="w-full bg-green-600 text-white py-3 px-6 rounded-lg font-semibold cursor-not-allowed opacity-75"
+                    >
+                      ✓ Registered
+                    </button>
+                  )
+                  //  : (
+                  //   <button
+                  //     disabled
+                  //     className="w-full bg-yellow-600 text-white py-3 px-6 rounded-lg font-semibold cursor-not-allowed opacity-75"
+                  //   >
+                  //     ⏳ Payment Pending
+                  //   </button>
+                  // )
+                ) : (
+                  <button
+                    onClick={() => navigate(`/workshop/${workshop._id}/checkout`)}
+                    className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 hover:opacity-90 text-white font-semibold py-4 text-lg rounded-lg transition-all duration-300 hover:scale-105"
+                  >
+                    Register Now
+                  </button>
+                )}
 
                 {/* <button
                   className="w-full border-2 border-purple-400/50 hover:bg-purple-600/20 py-4 rounded-lg transition-colors"
