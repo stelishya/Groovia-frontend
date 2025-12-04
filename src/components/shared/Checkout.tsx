@@ -4,14 +4,15 @@ import { upgradeService, ROLE_UPGRADE_PRICE } from '../../services/user/upgradeR
 import type { UpgradeStatus } from '../../services/user/upgradeRole.service';
 import { initiatePayment, confirmPayment } from '../../services/payment/payment.service';
 import type { Workshop } from '../../types/workshop.type';
+import type { Competition } from '../../services/competition.service';
 import toast from 'react-hot-toast';
 import { fetchMyProfile } from '../../services/user/auth.service';
 import { loginUser } from '../../redux/slices/user.slice';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
 import type { RootState } from '../../redux/store';
 import { markWorkshopPaymentFailed } from '../../services/workshop/workshop.service';
+import { markCompetitionPaymentFailed } from '../../services/competition.service';
 
 interface PaymentProps {
     userEmail?: string;
@@ -19,6 +20,7 @@ interface PaymentProps {
     onCancel?: () => void;
     upgradeRequest?: UpgradeStatus; // For role upgrade payments
     workshop?: Workshop; // For workshop booking payments
+    competition?: Competition; // For competition registration payments
 }
 
 export enum PaymentType {
@@ -45,7 +47,8 @@ const Payment: React.FC<PaymentProps> = ({
     onUpgrade,
     onCancel,
     upgradeRequest,
-    workshop
+    workshop,
+    competition
 }) => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [currentUpgradeRequest, setCurrentUpgradeRequest] = useState(upgradeRequest);
@@ -77,6 +80,16 @@ const Payment: React.FC<PaymentProps> = ({
                 amount: workshop.fee,
                 icon: <Calendar className="w-8 h-8 text-purple-400 mr-3" />,
                 workshopDetails: workshop
+            };
+        } else if (competition) {
+            return {
+                title: `Register for ${competition.title}`,
+                subtitle: `Complete your registration for this competition with a one-time payment of ₹${competition.fee}.`,
+                planName: competition.title,
+                billing: 'One-time payment',
+                amount: competition.fee,
+                icon: <TrendingUp className="w-8 h-8 text-purple-400 mr-3" />,
+                competitionDetails: competition
             };
         } else if (currentUpgradeRequest) {
             const amount = getRoleUpgradeAmount();
@@ -155,6 +168,12 @@ const Payment: React.FC<PaymentProps> = ({
                             //     }
                             // });
                             navigate('/bookings');
+                        } else if (config.type === PaymentType.COMPETITION_PAYMENT) {
+                            if (config.entityId) {
+                                await markCompetitionPaymentFailed(config.entityId);
+                            }
+                            toast.error('Payment cancelled');
+                            navigate('/competitions');
                         } else {
                             toast.error('Payment cancelled');
                         }
@@ -186,6 +205,10 @@ const Payment: React.FC<PaymentProps> = ({
             type = PaymentType.WORKSHOP_BOOKING;
             entityId = workshop._id;
             description = `Workshop: ${workshop.title}`;
+        } else if (competition) {
+            type = PaymentType.COMPETITION_PAYMENT;
+            entityId = competition._id;
+            description = `Competition: ${competition.title}`;
         } else if (currentUpgradeRequest) {
             type = currentUpgradeRequest.type === 'instructor' ? PaymentType.INSTRUCTOR_UPGRADE : PaymentType.ORGANIZER_UPGRADE;
             entityId = currentUpgradeRequest.id;
@@ -228,6 +251,8 @@ const Payment: React.FC<PaymentProps> = ({
                         localStorage.removeItem('pendingUpgradeRequest');
                         const profileResponse = await fetchMyProfile();
                         dispatch(loginUser({ user: profileResponse.profile, token: localStorage.getItem('token') || '' }));
+                    } else if (type === PaymentType.COMPETITION_PAYMENT) {
+                        navigate('/competitions');
                     }
                     onUpgrade?.();
                 } else {
@@ -270,6 +295,25 @@ const Payment: React.FC<PaymentProps> = ({
                 {
                     icon: <BarChart3 className="w-5 h-5 text-purple-400" />,
                     text: "Certificate upon completion"
+                }
+            ];
+        } else if (competition) {
+            return [
+                {
+                    icon: <Calendar className="w-5 h-5 text-purple-400" />,
+                    text: "Participate in the competition"
+                },
+                {
+                    icon: <TrendingUp className="w-5 h-5 text-purple-400" />,
+                    text: "Showcase your talent"
+                },
+                {
+                    icon: <MessageCircle className="w-5 h-5 text-purple-400" />,
+                    text: "Get feedback from judges"
+                },
+                {
+                    icon: <BarChart3 className="w-5 h-5 text-purple-400" />,
+                    text: "Win exciting prizes"
                 }
             ];
         } else {

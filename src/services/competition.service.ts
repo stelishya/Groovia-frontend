@@ -4,7 +4,11 @@ import type { CreateCompetitionData } from "../types/competition.type";
 
 export interface Competition {
     _id: string;
-    organizer_id: string;
+    organizer_id: string | {
+        _id: string;
+        username: string;
+        profileImage?: string;
+    };
     title: string;
     description: string;
     category: string;
@@ -26,18 +30,60 @@ export interface Competition {
     results?: any;
     createdAt: string;
     updatedAt: string;
-  }
+}
+
+export const getCompetitionById = async (id: string): Promise<Competition> => {
+    try {
+        const response = await CompetitionAxios.get(`/${id}`);
+        return response.data;
+    } catch (error) {
+        console.error('Failed to fetch competition details:', error);
+        if (axios.isAxiosError(error)) {
+            const message = error.response?.data?.message || 'Failed to fetch competition details';
+            throw new Error(message);
+        }
+        throw error;
+    }
+}
 
 export const getOrganizerCompetitions = async (params?: { category?: string; style?: string }): Promise<Competition[]> => {
     try {
         const queryString = params ? `?${new URLSearchParams(params).toString()}` : '';
-        const response = await CompetitionAxios.get(`/${queryString}`);
-        console.log("response from getCompetitions in client.service.ts:", response.data);
+        const response = await CompetitionAxios.get(`/my-competitions${queryString}`);
         return response.data;
     } catch (error) {
         console.error('Failed to fetch competitions:', error);
         if (axios.isAxiosError(error)) {
             const message = error.response?.data?.message || 'Failed to fetch competitions';
+            throw new Error(message);
+        }
+        throw error;
+    }
+}
+
+export const getRegisteredCompetitions = async (): Promise<Competition[]> => {
+    try {
+        const response = await CompetitionAxios.get('/my-registrations');
+        return response.data;
+    } catch (error) {
+        console.error('Failed to fetch registered competitions:', error);
+        if (axios.isAxiosError(error)) {
+            const message = error.response?.data?.message || 'Failed to fetch registered competitions';
+            throw new Error(message);
+        }
+        throw error;
+    }
+}
+
+export const getAllCompetitions = async (params?: any): Promise<Competition[]> => {
+    try {
+        const queryString = params ? `?${new URLSearchParams(params).toString()}` : '';
+        const response = await CompetitionAxios.get(`/${queryString}`);
+        return response.data;
+    } catch (error) {
+        console.error('Failed to fetch all competitions:', error);
+        if (axios.isAxiosError(error)) {
+            const message = error.response?.data?.message || 'Failed to fetch all competitions';
             throw new Error(message);
         }
         throw error;
@@ -88,5 +134,13 @@ export const deleteCompetition = async (id: string) => {
             success: false,
             message: error.response?.data?.message || 'Failed to delete competition'
         };
+    }
+};
+
+export const markCompetitionPaymentFailed = async (competitionId: string) => {
+    try {
+        await CompetitionAxios.post(`/${competitionId}/mark-payment-failed`);
+    } catch (error) {
+        console.error('Failed to mark competition payment as failed:', error);
     }
 };

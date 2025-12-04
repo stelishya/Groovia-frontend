@@ -1,18 +1,80 @@
-// import React from 'react';
-// import { FiHome, FiMessageSquare, FiCalendar, FiBriefcase, FiTrophy, FiCreditCard, FiUser, FiLogOut, FiSettings, FiSearch, FiBell } from 'react-icons/fi';
-// import {Search, Bell } from "lucide-react"
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { Search, X, ChevronLeft, ChevronRight } from "lucide-react";
 import Sidebar from "../../components/shared/Sidebar";
 import UserNavbar from "../../components/shared/Navbar";
-import type { RootState } from "../../redux/store";
-import { Briefcase, Calendar, ChevronLeft, ChevronRight, Search, Trophy, TrophyIcon, X } from "lucide-react";
-
 import WorkshopCard from "../../components/ui/WorkshopCard";
+import CompetitionCard from "../../components/ui/CompetitionCard";
 import { getAllWorkshops } from "../../services/workshop/workshop.service";
+import { getAllCompetitions } from "../../services/competition.service";
 import type { Workshop } from "../../types/workshop.type";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import type { Competition } from "../../services/competition.service";
+import type { RootState } from "../../redux/store";
 
+const CompetitionsSection = () => {
+    const [competitions, setCompetitions] = useState<Competition[]>([]);
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchCompetitions = async () => {
+            setLoading(true);
+            try {
+                const data = await getAllCompetitions();
+                setCompetitions(data || []);
+            } catch (error) {
+                console.error("Failed to fetch competitions:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchCompetitions();
+    }, []);
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case "active": return "bg-green-500 text-white";
+            case "closed": return "bg-red-500 text-white";
+            case "completed": return "bg-blue-500 text-white";
+            default: return "bg-gray-500 text-white";
+        }
+    };
+
+    return (
+        <div className="min-h-screen mt-12 p-6 rounded-xl">
+            <div className="flex justify-between items-center mb-8">
+                <h1 className="text-3xl font-semibold text-purple-500">
+                    Upcoming Competitions
+                </h1>
+            </div>
+
+            {loading ? (
+                <div className="flex justify-center items-center h-64">
+                    <p className="text-white text-xl">Loading competitions...</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                    {competitions.length > 0 ? (
+                        competitions.map((competition) => (
+                            <CompetitionCard
+                                key={competition._id}
+                                competition={competition}
+                                isOrganizer={false}
+                                onViewDetails={(comp) => navigate(`/competition/${comp._id}`)}
+                                getStatusColor={getStatusColor}
+                            />
+                        ))
+                    ) : (
+                        <p className="text-center col-span-full text-gray-500 text-2xl">
+                            No upcoming competitions found 🏆
+                        </p>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+};
 
 const Dashboard = ({ userData }: { userData: any }) => {
     const navigate = useNavigate();
@@ -51,7 +113,6 @@ const Dashboard = ({ userData }: { userData: any }) => {
 
             const response = await getAllWorkshops(params);
             if (response.success && response.data) {
-                // setWorkshops(response.data);
                 setWorkshops(Array.isArray(response.data) ? response.data : response.data.workshops || []);
                 setTotalWorkshops(response.data.total || response.data.length || 0);
             }
@@ -62,10 +123,6 @@ const Dashboard = ({ userData }: { userData: any }) => {
             setLoading(false)
         }
     };
-
-    // useEffect(() => {
-    //     fetchWorkshops();
-    // }, []);
 
     useEffect(() => {
         const handler = setTimeout(() => {
@@ -78,53 +135,12 @@ const Dashboard = ({ userData }: { userData: any }) => {
     return (
         <main className="flex-grow p-8 bg-deep-purple text-white overflow-y-auto">
             <UserNavbar />
-            {/* <Header /> */}
+
             <div className="mt-8">
                 <h1 className="text-5xl font-light leading-tight">LEARN, PERFORM, COMPETE,<br />TEACH – ALL IN ONE PLATFORM</h1>
                 <p className="text-gray-400 mt-4 max-w-lg">Your ultimate destination for dance education, competitive showcases, and community engagement.</p>
-                <button className="mt-8 px-10 py-4 font-bold text-white rounded-full bg-gradient-to-r from-pink-500 to-orange-400 hover:opacity-90">Explore Oppurtunities</button>
+                <button className="mt-8 px-10 py-4 font-bold text-white rounded-full bg-gradient-to-r from-pink-500 to-orange-400 hover:opacity-90">Explore Opportunities</button>
             </div>
-
-            {/* <div className="mt-12 p-6 bg-purple-800/50 rounded-xl flex items-center justify-between">
-            <div className="flex items-center">
-                <img src="https://i.pravatar.cc/80?img=32" alt="Elena Petrova" className="w-16 h-16 rounded-full border-2 border-purple-400" />
-                <div className="ml-4">
-                    <div className="flex items-center">
-                        <h3 className="text-xl font-bold">{userData?.username?.charAt(0).toUpperCase() + userData?.username?.slice(1)}</h3>
-                        <span className="ml-3 text-xs bg-blue-500 rounded-full px-2 py-0.5">Dancer</span>
-                    </div>
-                    <p className="text-sm text-gray-300">{userData?.danceStyles?.join(', ')}</p>
-                </div>
-            </div>
-            <div className="flex space-x-12 text-center">
-                <div><div className="text-2xl font-bold">24</div><div className="text-sm text-gray-300">Workshops</div></div>
-                <div><div className="text-2xl font-bold">156</div><div className="text-sm text-gray-300">Bookings</div></div>
-                <div><div className="text-2xl font-bold">4.8</div><div className="text-sm text-gray-300">Reviews</div></div>
-                <div><div className="text-2xl font-bold">8</div><div className="text-sm text-gray-300">Competitions</div></div>
-            </div>
-        </div> */}
-
-            {/* <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-purple-800/50 p-6 rounded-xl">
-                <h4 className="text-xl font-semibold mb-6">Earnings Overview</h4>
-                <div className="space-y-4 text-gray-300">
-                    <div className="flex justify-between"><span>This Month</span><span className="text-white font-bold">₹ 2,84,000</span></div>
-                    <div className="flex justify-between"><span>Workshops</span><span>₹ 1,9200</span></div>
-                    <div className="flex justify-between"><span>Event Bookings</span><span>₹ 92100</span></div>
-                    <div className="flex justify-between border-t border-purple-700 pt-4 mt-4"><span>Last Month</span><span>₹ 31,220</span></div>
-                </div>
-                <button className="mt-6 w-full py-3 bg-gray-200 text-gray-800 font-bold rounded-lg hover:bg-white">View Detailed Report</button>
-            </div>
-            <div className="bg-purple-800/50 p-6 rounded-xl">
-                <h4 className="text-xl font-semibold mb-6">Notifications</h4>
-                <div className="space-y-4">
-                    <div className="bg-purple-700/70 p-4 rounded-lg flex items-start"><Briefcase className="mr-3 mt-1 text-purple-300"/><div><p>New registration for Contemporary Flow Basics</p><p className="text-xs text-gray-400">2 hours ago</p></div></div>
-                    <div className="bg-purple-700/70 p-4 rounded-lg flex items-start"><Calendar className="mr-3 mt-1 text-purple-300"/><div><p>Booking request from Emily & James</p><p className="text-xs text-gray-400">5 hours ago</p></div></div>
-                    <div className="bg-purple-700/70 p-4 rounded-lg flex items-start"><TrophyIcon className="mr-3 mt-1 text-purple-300"/><div><p>Competition registration deadline approaching</p><p className="text-xs text-gray-400">1 day ago</p></div></div>
-                </div>
-                <button className="mt-6 w-full py-3 bg-gray-700 text-white font-bold rounded-lg hover:bg-gray-600">View All Notifications</button>
-            </div>
-        </div> */}
 
             {/* Workshops Feed Section */}
             <div className="min-h-screen mt-12 p-6 rounded-xl">
@@ -160,7 +176,6 @@ const Dashboard = ({ userData }: { userData: any }) => {
 
 
                     {/* Dance Style Filter */}
-                    {/* <div className="flex gap-4"> */}
                     <select
                         value={styleFilter}
                         onChange={(e) => {
@@ -207,9 +222,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
                         <option value="startDate">Sort by Date</option>
                         <option value="fee">Sort by Price</option>
                         <option value="title">Sort by Title</option>
-                        {/* <option value="popularity">Sort by Popularity</option> */}
                     </select>
-                    {/* </div> */}
                 </div>
 
                 {loading ? (
@@ -230,12 +243,12 @@ const Dashboard = ({ userData }: { userData: any }) => {
                                         instructorName={workshop.instructor.username}
                                         studioName={workshop.location || 'Online'}
                                         date={workshop.startDate}
-                                        deadline={workshop.deadline} 
+                                        deadline={workshop.deadline}
                                         onBook={() => navigate(`/workshop/${workshop._id}`)}
                                     />
                                 ))
                             ) : (
-                                <p className="text-center col-span-full text-gray-500 fontSize-2xl">
+                                <p className="text-center col-span-full text-gray-500 text-2xl">
                                     No upcoming workshops found 🎭
                                 </p>
                             )}
@@ -272,6 +285,9 @@ const Dashboard = ({ userData }: { userData: any }) => {
                     </>
                 )}
             </div>
+
+            {/* Competitions Feed Section */}
+            <CompetitionsSection />
         </main>
     )
 };

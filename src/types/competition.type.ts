@@ -46,6 +46,7 @@ export interface Competition {
   document?: string;
   fee: number;
   date: string;
+  maxParticipants: number;
   registrationDeadline: string;
   status: CompetitionStatus;
   registeredDancers: RegisteredDancer[];
