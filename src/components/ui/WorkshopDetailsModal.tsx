@@ -48,7 +48,7 @@ const WorkshopDetailsModal: React.FC<WorkshopDetailsModalProps> = ({ isOpen, onC
                             </div>
                             <div className="flex items-center gap-2 text-gray-300">
                                 <Calendar size={16} className="text-purple-400" />
-                                <span>{new Date(workshop.startDate).toLocaleDateString()} - {new Date(workshop.endDate).toLocaleDateString()}</span>
+                                <span>{new Date(workshop.startDate).toLocaleDateString('en-IN')} - {new Date(workshop.endDate).toLocaleDateString('en-IN')}</span>
                             </div>
                             <div className="flex items-center gap-2 text-gray-300">
                                 {workshop.mode === WorkshopMode.ONLINE ? <Video size={16} className="text-purple-400" /> : <MapPin size={16} className="text-purple-400" />}

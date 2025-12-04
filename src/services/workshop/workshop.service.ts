@@ -58,11 +58,38 @@ export const getAllWorkshops = async (params?: URLSearchParams) => {
 export const getInstructorWorkshops = async () => {
     try {
         const response = await WorkshopAxios.get('/instructor');
+        console.log("response in get instructor workshops", response);
         return { success: true, data: response.data };
     } catch (error: any) {
         return {
             success: false,
             message: error.response?.data?.message || 'Failed to fetch instructor workshops'
+        };
+    }
+};
+
+export const getBookedWorkshops = async (params?: {
+    search?: string;
+    style?: string;
+    sortBy?: string;
+    page?: number;
+    limit?: number;
+}) => {
+    try {
+        const queryParams = new URLSearchParams();
+        if (params?.search) queryParams.append('search', params.search);
+        if (params?.style) queryParams.append('style', params.style);
+        if (params?.sortBy) queryParams.append('sortBy', params.sortBy);
+        if (params?.page) queryParams.append('page', params.page.toString());
+        if (params?.limit) queryParams.append('limit', params.limit.toString());
+
+        const queryString = queryParams.toString();
+        const response = await WorkshopAxios.get(`/booked?${queryString}`);
+        return { success: true, data: response.data };
+    } catch (error: any) {
+        return {
+            success: false,
+            message: error.response?.data?.message || 'Failed to fetch booked workshops'
         };
     }
 };
@@ -104,6 +131,51 @@ export const deleteWorkshop = async (id: string) => {
         return {
             success: false,
             message: error.response?.data?.message || 'Failed to delete workshop'
+        };
+    }
+};
+
+export const initiateWorkshopBooking = async (workshopId: string) => {
+    try {
+        const response = await WorkshopAxios.post(`/${workshopId}/initiate-booking`);
+        return { success: true, data: response.data };
+    } catch (error: any) {
+        return {
+            success: false,
+            message: error.response?.data?.message || 'Failed to initiate booking'
+        };
+    }
+};
+
+export const confirmWorkshopBooking = async (
+    workshopId: string,
+    paymentId: string,
+    orderId: string,
+    signature: string
+) => {
+    try {
+        const response = await WorkshopAxios.post(`/${workshopId}/confirm-booking`, {
+            paymentId,
+            orderId,
+            signature
+        });
+        return { success: true, data: response.data };
+    } catch (error: any) {
+        return {
+            success: false,
+            message: error.response?.data?.message || 'Failed to confirm booking'
+        };
+    }
+};
+
+export const markWorkshopPaymentFailed = async (workshopId: string|undefined) => {
+    try {
+        const response = await WorkshopAxios.post(`/${workshopId}/mark-payment-failed`);
+        return { success: true, data: response.data };
+    } catch (error: any) {
+        return {
+            success: false,
+            message: error.response?.data?.message || 'Failed to mark payment as failed'
         };
     }
 };

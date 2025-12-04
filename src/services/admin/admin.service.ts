@@ -3,20 +3,20 @@
 import axios from "axios";
 import toast from 'react-hot-toast';
 import type { LoginForm } from '../../types/auth.type';
-import {loginAdmin as loginAdminAction} from '../../redux/slices/admin.slice';
+import { loginAdmin as loginAdminAction } from '../../redux/slices/admin.slice';
 import type { AppDispatch } from '../../redux/store';
 import { AuthAxiosAdmin } from '../../api/auth.axios';
 import { AdminAxios } from "../../api/user.axios";
 
 // let  AdminAxios = createBaseAxios('/admin-auth');
 
-export const loginAdmin = async (data: LoginForm,dispatch:AppDispatch) => {
+export const loginAdmin = async (data: LoginForm, dispatch: AppDispatch) => {
   try {
-    console.log("HI from loginAdmin in admin.service.ts",data)
+    console.log("HI from loginAdmin in admin.service.ts", data)
     const response = await AuthAxiosAdmin.post('/login', data);
-    console.log("response in loginAdmin in admin.service.ts",response)
-    const {admin, token} = response.data;
-    dispatch(loginAdminAction({admin,token}))
+    console.log("response in loginAdmin in admin.service.ts", response)
+    const { admin, token } = response.data;
+    dispatch(loginAdminAction({ admin, token }))
     return response.data;
   } catch (error: any) {
     const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
@@ -69,9 +69,9 @@ export const logoutAdmin = async () => {
 
 export const getAllUsers = async (page: number = 1, pageSize: number = 10) => {
   try {
-    console.log("HI from getAllUsers in admin.service.ts",page,pageSize)
+    console.log("HI from getAllUsers in admin.service.ts", page, pageSize)
     const response = await AdminAxios.get(`/users?page=${page}&limit=${pageSize}`);
-    console.log("response in getAllUsers in admin.service.ts : ",response)
+    console.log("response in getAllUsers in admin.service.ts : ", response)
     if (response.status !== 200) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -93,7 +93,7 @@ export const updateUserStatus = async (userId: string) => {
   try {
     const response = await AdminAxios.patch(`/users/${userId}/status`)
     // , {
-      // isActive
+    // isActive
     // });
     if (response.status !== 200) {
       throw new Error(`HTTP error! status: ${response.status}`);

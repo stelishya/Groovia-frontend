@@ -62,7 +62,7 @@ const InstructorWorkshopCard: React.FC<InstructorWorkshopCardProps> = ({
             {/* Details */}
             <div className="space-y-3 mb-6">
                 <div className="text-sm text-gray-200">
-                    <p>{date} • {time}</p>
+                    <p>{new Date(date).toLocaleDateString('en-IN')} • {time}</p>
                 </div>
 
                 <div className="flex items-center justify-between text-sm">

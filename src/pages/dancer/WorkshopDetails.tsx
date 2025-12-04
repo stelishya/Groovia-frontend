@@ -1,6 +1,6 @@
 import { Calendar, Clock, MapPin, Users, Video, AlertCircle, ArrowLeft, X } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { getWorkshopById } from "../../services/workshop/workshop.service";
 import type { Workshop } from "../../types/workshop.type";
 import { WorkshopMode } from "../../types/workshop.type";
@@ -16,16 +16,19 @@ export default function WorkshopDetails() {
   const [loading, setLoading] = useState(true);
   const [venueCoords, setVenueCoords] = useState<[number, number]>([20.5937, 78.9629]);
   const [loadingCoords, setLoadingCoords] = useState(false);
+  const location = useLocation();
+  const isRegistered = location.state?.isRegistered;
+  const paymentStatus = location.state?.paymentStatus;
 
   useEffect(() => {
     const fetchWorkshop = async () => {
       if (!id) return;
-
       setLoading(true);
       const result = await getWorkshopById(id);
 
       if (result.success) {
         setWorkshop(result.data);
+        console.log("workshop result ahn", result.data)
       } else {
         console.error("Failed to fetch workshop:", result.message);
       }
@@ -141,20 +144,23 @@ export default function WorkshopDetails() {
               </h1>
 
               <div className="flex items-center gap-4 text-gray-200">
-                <div className="flex items-center gap-2">
+                <button
+                  className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer"
+                  onClick={() => navigate(`/dancer-profile/${workshop.instructor._id}`)}
+                >
                   <img
                     src={workshop.instructor.profileImage || `https://ui-avatars.com/api/?name=${workshop.instructor.username}`}
                     alt={workshop.instructor.username}
-                    className="w-12 h-12 rounded-full border-2 border-purple-400 object-cover"
+                    className="w-14 h-14 rounded-full border-2 border-purple-400 object-cover hover:border-purple-300 transition-colors"
                     onError={(e) => {
                       e.currentTarget.src = `https://ui-avatars.com/api/?name=${workshop.instructor.username}`;
                     }}
                   />
-                  <div>
-                    <p className="text-sm text-gray-300">Instructor</p>
-                    <p className="font-semibold text-lg">{workshop.instructor.username}</p>
+                  <div className="text-left">
+                    <p className="text-sm text-gray-400">Instructor</p>
+                    <p className="font-semibold text-lg hover:text-purple-300 transition-colors">{workshop.instructor.username}</p>
                   </div>
-                </div>
+                </button>
               </div>
             </div>
 
@@ -173,7 +179,7 @@ export default function WorkshopDetails() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-12 relative z-20">
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">
@@ -310,12 +316,38 @@ export default function WorkshopDetails() {
               </div>
 
               <div className="space-y-3">
-                <button
-                  onClick={() => navigate(`/workshop/${workshop._id}/checkout`)}
-                  className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 hover:opacity-90 text-white font-semibold py-4 text-lg rounded-lg transition-all duration-300 hover:scale-105"
-                >
-                  Register Now
-                </button>
+                {isRegistered ? (
+                  paymentStatus === 'failed' ? (
+                    <button
+                      onClick={() => navigate(`/workshop/${workshop._id}/checkout`)}
+                      className="w-full bg-orange-600 hover:bg-orange-700 text-white font-semibold py-4 text-lg rounded-lg transition-all duration-300 hover:scale-105"
+                    >
+                      Retry Payment
+                    </button>
+                  ) : (
+                    <button
+                      disabled
+                      className="w-full bg-green-600 text-white py-3 px-6 rounded-lg font-semibold cursor-not-allowed opacity-75"
+                    >
+                      ✓ Registered
+                    </button>
+                  )
+                  //  : (
+                  //   <button
+                  //     disabled
+                  //     className="w-full bg-yellow-600 text-white py-3 px-6 rounded-lg font-semibold cursor-not-allowed opacity-75"
+                  //   >
+                  //     ⏳ Payment Pending
+                  //   </button>
+                  // )
+                ) : (
+                  <button
+                    onClick={() => navigate(`/workshop/${workshop._id}/checkout`)}
+                    className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 hover:opacity-90 text-white font-semibold py-4 text-lg rounded-lg transition-all duration-300 hover:scale-105"
+                  >
+                    Register Now
+                  </button>
+                )}
 
                 {/* <button
                   className="w-full border-2 border-purple-400/50 hover:bg-purple-600/20 py-4 rounded-lg transition-colors"

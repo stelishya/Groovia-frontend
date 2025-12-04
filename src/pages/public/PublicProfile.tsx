@@ -227,7 +227,7 @@ const PublicProfile = () => {
                     <div className="max-w-5xl mx-auto space-y-6">
 
                         {/* Header Section */}
-                        <div className="bg-gradient-to-r from-[#6d28d9] to-[#4f46e5] opacity-90 border-2 border-purple-500 rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden">
+                        <div className="bg-deep-purple-500 opacity-90 border-2 border-purple-500 rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden">
                             <div className="relative z-10 flex flex-col md:flex-row items-start gap-8">
                                 {/* Profile Image - Left Side */}
                                 <div className="w-40 h-40 rounded-full border-4 border-white/20 shadow-xl overflow-hidden shrink-0">

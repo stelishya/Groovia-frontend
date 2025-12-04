@@ -45,7 +45,12 @@ const WorkshopCheckoutPage = () => {
     }
 
     if (!workshop) {
-        return null;
+        // return null;
+        return (
+            <div className="min-h-screen bg-[#0f0f13] flex items-center justify-center">
+                <p className="text-white text-xl">Workshop not found</p>
+            </div>
+        );
     }
 
     return (

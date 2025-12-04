@@ -1,12 +1,16 @@
 
 
 import React, { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Search, Bell, X, MapPin, Calendar, IndianRupee, PersonStanding, User, PartyPopper, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getEventRequests } from '../../services/dancer/dancer.service';
 import { fetchMyProfile } from '../../services/user/auth.service';
 import Sidebar from '../../components/shared/Sidebar';
 import { updateEventBookingStatus } from '../../services/client/client.service';
+import { getBookedWorkshops } from '../../services/workshop/workshop.service';
+import WorkshopCard from '../../components/ui/WorkshopCard';
+import type { Workshop } from '../../types/workshop.type';
 import ConfirmationModal from '../../components/ui/ConfirmationModal';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -61,16 +65,16 @@ const RequestCard = ({ request, onAcceptClick, onDeclineClick, onViewMap }: { re
             <img src={request.clientId?.profileImage || 'https://img.icons8.com/?size=128&id=tZuAOUGm9AuS&format=png'} alt={request.clientId?.username || 'Unknown'} className="w-12 h-12 rounded-full mr-4" />
             <div className="flex flex-col gap-1">
                 <div className='flex items-center'>
-                    <User className='inline mr-1 text-gray-200' size={14}/>
+                    <User className='inline mr-1 text-gray-200' size={14} />
                     <h3 className="font-bold text-white">{request.clientId?.username || 'Unknown Client'}</h3>
                 </div>
                 <div className='flex items-center'>
-                    <PartyPopper className='inline mr-1 text-gray-200' size={14}/>
+                    <PartyPopper className='inline mr-1 text-gray-200' size={14} />
                     <h2 className="text-md text-gray-200">{request.event}</h2>
                 </div>
                 <div className="flex items-center text-sm text-gray-400">
                     <MapPin className="inline mr-1" size={14} />
-                    <span className="mr-2">{request.venue}</span>
+                    <span className="mr-2">{request.venue.substring(0, 40)}</span>
                     <button
                         onClick={() => onViewMap(request.venue)}
                         className="text-purple-300 hover:text-purple-100 underline text-xs"
@@ -80,18 +84,18 @@ const RequestCard = ({ request, onAcceptClick, onDeclineClick, onViewMap }: { re
                 </div>
                 <div className='flex items-center'>
                     <Calendar className="inline mr-1 text-gray-200" size={14} />
-                    <p className="text-sm text-gray-400">{new Date(request.date).toLocaleDateString()}</p>
+                    <p className="text-sm text-gray-400">{new Date(request.date).toLocaleDateString('en-IN')}</p>
                 </div>
                 <div className='flex items-center'>
-                    <IndianRupee className='inline mr-1 text-gray-200' size={14}/>
+                    <IndianRupee className='inline mr-1 text-gray-200' size={14} />
                     <p className="text-sm text-gray-400">Budget: {request.budget}</p>
                 </div>
             </div>
         </div>
         <div className="flex flex-col items-end">
             <span className={`text-xs px-2 py-1 rounded-full mb-2 ${request.status === 'pending' ? 'bg-yellow-500 text-black' :
-                    request.status === 'rejected' ? 'bg-red-500 text-white' :
-                        'bg-green-500 text-white'
+                request.status === 'rejected' ? 'bg-red-500 text-white' :
+                    'bg-green-500 text-white'
                 }`}>
                 {request.status}
             </span>
@@ -130,6 +134,52 @@ const BookingsPage = () => {
     const [selectedVenue, setSelectedVenue] = useState<string>('');
     const [venueCoords, setVenueCoords] = useState<[number, number] | null>(null);
     const [loadingCoords, setLoadingCoords] = useState(false);
+    const [activeTab, setActiveTab] = useState<'requests' | 'workshops'>('requests');
+
+    // State for booked workshops
+    const [workshopSearch, setWorkshopSearch] = useState('');
+    const [workshopSortBy, setWorkshopSortBy] = useState('date');
+    const [workshopPage, setWorkshopPage] = useState(1);
+    const [workshopLimit, setWorkshopLimit] = useState(10);
+    const [workshopTotal, setWorkshopTotal] = useState(0);
+
+    const [bookedWorkshops, setBookedWorkshops] = useState<Workshop[]>([]);
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        if (location.state?.activeTab) {
+            setActiveTab(location.state.activeTab);
+        }
+    }, [location.state]);
+
+    useEffect(() => {
+        const fetchBookedWorkshops = async () => {
+            // if (activeTab === 'workshops') {
+            setLoading(true);
+            try {
+                const response = await getBookedWorkshops({
+                    search: workshopSearch,
+                    sortBy: workshopSortBy,
+                    page: workshopPage,
+                    limit: workshopLimit
+                });
+                console.log("Booked Workshops", response);
+                if (response.success) {
+                    setBookedWorkshops(response.data.workshops);
+                    setTotalRequests(response.data.total || 0);
+                }
+            } catch (error) {
+                console.error("Failed to fetch booked workshops", error);
+                toast.error("Failed to load booked workshops");
+            } finally {
+                setLoading(false);
+            }
+            // }
+        };
+
+        fetchBookedWorkshops();
+    }, [activeTab, workshopPage, workshopLimit, workshopSearch, workshopSortBy]);
 
     const handleUpdateStatus = async (id: string, status: 'accepted' | 'rejected' | 'cancelled') => {
         try {
@@ -249,65 +299,129 @@ const BookingsPage = () => {
             {/* <Header user={user} /> */}
             <UserNavbar title="Bookings Management" subTitle="Manage your client requests & workshop bookings" />
             <div className="flex border-b border-purple-700 mb-6">
-                <button className="py-2 px-4 text-white border-b-2 border-purple-500 font-semibold">Client Requests ({requests.length})</button>
-                <button className="py-2 px-4 text-gray-400">Booked Workshops (0)</button>
+                <button
+                    className={`py-2 px-4 font-semibold ${activeTab === 'requests' ? 'text-white border-b-2 border-purple-500' : 'text-gray-400'}`}
+                    onClick={() => setActiveTab('requests')}
+                >
+                    Client Event Requests ({requests.length})
+                </button>
+                <button
+                    className={`py-2 px-4 font-semibold ${activeTab === 'workshops' ? 'text-white border-b-2 border-purple-500' : 'text-gray-400'}`}
+                    onClick={() => setActiveTab('workshops')}
+                >
+                    Booked Workshops ({bookedWorkshops.length})
+                </button>
             </div>
             <div className="flex justify-between items-center mb-6">
-                <div className="relative w-1/3">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-300" />
-                    <input type="text" placeholder="Search by event..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg py-2 pl-10 focus:outline-none" />
-                    {search && <X className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-300 cursor-pointer" onClick={() => setSearch('')} />}
-                </div>
-                <div className="flex items-center space-x-4">
-                    <select value={status} onChange={(e) => setStatus(e.target.value)} className="bg-purple-700 text-white rounded-lg py-2 px-4 focus:outline-none">
-                        <option value="">All Status</option>
-                        <option value="pending">Pending</option>
-                        <option value="accepted">Accepted</option>
-                        <option value="rejected">Rejected</option>
-                        <option value="cancelled">Cancelled</option>
-                    </select>
-                    <div className="flex items-center">
-                        <span className="text-gray-400 mr-2">Sort by:</span>
-                        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-purple-700 text-white rounded-lg py-2 px-4 focus:outline-none">
-                            <option value="date">Sort by Date</option>
-                            <option value="budget">Sort by Budget</option>
-                        </select>
+                {activeTab === 'requests' ? (
+                    <div className="relative w-1/3">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-300" />
+                        <input type="text" placeholder="Search by event..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg py-2 pl-10 focus:outline-none" />
+                        {search && <X className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-300 cursor-pointer" onClick={() => setSearch('')} />}
                     </div>
+                ) : (
+                    <div className="relative w-1/3">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-300" />
+                        <input type="text" placeholder="Search by workshop..." value={workshopSearch} onChange={(e) => setWorkshopSearch(e.target.value)} className="w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg py-2 pl-10 focus:outline-none" />
+                        {workshopSearch && <X className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-300 cursor-pointer" onClick={() => setWorkshopSearch('')} />}
+                    </div>
+                )}
+                <div className="flex items-center space-x-4">
+                    {activeTab === 'requests' ? (
+                        <>
+                            <select value={status} onChange={(e) => setStatus(e.target.value)} className="bg-purple-700 text-white rounded-lg py-2 px-4 focus:outline-none">
+                                <option value="">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="accepted">Accepted</option>
+                                <option value="rejected">Rejected</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                            <div className="flex items-center">
+                                <span className="text-gray-400 mr-2">Sort by:</span>
+                                <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-purple-700 text-white rounded-lg py-2 px-4 focus:outline-none">
+                                    <option value="date">Sort by Date</option>
+                                    <option value="budget">Sort by Budget</option>
+                                </select>
+                            </div>
+                        </>
+                    ) : (
+                        <select
+                            value={workshopSortBy}
+                            onChange={(e) => setWorkshopSortBy(e.target.value)}
+                            className="bg-[#a855f7] text-white px-4 py-2 rounded-lg focus:outline-none"
+                        >
+                            <option value="startDate">Sort by Date</option>
+                            <option value="fee">Sort by Price</option>
+                            <option value="title">Sort by Title</option>
+                        </select>
+                    )}
                 </div>
             </div>
             <div className="space-y-4">
                 {loading ? (
-                    <p>Loading requests...</p>
-                ) : requests.length > 0 ? (
-                    requests.map(req => <RequestCard key={req._id} request={req} onAcceptClick={handleAcceptClick} onDeclineClick={handleDeclineClick} onViewMap={handleViewMap} />)
+                    <p>Loading...</p>
+                ) : activeTab === 'requests' ? (
+                    requests.length > 0 ? (
+                        requests.map(req => <RequestCard key={req._id} request={req} onAcceptClick={handleAcceptClick} onDeclineClick={handleDeclineClick} onViewMap={handleViewMap} />)
+                    ) : (
+                        <p>No client requests found.</p>
+                    )
                 ) : (
-                    <p>No client requests found.</p>
+                    bookedWorkshops.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {bookedWorkshops.map(workshop => (
+                                <div key={workshop._id} className="h-full">
+                                    <WorkshopCard
+                                        image={workshop.posterImage}
+                                        title={workshop.title}
+                                        category={workshop.style}
+                                        price={workshop.fee}
+                                        instructorName={workshop.instructor.username}
+                                        studioName={workshop.mode === 'offline' ? workshop.location : 'Online'}
+                                        date={workshop.startDate}
+                                        deadline={workshop.deadline} 
+                                        onBook={() => navigate(`/workshop/${workshop._id}`, { state: { isRegistered: true, paymentStatus: workshop.userParticipant?.paymentStatus } })}
+                                        actionLabel="View Details"
+                                        paymentStatus={workshop.userParticipant?.paymentStatus}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <p>No booked workshops found.</p>
+                    )
                 )}
             </div>
 
             {/* Pagination */}
             <div className='flex justify-between items-center mt-8 space-x-4'>
-                <div className="flex justify-end items-center mt-8 space-x-4">
-                    <h3>Showing {requests.length} of {totalRequests} requests</h3>
-                </div>
+                {activeTab === 'requests' ? (
+                    <div className="flex justify-end items-center mt-8 space-x-4">
+                        <h3>Showing {requests.length} of {totalRequests} requests</h3>
+                    </div>
+                ) : (
+                    <div className="flex justify-end items-center mt-8 space-x-4">
+                        <h3>Showing {bookedWorkshops.length} of {bookedWorkshops.length} bookings</h3>
+                    </div>
+                )}
 
-            <div className="flex justify-end items-center mt-8 space-x-4">
-                <button
-                    onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
-                    disabled={currentPage === 1}
-                    className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    <ChevronLeft />
-                </button>
-                <span className="text-white">Page {currentPage} of {Math.max(1, Math.ceil(totalRequests / pageSize))}</span>
-                <button
-                    onClick={() => setCurrentPage(p => p + 1)}
-                    disabled={currentPage >= Math.ceil(totalRequests / pageSize)}
-                    className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                <div className="flex justify-end items-center mt-8 space-x-4">
+                    <button
+                        onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                    <ChevronRight />
-                </button>
-            </div>
+                        <ChevronLeft />
+                    </button>
+                    <span className="text-white">Page {currentPage} of {Math.max(1, Math.ceil(totalRequests / pageSize))}</span>
+                    <button
+                        onClick={() => setCurrentPage(p => p + 1)}
+                        disabled={currentPage >= Math.ceil(totalRequests / pageSize)}
+                        className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <ChevronRight />
+                    </button>
+                </div>
             </div>
             {modalOpen && (
                 <ConfirmationModal

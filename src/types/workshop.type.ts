@@ -26,6 +26,14 @@ export interface Workshop {
     fee: number;
     maxParticipants: number;
     participants: any[]; // Using any[] for now as Participant structure is complex
+    userParticipant?: {
+        dancerId: string;
+        paymentStatus: 'paid' | 'failed';
+        paymentId?: string;
+        attendence?: 'present' | 'absent';
+        paymentDate?: string;
+        registeredDate?: string;
+    } ;
     posterImage: string;
     location?: string;
     meetingLink?: string;

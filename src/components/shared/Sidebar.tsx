@@ -1,10 +1,11 @@
 import { House, MessageSquare, Calendar, Briefcase, Trophy, CreditCard, User, LogOut, Settings } from "lucide-react"
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logoutUser as logoutUserAction } from "../../redux/slices/user.slice";
 import { logoutUser as logoutUserService } from "../../services/user/auth.service";
 import { useState } from "react";
 import ConfirmationModal from "../ui/ConfirmationModal";
+import { type RootState } from "../../redux/store";
 
 interface SidebarProps {
     activeMenu?: string;
@@ -13,6 +14,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeMenu = 'Home' }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [showLogoutModal, setShowLogoutModal] = useState(false);
+    const { userData } = useSelector((state: RootState) => state.user);
+    const userRoles = userData?.role || [];
 
     const handleLogout = async () => {
         console.log("handleLogout in dancer home")
@@ -31,8 +34,11 @@ const Sidebar: React.FC<SidebarProps> = ({ activeMenu = 'Home' }) => {
         { icon: <House />, name: 'Home', action: () => navigate('/home') },
         { icon: <MessageSquare />, name: 'Messages' },
         { icon: <Calendar />, name: 'Bookings', action: () => navigate('/bookings') },
-        { icon: <Briefcase />, name: 'Workshops', action: () => navigate('/workshops') },
-        { icon: <Trophy />, name: 'Competitions',action:()=>navigate('/competitions') },
+        ...(userRoles.includes('dancer') || userRoles.includes('instructor')
+            ? [{ icon: <Briefcase />, name: 'Workshops', action: () => navigate('/workshops') }]
+            : []),
+        ...(userRoles.includes('dancer') || userRoles.includes('organizer')
+            ? [{ icon: <Trophy />, name: 'Competitions',action:()=> navigate('/competitions') }] : []),
         { icon: <CreditCard />, name: 'Payments' },
     ];
 
@@ -43,7 +49,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeMenu = 'Home' }) => {
     ];
 
     return (
-        <aside className="w-64 bg-purple-900 text-white flex flex-col p-4">
+        <aside className="w-64 flex-shrink-0 bg-purple-900 text-white flex flex-col p-4">
             <div className="text-3xl font-bold mb-10 ml-4">Groovia</div>
             <nav className="flex-grow">
                 <ul>

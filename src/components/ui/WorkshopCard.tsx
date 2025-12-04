@@ -10,6 +10,9 @@ interface WorkshopCardProps {
     studioName?: string; // Optional, as it might be online or same as instructor
     date: string;
     onBook: () => void;
+    actionLabel?: string;
+    paymentStatus?: 'paid' | 'failed';
+    deadline?: string;
 }
 
 const WorkshopCard: React.FC<WorkshopCardProps> = ({
@@ -21,7 +24,12 @@ const WorkshopCard: React.FC<WorkshopCardProps> = ({
     studioName,
     date,
     onBook,
+    actionLabel = 'Book Now',
+    paymentStatus,
+    deadline
 }) => {
+    const isDeadlinePassed = deadline ? new Date(deadline) < new Date() : false;
+
     return (
         <div className="border-[#a855f7] border-2 bg-purple-500/50 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col h-full relative group">
             {/* Image Container */}
@@ -40,7 +48,7 @@ const WorkshopCard: React.FC<WorkshopCardProps> = ({
             {/* Content */}
             <div className="p-5 flex flex-col flex-grow">
                 {/* Title */}
-                <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2 leading-tight">
+                <h3 className="text-xl font-bold text-purple-300 mb-2 line-clamp-2 leading-tight">
                     {title}
                 </h3>
 
@@ -49,10 +57,25 @@ const WorkshopCard: React.FC<WorkshopCardProps> = ({
                     <span className="px-3 py-1 bg-white/30 backdrop-blur-sm text-white text-xs font-semibold rounded-full uppercase tracking-wide">
                         {category}
                     </span>
-                    <span className="text-2xl font-bold text-gray-900">
+                    <span className="text-2xl font-bold text-pink-200">
                         ₹{price}
                     </span>
                 </div>
+                {paymentStatus && (
+                    <div className={`mt-2 px-3 py-1 rounded-full text-xs font-semibold text-center ${paymentStatus === 'paid'
+                        ? 'bg-green-500/20 text-green-400 border border-green-500'
+                        : paymentStatus === 'failed'
+                            ? 'bg-red-500/20 text-red-400 border border-red-500'
+                            : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500'
+                        }`}>
+                        {paymentStatus === 'paid' ? '✓ Paid' : '✗ Payment Failed'}
+                    </div>
+                )}
+                {isDeadlinePassed && !paymentStatus && (
+                    <div className="mt-2 px-3 py-1 rounded-full text-xs font-semibold text-center bg-gray-500/20 text-gray-400 border border-gray-500">
+                        ⏰ Registration Closed
+                    </div>
+                )}
 
                 {/* Details */}
                 <div className="space-y-2 mb-6 flex-grow">
@@ -68,7 +91,7 @@ const WorkshopCard: React.FC<WorkshopCardProps> = ({
                     )}
                     <div className="flex items-center text-white/90 text-sm">
                         <Calendar size={16} className="mr-2 flex-shrink-0" />
-                        <span>{date}</span>
+                        <span>{new Date(date).toLocaleDateString('en-IN')}</span>
                     </div>
                 </div>
 
@@ -78,7 +101,7 @@ const WorkshopCard: React.FC<WorkshopCardProps> = ({
                         onClick={onBook}
                         className="bg-[#c084fc] hover:bg-[#d8b4fe] text-white px-6 py-2 rounded-lg font-semibold flex items-center transition-colors duration-200 shadow-md"
                     >
-                        Book Now
+                        {isDeadlinePassed && actionLabel === 'Book Now' ? 'Registration Closed' : actionLabel}
                         <ArrowUpRight size={18} className="ml-2" />
                     </button>
                 </div>
