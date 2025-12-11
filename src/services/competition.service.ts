@@ -49,7 +49,8 @@ export const getCompetitionById = async (id: string): Promise<Competition> => {
 export const getOrganizerCompetitions = async (params?: { category?: string; style?: string }): Promise<Competition[]> => {
     try {
         const queryString = params ? `?${new URLSearchParams(params).toString()}` : '';
-        const response = await CompetitionAxios.get(`/my-competitions${queryString}`);
+        console.log("Fetching organizer competitions with queryString:", params)
+        const response = await CompetitionAxios.get(`/my-competitions`);
         return response.data;
     } catch (error) {
         console.error('Failed to fetch competitions:', error);
@@ -116,6 +117,7 @@ export const updateCompetition = async (id: string, data: Partial<CreateCompetit
             },
         };
         const response = await CompetitionAxios.patch(`/${id}`, data, config);
+        console.log("update competition response:", response.data);
         return { success: true, data: response.data };
     } catch (error: any) {
         return {

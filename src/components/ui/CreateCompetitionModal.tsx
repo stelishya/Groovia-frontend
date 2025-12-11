@@ -39,7 +39,25 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
   // onSetTempImageSrc
 }) => {
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    title: string;
+    description: string;
+    category: string;
+    style: string;
+    customStyle: string;
+    level: string;
+    age_category: string;
+    mode: string;
+    duration: string;
+    location: string;
+    meeting_link: string;
+    date: string;
+    registrationDeadline: string;
+    maxParticipants: string;
+    fee: string;
+    posterImage: string;
+    document: string | File | null;
+  }>({
     title: '',
     description: '',
     category: '',
@@ -56,7 +74,7 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
     maxParticipants: '',
     fee: '',
     posterImage: '',
-    document: null as File | null,
+    document: '',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -67,6 +85,66 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [showCropModal, setShowCropModal] = useState(false);
   const [tempImageSrc, setTempImageSrc] = useState<string>('');
+
+  useEffect(() => {
+    if (isEditing && initialData) {
+      setFormData({
+        title: initialData.title || '',
+        description: initialData.description || '',
+        category: initialData.category || '',
+        style: initialData.style || '',
+        customStyle: '',
+        level: initialData.level || '',
+        age_category: initialData.age_category || '',
+        mode: initialData.mode || '',
+        duration: initialData.duration || '',
+        location: initialData.location || '',
+        meeting_link: initialData.meeting_link || '',
+        date: initialData.date ? new Date(initialData.date).toISOString().split('T')[0] : '',
+        registrationDeadline: initialData.registrationDeadline ? new Date(initialData.registrationDeadline).toISOString().split('T')[0] : '',
+        maxParticipants: initialData.maxParticipants?.toString() || '',
+        fee: initialData.fee?.toString() || '',
+        posterImage: initialData.posterImage || '',
+        document: initialData.document || '',
+      });
+
+      // Set image preview if posterImage exists
+      if (initialData.posterImage) {
+        setImagePreview(initialData.posterImage);
+      }
+
+      // Check if using custom style
+      const standardStyles = ['hip-hop', 'bharatanatyam', 'freestyle', 'ballet', 'contemporary', 'jazz'];
+      if (initialData.style && !standardStyles.includes(initialData.style.toLowerCase())) {
+        setShowCustomStyle(true);
+        setCustomStyle(initialData.style);
+      }
+    } else {
+      // Reset form when creating new competition
+      setFormData({
+        title: '',
+        description: '',
+        category: '',
+        style: '',
+        customStyle: '',
+        level: '',
+        age_category: '',
+        mode: '',
+        duration: '',
+        location: '',
+        meeting_link: '',
+        date: '',
+        registrationDeadline: '',
+        maxParticipants: '',
+        fee: '',
+        posterImage: '',
+        document: '',
+      });
+      setImagePreview('');
+      setShowCustomStyle(false);
+      setCustomStyle('');
+    }
+  }, [isEditing, initialData]);
 
   const handleImageUpload = (file: File) => {
     if (file.size > 5 * 1024 * 1024) {
@@ -224,8 +302,7 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
       return
     }
     console.log('Form data:', formData);
-    // TODO: Submit form data to API
-    // onClose();
+
     // Convert base64 image to Blob for file upload
     const base64ToBlob = (base64: string): Blob | null => {
       if (!base64 || !base64.includes(',')) return null;
@@ -243,11 +320,17 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
     // Create FormData for file upload
     const formDataToSend = new FormData();
 
-    // Add the poster image as a file
+    // Add the poster image as a file (only if it's a new base64 image)
     if (formData.posterImage) {
-      const imageBlob = base64ToBlob(formData.posterImage);
-      if (imageBlob) {
-        formDataToSend.append('posterImage', imageBlob, 'competition-poster.png');
+      if (formData.posterImage.startsWith('data:')) {
+        // New image upload - convert base64 to blob
+        const imageBlob = base64ToBlob(formData.posterImage);
+        if (imageBlob) {
+          formDataToSend.append('posterImage', imageBlob, 'competition-poster.png');
+        }
+      } else if (isEditing) {
+        // Editing with existing image URL - send the URL as is
+        formDataToSend.append('posterImage', formData.posterImage);
       }
     }
 
@@ -264,12 +347,23 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
     formDataToSend.append('registrationDeadline', formData.registrationDeadline);
     formDataToSend.append('maxParticipants', formData.maxParticipants);
     formDataToSend.append('fee', formData.fee);
+
     if (formData.mode === CompetitionMode.ONLINE && formData.meeting_link) {
       formDataToSend.append('meeting_link', formData.meeting_link);
     }
     if (formData.mode === CompetitionMode.OFFLINE && formData.location) {
       formDataToSend.append('location', formData.location);
     }
+
+    if (formData.document) {
+      formDataToSend.append('document', formData.document);
+    }
+
+    console.log('FormData entries:');
+    for (let pair of formDataToSend.entries()) {
+      console.log(pair[0] + ': ' + (pair[1] instanceof Blob ? 'Blob/File' : pair[1]));
+    }
+
     onSubmit(formDataToSend as any);
   };
 
@@ -280,7 +374,11 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
       <div className="bg-gradient-to-br from-purple-900 via-purple-800 to-pink-900 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-purple-500/30">
         <div className="p-6 border-b border-purple-500/30">
           <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold text-white">Create New Competition</h2>
+            {isEditing ? (
+              <h2 className="text-2xl font-bold text-white">Edit Competition</h2>
+            ) : (
+              <h2 className="text-2xl font-bold text-white">Create New Competition</h2>
+            )}
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-white text-2xl"
@@ -295,7 +393,7 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
             {/* Basic Info */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-purple-200 mb-2">
+                <label className="block px-3 text-sm font-medium text-purple-200 mb-2">
                   Competition Title *
                 </label>
                 <input
@@ -303,21 +401,21 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
                   name="title"
                   value={formData.title}
                   onChange={handleInputChange}
-                  className={`w-full bg-purple-600 border rounded-lg px-4 py-3 text-white placeholder-purple-300 focus:outline-none focus:border-purple-400 ${errors.title ? 'border-red-500' : 'border-purple-500/30'
+                  className={`w-full bg-purple-600 border rounded-lg px-3 py-3 text-white placeholder-purple-300 focus:outline-none focus:border-purple-400 ${errors.title ? 'border-red-500' : 'border-purple-500/30'
                     }`}
                   placeholder="Enter competition title"
                 />
                 {errors.title && <p className="text-red-400 text-xs mt-1">{errors.title}</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium text-purple-200 mb-2">
+                <label className="block px-3 text-sm font-medium text-purple-200 mb-2">
                   Category *
                 </label>
                 <select
                   name="category"
                   value={formData.category}
                   onChange={handleInputChange}
-                  className={`w-full bg-purple-600 border rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400 ${errors.category ? 'border-red-500' : 'border-purple-500/30'
+                  className={`w-full bg-purple-600 border rounded-lg px-2 py-3 text-purple-200 focus:outline-none focus:border-purple-400 ${errors.category ? 'border-red-500' : 'border-purple-500/30'
                     }`}
                 >
                   <option value="">Select Category</option>
@@ -330,7 +428,7 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-purple-200 mb-2">
+              <label className="block px-3 text-sm font-medium text-purple-200 mb-2">
                 Description *
               </label>
               <textarea
@@ -338,7 +436,7 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
                 name="description"
                 value={formData.description}
                 onChange={handleInputChange}
-                className={`w-full bg-purple-600 border rounded-lg px-4 py-3 text-white placeholder-purple-300 focus:outline-none focus:border-purple-400 ${errors.description ? 'border-red-500' : 'border-purple-500/30'
+                className={`w-full bg-purple-600 border rounded-lg px-3 py-3 text-white placeholder-purple-300 focus:outline-none focus:border-purple-400 ${errors.description ? 'border-red-500' : 'border-purple-500/30'
                   }`}
                 placeholder="Describe your competition"
               />
@@ -348,14 +446,14 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
             {/* Style and Level */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-medium text-purple-200 mb-2">
+                <label className="block px-3 text-sm font-medium text-purple-200 mb-2">
                   Dance Style *
                 </label>
                 <select
                   name="style"
                   value={showCustomStyle ? 'other' : formData.style}
                   onChange={handleInputChange}
-                  className={`w-full bg-purple-600 border rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400 ${errors.style ? 'border-red-500' : 'border-purple-500/30'
+                  className={`w-full bg-purple-600 border rounded-lg px-2 py-3 text-purple-200 focus:outline-none focus:border-purple-400 ${errors.style ? 'border-red-500' : 'border-purple-500/30'
                     }`}
                 >
                   <option value="">Select Style</option>
@@ -380,14 +478,14 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
                 {errors.style && <p className="text-red-400 text-xs mt-1">{errors.style}</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium text-purple-200 mb-2">
+                <label className="block px-3 text-sm font-medium text-purple-200 mb-2">
                   Level *
                 </label>
                 <select
                   name="level"
                   value={formData.level}
                   onChange={handleInputChange}
-                  className={`w-full bg-purple-600 border rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400 ${errors.level ? 'border-red-500' : 'border-purple-500/30'
+                  className={`w-full bg-purple-600 border rounded-lg px-2 py-3 text-purple-200 focus:outline-none focus:border-purple-400 ${errors.level ? 'border-red-500' : 'border-purple-500/30'
                     }`}
                 >
                   <option value="">Select Level</option>
@@ -398,14 +496,14 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
                 {errors.level && <p className="text-red-400 text-xs mt-1">{errors.level}</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium text-purple-200 mb-2">
+                <label className="block px-3 text-sm font-medium text-purple-200 mb-2">
                   Age Category *
                 </label>
                 <select
                   name="age_category"
                   value={formData.age_category}
                   onChange={handleInputChange}
-                  className={`w-full bg-purple-600 border rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400 ${errors.age_category ? 'border-red-500' : 'border-purple-500/30'
+                  className={`w-full bg-purple-600 border rounded-lg px-2 py-3 text-purple-200 focus:outline-none focus:border-purple-400 ${errors.age_category ? 'border-red-500' : 'border-purple-500/30'
                     }`}
                 >
                   <option value="">Select Age Group</option>
@@ -422,14 +520,14 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
             {/* Mode and Duration */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-purple-200 mb-2">
+                <label className="block px-3 text-sm font-medium text-purple-200 mb-2">
                   Mode *
                 </label>
                 <select
                   name="mode"
                   value={formData.mode}
                   onChange={handleInputChange}
-                  className={`w-full bg-purple-600 border rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400 ${errors.mode ? 'border-red-500' : 'border-purple-500/30'
+                  className={`w-full bg-purple-600 border rounded-lg px-2 py-3 text-purple-200 focus:outline-none focus:border-purple-400 ${errors.mode ? 'border-red-500' : 'border-purple-500/30'
                     }`}
                 >
                   <option value="">Select Mode</option>
@@ -439,7 +537,7 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
                 {errors.mode && <p className="text-red-400 text-xs mt-1">{errors.mode}</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium text-purple-200 mb-2">
+                <label className="block px-3 text-sm font-medium text-purple-200 mb-2">
                   Duration *
                 </label>
                 <input
@@ -447,7 +545,7 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
                   name="duration"
                   value={formData.duration}
                   onChange={handleInputChange}
-                  className={`w-full bg-purple-600 border rounded-lg px-4 py-3 text-white placeholder-purple-300 focus:outline-none focus:border-purple-400 ${errors.duration ? 'border-red-500' : 'border-purple-500/30'
+                  className={`w-full bg-purple-600 border rounded-lg px-3 py-3 text-white placeholder-purple-300 focus:outline-none focus:border-purple-400 ${errors.duration ? 'border-red-500' : 'border-purple-500/30'
                     }`}
                   placeholder="e.g.,5 minutes"
                 />
@@ -458,7 +556,7 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
             {/* Location/Meeting Link */}
             {formData.mode === 'offline' && (
               <div>
-                <label className="block text-sm font-medium text-purple-200 mb-2">
+                <label className="block px-3 text-sm font-medium text-purple-200 mb-2">
                   Location *
                 </label>
                 <div className="flex gap-2">
@@ -467,7 +565,7 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
                     name="location"
                     value={formData.location}
                     onChange={handleInputChange}
-                    className={`w-full bg-purple-600 border rounded-lg px-4 py-3 text-white placeholder-purple-300 focus:outline-none focus:border-purple-400 ${errors.location ? 'border-red-500' : 'border-purple-500/30'
+                    className={`w-full bg-purple-600 border rounded-lg px-3 py-3 text-white placeholder-purple-300 focus:outline-none focus:border-purple-400 ${errors.location ? 'border-red-500' : 'border-purple-500/30'
                       }`}
                     placeholder="Enter venue address"
                   />
@@ -498,7 +596,7 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
 
             {formData.mode === 'online' && (
               <div>
-                <label className="block text-sm font-medium text-purple-200 mb-2">
+                <label className="block px-3 text-sm font-medium text-purple-200 mb-2">
                   Meeting Link *
                 </label>
                 <input
@@ -506,7 +604,7 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
                   name="meeting_link"
                   value={formData.meeting_link}
                   onChange={handleInputChange}
-                  className={`w-full bg-purple-600 border rounded-lg px-4 py-3 text-white placeholder-purple-300 focus:outline-none focus:border-purple-400 ${errors.meeting_link ? 'border-red-500' : 'border-purple-500/30'
+                  className={`w-full bg-purple-600 border rounded-lg px-3 py-3 text-white placeholder-purple-300 focus:outline-none focus:border-purple-400 ${errors.meeting_link ? 'border-red-500' : 'border-purple-500/30'
                     }`}
                   placeholder="https://meet.google.com/..."
                 />
@@ -517,7 +615,7 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
             {/* Dates and Capacity */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
-                <label className="block text-sm font-medium text-purple-200 mb-2">
+                <label className="block px-3 text-sm font-medium text-purple-200 mb-2">
                   Competition Date *
                 </label>
                 <input
@@ -526,13 +624,13 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
                   value={formData.date}
                   onChange={handleInputChange}
                   min={new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]}
-                  className={`w-full bg-purple-600 border rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400 ${errors.date ? 'border-red-500' : 'border-purple-500/30'
+                  className={`w-full bg-purple-600 border rounded-lg px-3 py-3 text-white focus:outline-none focus:border-purple-400 ${errors.date ? 'border-red-500' : 'border-purple-500/30'
                     }`}
                 />
                 {errors.date && <p className="text-red-400 text-xs mt-1">{errors.date}</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium text-purple-200 mb-2">
+                <label className="block px-3 text-sm font-medium text-purple-200 mb-2">
                   Registration Deadline *
                 </label>
                 <input
@@ -541,13 +639,13 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
                   value={formData.registrationDeadline}
                   onChange={handleInputChange}
                   min={new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]}
-                  className={`w-full bg-purple-500 border rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-400 ${errors.registrationDeadline ? 'border-red-500' : 'border-purple-500/30'
+                  className={`w-full bg-purple-500 border rounded-lg px-3 py-3 text-white focus:outline-none focus:border-purple-400 ${errors.registrationDeadline ? 'border-red-500' : 'border-purple-500/30'
                     }`}
                 />
                 {errors.registrationDeadline && <p className="text-red-400 text-xs mt-1">{errors.registrationDeadline}</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium text-purple-200 mb-2">
+                <label className="block px-3 text-sm font-medium text-purple-200 mb-2">
                   Max Participants *
                 </label>
                 <input
@@ -556,7 +654,7 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
                   value={formData.maxParticipants}
                   onChange={handleInputChange}
                   min="1"
-                  className={`w-full bg-purple-500 border rounded-lg px-4 py-3 text-white placeholder-purple-300 focus:outline-none focus:border-purple-400 ${errors.maxParticipants ? 'border-red-500' : 'border-purple-500/30'
+                  className={`w-full bg-purple-500 border rounded-lg px-3 py-3 text-white placeholder-purple-300 focus:outline-none focus:border-purple-400 ${errors.maxParticipants ? 'border-red-500' : 'border-purple-500/30'
                     }`}
                   placeholder="100"
                 />
@@ -567,7 +665,7 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
             {/* Fee and Poster */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-purple-200 mb-2">
+                <label className="block px-3 text-sm font-medium text-purple-200 mb-2">
                   Entry Fee (₹) *
                 </label>
                 <input
@@ -576,7 +674,7 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
                   value={formData.fee}
                   onChange={handleInputChange}
                   min="0"
-                  className={`w-full bg-purple-500 border rounded-lg px-4 py-3 text-white placeholder-purple-300 focus:outline-none focus:border-purple-400 ${errors.fee ? 'border-red-500' : 'border-purple-500/30'
+                  className={`w-full bg-purple-500 border rounded-lg px-3 py-3 text-white placeholder-purple-300 focus:outline-none focus:border-purple-400 ${errors.fee ? 'border-red-500' : 'border-purple-500/30'
                     }`}
                   placeholder="500"
                 />
@@ -584,7 +682,7 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
                 <p className="text-purple-300 text-xs mt-1">Note: A 20% platform fee will be deducted from each registration fee.</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-purple-200 mb-2">
+                <label className="block px-3 text-sm font-medium text-purple-200 mb-2">
                   Poster Image *
                 </label>
                 <div
@@ -603,7 +701,7 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
                           setImagePreview('');
                           setFormData(prev => ({ ...prev, posterImage: '' }));
                         }}
-                        className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                        className="absolute top-0 right-0 bg-gray-500 text-white rounded-full p-1 hover:bg-red-600"
                       >
                         <X size={16} />
                       </button>
@@ -662,16 +760,48 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
 
             {/* Rules/Document */}
             <div>
-              <label className="block text-sm font-medium text-purple-200 mb-2">
+              <label className="block px-3 text-sm font-medium text-purple-200 mb-2">
                 Rules & Regulations (PDF)
               </label>
-              <input
-                type="file"
-                name="document"
-                accept=".pdf"
-                onChange={handleFileChange}
-                className="w-full bg-purple-500 border border-purple-500/30 rounded-lg px-4 py-3 text-white file:bg-purple-600 file:text-white file:border-none file:rounded file:px-3 file:py-1 file:mr-3"
-              />
+
+              {typeof formData.document === 'string' && formData.document ? (
+                <div className="flex items-center gap-3 p-3 bg-purple-600/30 border border-purple-500/30 rounded-lg mb-2">
+                  <div className="bg-red-500/20 p-2 rounded text-red-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /></svg>
+                  </div>
+                  <div className="flex-1 overflow-hidden">
+                    <p className="text-white text-sm truncate">Existing Document</p>
+                    <a
+                      href={formData.document}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-purple-300 hover:text-purple-200 underline"
+                    >
+                    <p className="text-purple-200 text-xs truncate opacity-70">
+                      {decodeURIComponent(formData.document.split('/').pop()?.split('?')[0].split('-')[2] || 'Document.pdf')}
+                    </p>
+                    </a>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, document: null }))}
+                    className="p-1 hover:bg-purple-600 rounded text-gray-400 hover:text-white transition-colors"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ) : (
+                <input
+                  type="file"
+                  name="document"
+                  accept=".pdf"
+                  onChange={handleFileChange}
+                  className="w-full bg-purple-500 border border-purple-500/30 rounded-lg px-3 py-3 text-white file:bg-purple-600 file:text-white file:border-none file:rounded file:px-3 file:py-1 file:mr-3"
+                />
+              )}
+              {typeof formData.document !== 'string' && (
+                <p className="text-purple-300 text-xs mt-1">Upload PDF containing competition rules (max 5MB)</p>
+              )}
             </div>
 
             {/* Action Buttons */}
@@ -687,7 +817,7 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
                 type="submit"
                 className="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg font-medium transition-all"
               >
-                Create Competition
+                {isEditing ? 'Update Competition' : 'Create Competition'}
               </button>
             </div>
           </form>

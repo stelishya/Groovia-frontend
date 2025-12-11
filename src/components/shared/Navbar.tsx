@@ -47,8 +47,6 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ title, subTitle }) => {
     const fetchNotifications = async () => {
         try {
             const response = await NotificationAxios.get(`/user/${userData?._id}`);
-            console.log("response in fetchNotifications : ", response)
-            // Backend returns { success: true, data: { notifications: [...], pagination: {...} } }
             const newNotifications = response.data.data.notifications || [];
             setNotifications(newNotifications);
 
@@ -172,7 +170,7 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ title, subTitle }) => {
         <>
             <header className="flex justify-between items-center p-4 relative">
                 <div>
-                    <h1 className="text-3xl font-bold text-white">{title}</h1>
+                    <h1 className="text-4xl font-bold text-purple-400 mb-2">{title}</h1>
                     <p className="text-gray-400">{subTitle}</p>
                 </div>
                 {/* Search Bar */}
@@ -207,7 +205,7 @@ className = "w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg p
                             onClick={() => setShowNotifications(!showNotifications)}
                             className="relative text-white text-2xl cursor-pointer hover:text-purple-300 transition-colors"
                         >
-                            <Bell className="w-6 h-6" />
+                            <Bell className="w-6 h-6 text-purple-400 cursor-pointer hover:text-purple-300" />
                             {unreadCount > 0 && (
                                 <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full text-xs text-white flex items-center justify-center font-bold">
                                     {unreadCount}

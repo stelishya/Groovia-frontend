@@ -1,4 +1,3 @@
-"use client"
 import type { ReactNode } from "react"
 import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react"
 

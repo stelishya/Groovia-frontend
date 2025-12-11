@@ -5,6 +5,7 @@ import { WorkshopMode } from '../../types/workshop.type';
 interface InstructorWorkshopCardProps {
     title: string;
     status: 'Upcoming' | 'Active' | 'Completed';
+    fee: number;
     date: string;
     time: string;
     mode: WorkshopMode;
@@ -18,6 +19,7 @@ interface InstructorWorkshopCardProps {
 const InstructorWorkshopCard: React.FC<InstructorWorkshopCardProps> = ({
     title,
     status,
+    fee,
     date,
     time,
     mode,
@@ -68,7 +70,9 @@ const InstructorWorkshopCard: React.FC<InstructorWorkshopCardProps> = ({
                 <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-300">Mode : <span className="text-white font-medium">{mode}</span></span>
                 </div>
-
+                <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-300">Fee : ₹<span className="text-white font-medium">{fee}</span></span>
+                </div>
                 <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-300">Attendees {attendeesCount} / {maxAttendees}</span>
                     {/* Progress bar could go here */}

@@ -70,5 +70,6 @@ export interface CreateCompetitionData {
   document?: string;
   fee: number;
   date: string;
+  maxParticipants: number;
   registrationDeadline: string;
 }

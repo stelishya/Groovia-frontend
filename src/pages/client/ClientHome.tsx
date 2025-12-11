@@ -409,7 +409,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
                 </div>
 
                 {/* Dancer Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
                     {dancers.length > 0 ? (
                         dancers.map((dancer) => (
                             <DancerCard

@@ -159,7 +159,7 @@ const Payment: React.FC<PaymentProps> = ({
                         if (config.type === PaymentType.WORKSHOP_BOOKING) {
                             // Mark payment as failed
                             await markWorkshopPaymentFailed(config.entityId);
-                            toast.error('Payment cancelled');
+                            toast.error('Payment failed');
                             // Redirect to workshop details
                             // navigate(`/booked/${config.entityId}`, {
                             //     state: {
@@ -172,10 +172,10 @@ const Payment: React.FC<PaymentProps> = ({
                             if (config.entityId) {
                                 await markCompetitionPaymentFailed(config.entityId);
                             }
-                            toast.error('Payment cancelled');
+                            toast.error('Payment failed');
                             navigate('/competitions');
                         } else {
-                            toast.error('Payment cancelled');
+                            toast.error('Payment failed');
                         }
                         setIsProcessing(false);
                         // config.onFailure?.();

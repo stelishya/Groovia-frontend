@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import Sidebar from '../../components/shared/Sidebar';
 import InstructorWorkshopCard from '../../components/ui/InstructorWorkshopCard';
 import CreateWorkshopModal from '../../components/ui/CreateWorkshopModal';
-import WorkshopDetailsModal from '../../components/ui/WorkshopDetailsModal';
+import GenericDetailsModal from '../../components/ui/EntityDetailsModal';
 import { Search, Plus, ScanLine, Bell, Filter, X } from 'lucide-react';
 import { getInstructorWorkshops, createWorkshop, updateWorkshop, deleteWorkshop } from '../../services/workshop/workshop.service';
 import type { Workshop, CreateWorkshopData } from '../../types/workshop.type';
 import toast from 'react-hot-toast';
 import ConfirmationModal from '../../components/ui/ConfirmationModal';
+import UserNavbar from '../../components/shared/Navbar';
 
 const InstructorWorkshops = () => {
     const [filter, setFilter] = useState('All Types');
@@ -62,13 +63,13 @@ const InstructorWorkshops = () => {
     };
 
     const handleDeleteWorkshop = async (id: string) => {
-            const response = await deleteWorkshop(id);
-            if (response.success) {
-                toast.success('Workshop deleted successfully');
-                fetchWorkshops();
-            } else {
-                toast.error(response.message || 'Failed to delete workshop');
-            }
+        const response = await deleteWorkshop(id);
+        if (response.success) {
+            toast.success('Workshop deleted successfully');
+            fetchWorkshops();
+        } else {
+            toast.error(response.message || 'Failed to delete workshop');
+        }
     };
 
     const handleViewDetails = (workshop: Workshop) => {
@@ -93,14 +94,14 @@ const InstructorWorkshops = () => {
     const filteredWorkshops = workshops.filter(workshop =>
         workshop.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
-    
+
     return (
         <div className="flex h-screen bg-[#0f0f13] text-white overflow-hidden">
             <Sidebar activeMenu='Workshops'/>
 
             <div className="flex-1 flex flex-col overflow-hidden relative">
                 {/* Header */}
-                <header className="flex justify-between items-center p-8 pb-4">
+                {/* <header className="flex justify-between items-center p-8 pb-4">
                     <div>
                         <h1 className="text-4xl font-bold text-purple-400 mb-2">Workshops Management</h1>
                         <p className="text-gray-400">Manage your dance workshops and track attendance</p>
@@ -114,7 +115,8 @@ const InstructorWorkshops = () => {
                             className="w-10 h-10 rounded-full border-2 border-purple-500 cursor-pointer"
                         />
                     </div>
-                </header>
+                </header> */}
+                <UserNavbar title='Workshops Management' subTitle='Manage your dance workshops and track attendance'/>
 
                 {/* Controls Bar */}
                 <div className="px-8 py-6 flex flex-wrap justify-between items-center gap-4">
@@ -146,12 +148,12 @@ const InstructorWorkshops = () => {
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                             {searchQuery && (
-                            <X
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-300 cursor-pointer hover:text-white"
-                                size={20}
-                                onClick={() => setSearchQuery('')}
-                            />
-                        )}
+                                <X
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-300 cursor-pointer hover:text-white"
+                                    size={20}
+                                    onClick={() => setSearchQuery('')}
+                                />
+                            )}
                         </div>
                         {/* <button className="flex items-center gap-2 px-4 py-2 bg-[#7c3aed] text-white rounded-lg hover:bg-[#6d28d9] transition-colors">
                             <span>All Types</span>
@@ -172,6 +174,7 @@ const InstructorWorkshops = () => {
                                         key={workshop._id}
                                         title={workshop.title}
                                         status={getStatus(workshop)}
+                                        fee={workshop.fee}
                                         date={workshop.startDate}
                                         time={workshop.sessions[0]?.startTime || 'TBA'}
                                         mode={workshop.mode}
@@ -181,7 +184,8 @@ const InstructorWorkshops = () => {
                                         onEdit={() => handleEditClick(workshop)}
                                         onDelete={() => {
                                             setEditingWorkshop(workshop)
-                                            setIsDeleteModalOpen(true)}}
+                                            setIsDeleteModalOpen(true)
+                                        }}
                                     />
                                 ))
                             ) : (
@@ -208,8 +212,9 @@ const InstructorWorkshops = () => {
                             handleDeleteWorkshop(editingWorkshop._id);
                             setIsDeleteModalOpen(false);
                             setEditingWorkshop(null);
-                        }}
                         }
+                    }
+                    }
                 />
             )}
             <CreateWorkshopModal
@@ -223,10 +228,11 @@ const InstructorWorkshops = () => {
                 isEditing={!!editingWorkshop}
             />
 
-            <WorkshopDetailsModal
+            <GenericDetailsModal
                 isOpen={!!viewingWorkshop}
                 onClose={() => setViewingWorkshop(null)}
-                workshop={viewingWorkshop}
+                data={viewingWorkshop}
+                entityType="workshop"
             />
         </div>
     );

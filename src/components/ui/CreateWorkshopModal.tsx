@@ -347,6 +347,7 @@ const CreateWorkshopModal: React.FC<CreateWorkshopModalProps> = ({ isOpen, onClo
                                 name="title"
                                 value={formData.title}
                                 onChange={handleChange}
+                                placeholder="Enter workshop title"
                                 className={`w-full bg-purple-500 border-2 ${errors.title ? 'border-red-500' : 'border-purple-800'} rounded-lg p-2 text-white`}
                             />
                             {errors.title && <p className="text-red-400 text-xs mt-1">{errors.title}</p>}
@@ -383,6 +384,7 @@ const CreateWorkshopModal: React.FC<CreateWorkshopModalProps> = ({ isOpen, onClo
                             name="description"
                             value={formData.description}
                             onChange={handleChange}
+                            placeholder="Enter workshop description"
                             className={`w-full bg-purple-500 border-2 ${errors.description ? 'border-red-500' : 'border-purple-800'} rounded-lg p-2 text-white`}
                             rows={3}
                         />

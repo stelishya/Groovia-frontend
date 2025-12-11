@@ -75,13 +75,12 @@ const CompetitionCard: React.FC<CompetitionCardProps> = ({
                 </div>
                 {paymentStatus && (
                     <div className="flex items-center mt-2">
-                        <span className={`text-xs px-3 py-1 rounded-full font-medium ${
-                            paymentStatus === 'paid' 
-                                ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
-                                : paymentStatus === 'failed' 
-                                ? 'bg-red-500/20 text-red-400 border border-red-500/30' 
+                        <span className={`text-xs px-3 py-1 rounded-full font-medium ${paymentStatus === 'paid'
+                            ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                            : paymentStatus === 'failed'
+                                ? 'bg-red-500/20 text-red-400 border border-red-500/30'
                                 : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-                        }`}>
+                            }`}>
                             Payment: {paymentStatus.charAt(0).toUpperCase() + paymentStatus.slice(1)}
                         </span>
                     </div>
