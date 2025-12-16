@@ -31,7 +31,8 @@ const WorkshopCard: React.FC<WorkshopCardProps> = ({
     const isDeadlinePassed = deadline ? new Date(deadline) < new Date() : false;
 
     return (
-        <div className="border-[#a855f7] border-2 bg-purple-500/50 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col h-full relative group">
+        <div className="border-[#a855f7] border-2 bg-purple-500/50 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-transform duration-300 ease-in-out
+        hover:-translate-y-2 flex flex-col h-full relative group">
             {/* Image Container */}
             <div className="p-4 pb-0">
                 <div className="relative h-48 w-full rounded-xl overflow-hidden">
@@ -91,7 +92,12 @@ const WorkshopCard: React.FC<WorkshopCardProps> = ({
                     )}
                     <div className="flex items-center text-white/90 text-sm">
                         <Calendar size={16} className="mr-2 flex-shrink-0" />
-                        <span>{new Date(date).toLocaleDateString('en-IN')}</span>
+                        {/* <span>{new Date(date).toLocaleDateString('en-IN')}</span> */}
+                        <span>{new Date(date).toLocaleDateString('en-IN', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                        })}</span>
                     </div>
                 </div>
 

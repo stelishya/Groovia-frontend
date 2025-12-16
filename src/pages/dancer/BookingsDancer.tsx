@@ -1,15 +1,14 @@
 
-
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Search, Bell, X, MapPin, Calendar, IndianRupee, PersonStanding, User, PartyPopper, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Bell, X, MapPin, Calendar, IndianRupee, User, PartyPopper, ChevronLeft, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getEventRequests } from '../../services/dancer/dancer.service';
 import { fetchMyProfile } from '../../services/user/auth.service';
 import Sidebar from '../../components/shared/Sidebar';
 import { updateEventBookingStatus } from '../../services/client/client.service';
 import { getBookedWorkshops } from '../../services/workshop/workshop.service';
-import WorkshopCard from '../../components/ui/WorkshopCard';
+import { UserTable } from '../../components/ui/Table';
 import type { Workshop } from '../../types/workshop.type';
 import ConfirmationModal from '../../components/ui/ConfirmationModal';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
@@ -300,16 +299,16 @@ const BookingsPage = () => {
             <UserNavbar title="Bookings Management" subTitle="Manage your client requests & workshop bookings" />
             <div className="flex border-b border-purple-700 mb-6">
                 <button
-                    className={`py-2 px-4 font-semibold ${activeTab === 'requests' ? 'text-white border-b-2 border-purple-500' : 'text-gray-400'}`}
-                    onClick={() => setActiveTab('requests')}
-                >
-                    Client Event Requests ({requests.length})
-                </button>
-                <button
                     className={`py-2 px-4 font-semibold ${activeTab === 'workshops' ? 'text-white border-b-2 border-purple-500' : 'text-gray-400'}`}
                     onClick={() => setActiveTab('workshops')}
                 >
                     Booked Workshops ({bookedWorkshops.length})
+                </button>
+                <button
+                    className={`py-2 px-4 font-semibold ${activeTab === 'requests' ? 'text-white border-b-2 border-purple-500' : 'text-gray-400'}`}
+                    onClick={() => setActiveTab('requests')}
+                >
+                    Client Event Requests ({requests.length})
                 </button>
             </div>
             <div className="flex justify-between items-center mb-6">
@@ -368,25 +367,21 @@ const BookingsPage = () => {
                     )
                 ) : (
                     bookedWorkshops.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {bookedWorkshops.map(workshop => (
-                                <div key={workshop._id} className="h-full">
-                                    <WorkshopCard
-                                        image={workshop.posterImage}
-                                        title={workshop.title}
-                                        category={workshop.style}
-                                        price={workshop.fee}
-                                        instructorName={workshop.instructor.username}
-                                        studioName={workshop.mode === 'offline' ? workshop.location : 'Online'}
-                                        date={workshop.startDate}
-                                        deadline={workshop.deadline} 
-                                        onBook={() => navigate(`/workshop/${workshop._id}`, { state: { isRegistered: true, paymentStatus: workshop.userParticipant?.paymentStatus } })}
-                                        actionLabel="View Details"
-                                        paymentStatus={workshop.userParticipant?.paymentStatus}
-                                    />
-                                </div>
-                            ))}
-                        </div>
+                        <UserTable
+                            data={bookedWorkshops}
+                            variant="dancer-workshop"
+                            onView={(workshop) => {
+                                // Using default workshop card navigation logic
+                                // Need to ensure state is passed if required by WorkshopDetails page
+                                // The original code passed state: { isRegistered: true, paymentStatus: workshop.userParticipant.paymentStatus }
+                                navigate(`/workshop/${workshop._id}`, {
+                                    state: {
+                                        isRegistered: true,
+                                        paymentStatus: workshop.userParticipant?.paymentStatus
+                                    }
+                                });
+                            }}
+                        />
                     ) : (
                         <p>No booked workshops found.</p>
                     )

@@ -33,7 +33,15 @@ export interface Workshop {
         attendence?: 'present' | 'absent';
         paymentDate?: string;
         registeredDate?: string;
-    } ;
+        snapshot?: {
+            title: string;
+            fee: number;
+            date: Date;
+            time: string;
+            location: string;
+            image: string;
+        };
+    };
     posterImage: string;
     location?: string;
     meetingLink?: string;

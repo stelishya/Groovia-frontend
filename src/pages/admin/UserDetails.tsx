@@ -278,10 +278,12 @@ const UserDetails: React.FC = () => {
             <BadgeCheck className="h-3 sm:h-4 w-3 sm:w-4 text-gray-400" />
             <span className="truncate">{record.role[0]}</span>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-900 dark:text-gray-100">
-            <Landmark className="h-3 sm:h-4 w-3 sm:w-4 text-gray-400" />
-            <span className="truncate">{record.role[1]}</span>
-          </div>
+          {record.role[1] && (
+            <div className="flex items-center gap-2 text-sm text-gray-900 dark:text-gray-100">
+              <Landmark className="h-3 sm:h-4 w-3 sm:w-4 text-gray-400" />
+              <span className="truncate">{record.role[1]}</span>
+            </div>
+          )}
           {/* {record.phone && (
             <div className="flex items-center gap-2 text-sm text-gray-900 dark:text-gray-100">
               <Phone className="h-3 sm:h-4 w-3 sm:w-4 text-gray-400" />

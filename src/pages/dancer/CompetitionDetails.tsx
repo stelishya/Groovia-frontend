@@ -107,8 +107,8 @@ export default function CompetitionDetails() {
             </div>
         );
     }
-
-    const organizer = typeof competition.organizer_id === 'object' ? competition.organizer_id : { _id: competition.organizer_id, username: 'Organizer', profileImage: '' };
+    console.log("typeof competition.organizer_id",typeof competition.organizer_id )
+    const organizer = typeof competition.organizer_id === 'object' ? competition.organizer_id : { _id: competition.organizer_id, username: 'Unknown Organizer', profileImage: '' };
 
     return (
         <div className="min-h-screen bg-[#0f0f13] text-white">
@@ -125,10 +125,10 @@ export default function CompetitionDetails() {
                 <div className="relative container mx-auto px-4 h-full flex flex-col justify-between py-8">
                     <button
                         onClick={() => navigate(-1)}
-                        className="flex items-center gap-2 px-4 py-2 bg-purple-600/80 hover:bg-purple-700 rounded-lg transition-colors w-fit z-10"
+                        className="absolute top-2 left-3 w-14 h-14  rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-all duration-200 z-10"
+                        // className="flex items-center gap-2 px-4 py-2 bg-purple-600/80 hover:bg-purple-700 rounded-lg transition-colors w-fit z-10"
                     >
                         <ArrowLeft size={20} />
-                        Back
                     </button>
 
                     <div className="flex flex-col lg:flex-row gap-8 items-start z-10">

@@ -57,7 +57,7 @@ const CompetitionCheckoutPage = () => {
         <Checkout
             competition={competition}
             userEmail={user?.email || ''}
-            onUpgrade={() => navigate('/bookings')}
+            onUpgrade={() => navigate('/competitions')}
             onCancel={() => navigate(-1)}
         />
     );
