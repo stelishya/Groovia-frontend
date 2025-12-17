@@ -247,36 +247,36 @@ export function UserTable({
         <table className="w-full">
           <thead className="bg-purple-900/50 border-b border-purple-700">
             <tr>
-              <th className="px-6 py-4 text-center text-xs font-medium text-purple-300 uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
                 {variant.includes('workshop') ? 'Workshop' : 'Competition'}
               </th>
-              <th className="px-6 py-4 text-center text-xs font-medium text-purple-300 uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
                 Date
               </th>
-              <th className="px-6 py-4 text-center text-xs font-medium text-purple-300 uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
                 Location
               </th>
               {variant === 'organizer-competition' && (
-                <th className="px-6 py-4 text-center text-xs font-medium text-purple-300 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
                   Participants
                 </th>
               )}
-              <th className="px-6 py-4 text-center text-xs font-medium text-purple-300 uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
                 Fee
               </th>
-              <th className="px-6 py-4 text-center text-xs font-medium text-purple-300 uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-6 py-4 text-center text-xs font-medium text-purple-300 uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
                 View
               </th>
               {variant === 'organizer-competition' && (
-                <th className="px-6 py-4 text-center text-xs font-medium text-purple-300 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
                   Actions
                 </th>
               )}
               {variant !== 'organizer-competition' && (
-                <th className="px-6 py-4 text-center text-xs font-medium text-purple-300 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
                   Payment
                 </th>
               )}
@@ -294,7 +294,7 @@ export function UserTable({
                 >
                   {/* Info with Image */}
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-left gap-3">
                       <img
                         src={getImageUrl(display.image)}
                         alt={display.title}
@@ -322,7 +322,7 @@ export function UserTable({
                   </td>
 
                   {/* Date */}
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap text-left">
                     <div className="text-sm text-white">
                       {display.date.toLocaleDateString('en-US', {
                         year: 'numeric',
@@ -339,7 +339,7 @@ export function UserTable({
 
                   {/* Location */}
                   <td className="px-6 py-4">
-                    <div className="text-sm text-white max-w-xs truncate text-center">
+                    <div className="text-sm text-white max-w-xs truncate text-left">
                       {display.isOnline ? (
                         <span className="text-purple-300">🌐 Online</span>
                       ) : (
@@ -351,7 +351,7 @@ export function UserTable({
                   {/* Participants (Organizer Only) */}
                   {variant === 'organizer-competition' && (
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex flex-col gap-2">
+                      <div className="flex flex-col gap-2 text-left">
                         <div className="text-sm text-white">
                           {display.participantsCount} / {display.maxParticipants}
                         </div>
@@ -375,13 +375,13 @@ export function UserTable({
 
                   {/* Fee */}
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-semibold text-white">
+                    <div className="text-sm font-semibold text-white text-left">
                       ₹{display.fee}
                     </div>
                   </td>
 
                   {/* Status */}
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap text-left">
                     <span className={`text-xs px-3 py-1 rounded-full font-medium ${getStatusColor(display.status)}`}>
                       {display.status}
                     </span>
@@ -400,7 +400,7 @@ export function UserTable({
                   </td>
 
                   {/* View */}
-                  <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                  <td className="px-6 py-4 whitespace-nowrap text-left text-sm font-medium">
                     <button
                       onClick={() => onView?.(item)}
                       className="px-3 py-1.5 bg-purple-600 text-white rounded-lg text-xs hover:bg-purple-700 transition-colors"
@@ -412,7 +412,7 @@ export function UserTable({
                   {/* Actions (Organizer Only) */}
                   {variant === 'organizer-competition' && (
                     <td>
-                      <div className="flex justify-end gap-2">
+                      <div className="flex justify-left gap-2">
                         <button
                           onClick={() => onEdit?.(item)}
                           className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs hover:bg-blue-700 transition-colors flex items-center gap-1"
@@ -431,7 +431,7 @@ export function UserTable({
 
                   {/* Payment (Dancer Only) */}
                   {variant !== 'organizer-competition' && (
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                    <td className="px-6 py-4 whitespace-nowrap text-left">
                       <div>
                         {paymentStatus === 'failed' ? (
                           <button
@@ -441,7 +441,7 @@ export function UserTable({
                             <RefreshCcw size={14} /> Retry
                           </button>
                         ) : (
-                          <span className="text-green-400 text-xs text-center block">{paymentStatus.toUpperCase()}</span>
+                          <span className="text-green-400 text-xs text-left block">{paymentStatus.toUpperCase()}</span>
                         )}
                       </div>
                     </td>

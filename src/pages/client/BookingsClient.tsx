@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Bell, X, MapPin, DollarSign, Calendar, ChevronRight, ChevronLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Search, Bell, X, MapPin, DollarSign, Calendar, ChevronRight, ChevronLeft, IndianRupee } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getClientEventRequests, updateEventBookingStatus } from '../../services/client/client.service';
 import Sidebar from '../../components/shared/Sidebar';
@@ -8,7 +9,6 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
-// Fix for default marker icon
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
@@ -28,14 +28,16 @@ interface Dancer {
     danceStyles?: string[];
 }
 
-interface EventRequest {
+export interface EventRequest {
     _id: string;
     dancerId: Dancer | null;
     event: string;
     date: string;
     venue: string;
     budget: string;
-    status: 'pending' | 'accepted' | 'rejected' | 'completed' | 'cancelled';
+    status: 'pending' | 'accepted' | 'rejected' | 'completed' | 'confirmed' | 'cancelled';
+    acceptedAmount?: number;
+    paymentStatus?: 'pending' | 'failed' | 'paid';
 }
 
 
@@ -52,7 +54,17 @@ const Header = () => (
     </header>
 );
 
-const RequestCard = ({ request, onCancelClick, onViewMap }: { request: EventRequest, onCancelClick: (id: string) => void, onViewMap: (venue: string) => void }) => (
+const RequestCard = ({
+    request,
+    onCancelClick,
+    onViewMap,
+    onPaymentClick
+}: {
+    request: EventRequest,
+    onCancelClick: (id: string) => void,
+    onViewMap: (venue: string) => void,
+    onPaymentClick: (request: EventRequest) => void
+}) => (
     <div className="bg-gradient-to-br from-deep-purple to-purple-500 rounded-lg p-6">
         <div className="flex justify-between items-start">
             {/* Left side - Dancer Info */}
@@ -93,8 +105,8 @@ const RequestCard = ({ request, onCancelClick, onViewMap }: { request: EventRequ
                     </div>
                     {/* <span className={`text-xs px-3 py-1 rounded-full ${request.status === 'pending' ? 'bg-yellow-500 text-black' : 'bg-green-500 text-white'}`}> */}
                     <span className={`text-xs px-2 py-1 rounded-full mb-2 ${request.status === 'pending' ? 'bg-yellow-500 text-black' :
-                            request.status === 'rejected' ? 'bg-red-500 text-white' :
-                                'bg-green-500 text-white'
+                        request.status === 'rejected' ? 'bg-red-500 text-white' :
+                            'bg-green-500 text-white'
                         }`}>
                         {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
                     </span>
@@ -112,9 +124,14 @@ const RequestCard = ({ request, onCancelClick, onViewMap }: { request: EventRequ
                         })}</span>
                     </div>
                     <div className="flex items-center text-white/90">
-                        <DollarSign className="w-4 h-4 mr-2" />
                         <span>₹{request.budget}</span>
                     </div>
+                    {request.acceptedAmount && (
+                        <div className="flex items-center text-green-300 font-semibold">
+                            <IndianRupee className="w-4 h-4 mr-2" />
+                            <span>Agreed: ₹ {request.acceptedAmount}</span>
+                        </div>
+                    )}
                     <div className="flex items-center text-white/90">
                         <MapPin className="w-4 h-4 mr-2" />
                         <span className="mr-2">{request.venue || 'Venue not specified'}</span>
@@ -136,13 +153,29 @@ const RequestCard = ({ request, onCancelClick, onViewMap }: { request: EventRequ
             {request.status === 'pending' && (
                 <>
                     {/* <button className="bg-green-500 text-white px-3 py-1 rounded-md text-sm">Accept</button> */}
-                    <button onClick={() => onCancelClick(request._id)} className="bg-orange-500 text-white px-3 py-1 rounded-md text-sm">Cancel Request</button>
+                    <button onClick={() => onCancelClick(request._id)} className="bg-orange-500/70 text-white font-bold px-3 py-2 rounded-md text-sm">Cancel Request</button>
                 </>
             )}
             {request.status === 'accepted' && (
                 <>
-                    <button className="bg-blue-500 text-white px-3 py-1 rounded-md text-sm">Pay 50% Advance to Confirm Booking</button>
-                    <button className="bg-purple-500 text-white px-3 py-1 rounded-md text-sm">Message</button>
+                    {/* Only show Pay button if payment is not completed */}
+                    {request.paymentStatus !== 'paid' ? (
+                        <button
+                            onClick={() => onPaymentClick(request)}
+                            className={`font-bold px-3 py-2 border rounded-md text-sm transition-colors ${request.paymentStatus === 'failed'
+                                    ? 'bg-red-600/50 text-white border-red-800 hover:bg-red-700'
+                                    : 'bg-purple-600/50 text-white border-purple-800 hover:bg-purple-700'
+                                }`}
+                        >
+                            {request.paymentStatus === 'failed' ? 'Retry Payment' : `Pay ₹${request.acceptedAmount || 0} to Confirm`}
+                        </button>
+                    ) : (
+                        <span className="bg-green-500/20 text-green-300 font-bold px-3 py-2 rounded-md text-sm border border-green-500/50">
+                            Payment Completed
+                        </span>
+                    )}
+
+                    <button className="bg-purple-500 text-white font-bold px-3 py-2 rounded-md text-sm">Message</button>
                 </>
             )}
         </div>
@@ -165,6 +198,7 @@ const BookingsPage = () => {
     const [selectedVenue, setSelectedVenue] = useState<string>('');
     const [venueCoords, setVenueCoords] = useState<[number, number] | null>(null);
     const [loadingCoords, setLoadingCoords] = useState(false);
+    const navigate = useNavigate();
 
     console.log("requests in bookings page in bookings client :", requests)
 
@@ -219,35 +253,46 @@ const BookingsPage = () => {
         }
     };
 
-    useEffect(() => {
-        const fetchRequests = async () => {
-            setLoading(true);
-            try {
-                const params = new URLSearchParams();
-                params.append('page', currentPage.toString());
-                params.append('limit', pageSize.toString());
-                if (search) params.append('search', search);
-                if (status) params.append('status', status);
-                if (sortBy) params.append('sortBy', sortBy);
+    // Razorpay Logic
+    // Razorpay Logic - MOVED TO CHECKOUT PAGE
+    const handlePayment = (request: EventRequest) => {
+        if (!request.acceptedAmount) {
+            toast.error("No accepted amount to pay.");
+            return;
+        }
 
-                const data = await getClientEventRequests(params);
-                console.log('Processed API Response:', data);
-                if (Array.isArray(data.data.requests)) {
-                    console.log("requests in bookings page in bookings client :", data.data.requests)
-                    console.log("total in bookings page in bookings client :", data.data.total)
-                    setRequests(data.data.requests || []);
-                    setTotalRequests(data.data.total || 0);
-                } else {
-                    // If response is an object with requests/total properties
-                    setRequests(data.data.requests || []);
-                    setTotalRequests(data.data.total || 0);
-                }
-            } catch (error) {
-                console.error("Failed to fetch requests", error);
+        navigate(`/event/${request._id}/checkout`, { state: { eventBooking: request } });
+    };
+
+    const fetchRequests = async () => {
+        setLoading(true);
+        try {
+            const params = new URLSearchParams();
+            params.append('page', currentPage.toString());
+            params.append('limit', pageSize.toString());
+            if (search) params.append('search', search);
+            if (status) params.append('status', status);
+            if (sortBy) params.append('sortBy', sortBy);
+
+            const data = await getClientEventRequests(params);
+            console.log('Processed API Response:', data);
+            if (Array.isArray(data.data.requests)) {
+                console.log("requests in bookings page in bookings client :", data.data.requests)
+                console.log("total in bookings page in bookings client :", data.data.total)
+                setRequests(data.data.requests || []);
+                setTotalRequests(data.data.total || 0);
+            } else {
+                // If response is an object with requests/total properties
+                setRequests(data.data.requests || []);
+                setTotalRequests(data.data.total || 0);
             }
-            setLoading(false);
-        };
+        } catch (error) {
+            console.error("Failed to fetch requests", error);
+        }
+        setLoading(false);
+    };
 
+    useEffect(() => {
         const handler = setTimeout(() => {
             fetchRequests();
         }, 500); // Debounce search input
@@ -260,7 +305,7 @@ const BookingsPage = () => {
     return (
         <div className="flex-grow p-8 bg-deep-purple text-white overflow-y-auto">
             {/* <Header /> */}
-            <UserNavbar title="Bookings Management" subTitle="Manage your bookings"/>
+            <UserNavbar title="Bookings Management" subTitle="Manage your bookings" />
             <div className="flex border-b border-purple-700 mb-6">
                 <button className="py-2 px-4 text-white border-b-2 border-purple-500 font-semibold">Event Requests History ({requests.length})</button>
                 {/* <button className="py-2 px-4 text-gray-400">Booked Workshops (0)</button> */}
@@ -272,12 +317,13 @@ const BookingsPage = () => {
                     {search && <X className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-300 cursor-pointer" onClick={() => setSearch('')} />}
                 </div>
                 <div className="flex items-center space-x-4">
-                    <select value={status} onChange={(e) => setStatus(e.target.value)} className="bg-purple-700 text-white rounded-lg py-2 px-4 focus:outline-none">
+                    <select value={status} onChange={(e) => setStatus(e.target.value)} className="bg-purple-700 text-white border border-purple-500 rounded-lg py-2 px-4 focus:outline-none">
                         <option value="">All Status</option>
                         <option value="pending">Pending</option>
                         <option value="accepted">Accepted</option>
                         <option value="rejected">Rejected</option>
                         <option value="cancelled">Cancelled</option>
+                        <option value="confirmed">Confirmed</option>
                     </select>
                     <div className="flex items-center">
                         <span className="text-gray-400 mr-2">Sort by:</span>
@@ -292,7 +338,15 @@ const BookingsPage = () => {
                 {loading ? (
                     <p>Loading requests...</p>
                 ) : requests.length > 0 ? (
-                    requests.map(req => <RequestCard key={req._id} request={req} onCancelClick={handleCancelClick} onViewMap={handleViewMap} />)
+                    requests.map(req => (
+                        <RequestCard
+                            key={req._id}
+                            request={req}
+                            onCancelClick={handleCancelClick}
+                            onViewMap={handleViewMap}
+                            onPaymentClick={handlePayment}
+                        />
+                    ))
                 ) : (
                     <p>No event requests found.</p>
                 )}
@@ -303,23 +357,23 @@ const BookingsPage = () => {
                 <div className="flex justify-end items-center mt-8 space-x-4">
                     <h3>Showing {requests.length} of {totalRequests} requests</h3>
                 </div>
-            <div className="flex justify-end items-center mt-8 space-x-4">
-                <button
-                    onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
-                    disabled={currentPage === 1}
-                    className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    <ChevronLeft/>
-                </button>
-                <span className="text-white">Page {currentPage} of {Math.max(1, Math.ceil(totalRequests / pageSize))}</span>
-                <button
-                    onClick={() => setCurrentPage(p => p + 1)}
-                    disabled={currentPage >= Math.ceil(totalRequests / pageSize)}
-                    className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    <ChevronRight/>
-                </button>
-            </div>
+                <div className="flex justify-end items-center mt-8 space-x-4">
+                    <button
+                        onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+                        disabled={currentPage === 1}
+                        className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <ChevronLeft />
+                    </button>
+                    <span className="text-white">Page {currentPage} of {Math.max(1, Math.ceil(totalRequests / pageSize))}</span>
+                    <button
+                        onClick={() => setCurrentPage(p => p + 1)}
+                        disabled={currentPage >= Math.ceil(totalRequests / pageSize)}
+                        className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        <ChevronRight />
+                    </button>
+                </div>
             </div>
             {modalOpen && (
                 <ConfirmationModal

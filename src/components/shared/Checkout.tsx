@@ -1,18 +1,22 @@
 import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 import { Star, TrendingUp, Search, MessageCircle, BarChart3, Calendar, MapPin, Clock } from 'lucide-react';
-import { upgradeService, ROLE_UPGRADE_PRICE } from '../../services/user/upgradeRole.service';
+
+import { loginUser } from '../../redux/slices/user.slice';
+import type { RootState } from '../../redux/store';
 import type { UpgradeStatus } from '../../services/user/upgradeRole.service';
-import { initiatePayment, confirmPayment } from '../../services/payment/payment.service';
 import type { Workshop } from '../../types/workshop.type';
 import type { Competition } from '../../services/competition.service';
-import toast from 'react-hot-toast';
+import type { EventRequest } from '../../pages/client/BookingsClient';
+
 import { fetchMyProfile } from '../../services/user/auth.service';
-import { loginUser } from '../../redux/slices/user.slice';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import type { RootState } from '../../redux/store';
 import { markWorkshopPaymentFailed } from '../../services/workshop/workshop.service';
 import { markCompetitionPaymentFailed } from '../../services/competition.service';
+import { initiatePayment, confirmPayment } from '../../services/payment/payment.service';
+import { upgradeService, ROLE_UPGRADE_PRICE } from '../../services/user/upgradeRole.service';
+import { markEventRequestPaymentFailed } from '../../services/client/client.service';
 
 interface PaymentProps {
     userEmail?: string;
@@ -21,6 +25,7 @@ interface PaymentProps {
     upgradeRequest?: UpgradeStatus; // For role upgrade payments
     workshop?: Workshop; // For workshop booking payments
     competition?: Competition; // For competition registration payments
+    eventRequest?: EventRequest; // For event request payments
 }
 
 export enum PaymentType {
@@ -48,7 +53,8 @@ const Payment: React.FC<PaymentProps> = ({
     onCancel,
     upgradeRequest,
     workshop,
-    competition
+    competition,
+    eventRequest
 }) => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [currentUpgradeRequest, setCurrentUpgradeRequest] = useState(upgradeRequest);
@@ -100,6 +106,16 @@ const Payment: React.FC<PaymentProps> = ({
                 billing: 'One-time payment',
                 amount: amount,
                 icon: currentUpgradeRequest.type === 'instructor' ? <Star className="w-8 h-8 text-yellow-400 mr-3" /> : <Star className="w-8 h-8 text-blue-400 mr-3" />
+            };
+        } else if (eventRequest) {
+            return {
+                title: `Register for ${eventRequest.event}`,
+                subtitle: `Complete your registration for this event with a one-time payment of ₹${eventRequest.acceptedAmount}.`,
+                planName: eventRequest.event,
+                billing: 'One-time payment',
+                amount: eventRequest.acceptedAmount,
+                icon: <TrendingUp className="w-8 h-8 text-purple-400 mr-3" />,
+                eventRequestDetails: eventRequest
             };
         } else {
             return {
@@ -159,7 +175,7 @@ const Payment: React.FC<PaymentProps> = ({
                         if (config.type === PaymentType.WORKSHOP_BOOKING) {
                             // Mark payment as failed
                             await markWorkshopPaymentFailed(config.entityId);
-                            toast.error('Payment failed');
+                            toast.error('Workshop Payment Failed');
                             // Redirect to workshop details
                             // navigate(`/booked/${config.entityId}`, {
                             //     state: {
@@ -172,9 +188,15 @@ const Payment: React.FC<PaymentProps> = ({
                             if (config.entityId) {
                                 await markCompetitionPaymentFailed(config.entityId);
                             }
-                            toast.error('Payment failed');
+                            toast.error('Competition Payment Failed');
                             navigate('/competitions');
-                        } else {
+                        } else if(config.type === PaymentType.EVENT_REQUEST_PAYMENT){
+                            if (config.entityId) {
+                                await markEventRequestPaymentFailed(config.entityId);
+                            }
+                            toast.error('Event Request Payment Failed');
+                            navigate('/bookings');
+                        }else {
                             toast.error('Payment failed');
                         }
                         setIsProcessing(false);
@@ -195,11 +217,11 @@ const Payment: React.FC<PaymentProps> = ({
     };
 
     const handlePayment = async () => {
-        console.log("new checkoutpayment handler ethi")
+        console.log("new checkout payment handler ethi")
         let type: PaymentType;
         let entityId: string;
         let description: string;
-        let amount: number = 0;
+        let amount: number | undefined = 0;
 
         if (workshop) {
             type = PaymentType.WORKSHOP_BOOKING;
@@ -214,19 +236,39 @@ const Payment: React.FC<PaymentProps> = ({
             entityId = currentUpgradeRequest.id;
             description = `${currentUpgradeRequest.type} Role Upgrade`;
             amount = getRoleUpgradeAmount();
+        } else if (eventRequest) {
+            type = PaymentType.EVENT_REQUEST_PAYMENT;
+            entityId = eventRequest._id;
+            description = `Event Request: ${eventRequest.event}`;
+            amount = eventRequest.acceptedAmount;
         } else {
             return;
         }
 
         // 1. Initiate Payment
         const result = await initiatePayment(type, { entityId, amount });
-
+        console.log("payment result", result)
         if (!result.success) {
             toast.error(result.message || 'Failed to initiate payment');
             return;
         }
 
-        const { amount: orderAmount, currency, orderId } = result.data;
+        let orderData = result.data;
+
+        // Helper to find the actual order object
+        if (result.data?.data?.order) {
+            orderData = result.data.data.order;
+        } else if (result.data?.order) {
+            orderData = result.data.order;
+        } else if (result.data?.data) {
+            // Sometimes data IS the order (legacy endpoints)
+            orderData = result.data.data;
+        }
+
+        // Normalize orderId (Razorpay returns 'id', backend might return 'orderId' or 'id')
+        const orderId = orderData.orderId || orderData.id;
+        const orderAmount = orderData.amount;
+        const currency = orderData.currency;
 
         // 2. Open Razorpay
         await initiateRazorpayPayment({

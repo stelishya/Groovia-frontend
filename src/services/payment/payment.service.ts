@@ -1,4 +1,4 @@
-import { CompetitionAxios, WorkshopAxios } from "../../api/user.axios";
+import { ClientAxios, CompetitionAxios, WorkshopAxios } from "../../api/user.axios";
 import { UserAxios } from "../../api/auth.axios";
 
 export enum PaymentType {
@@ -28,6 +28,12 @@ export const initiatePayment = async (type: PaymentType, data: any) => {
                 response = await CompetitionAxios.post(`/${data.entityId}/initiate-payment`, {
                     amount: data.amount,
                     currency: 'INR'
+                });
+                break;
+            case PaymentType.EVENT_REQUEST_PAYMENT:
+                response = await ClientAxios.post(`/event-requests/${data.entityId}/payment`, {
+                    // amount: data.amount, // Backend creates order from DB amount, body usually ignored or used for validation
+                    // currency: 'INR'
                 });
                 break;
             default:
@@ -70,6 +76,14 @@ export const confirmPayment = async (type: PaymentType, data: any) => {
                     orderId: data.orderId,
                     signature: data.signature,
                     amount: data.amount
+                });
+                break;
+            case PaymentType.EVENT_REQUEST_PAYMENT:
+                response = await ClientAxios.post(`/event-requests/${data.entityId}/verify-payment`, {
+                    razorpay_payment_id: data.paymentId,
+                    razorpay_order_id: data.orderId,
+                    razorpay_signature: data.signature,
+                    // amount: data.amount 
                 });
                 break;
             default:

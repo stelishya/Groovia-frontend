@@ -46,11 +46,11 @@ export const getCompetitionById = async (id: string): Promise<Competition> => {
     }
 }
 
-export const getOrganizerCompetitions = async (params?: { category?: string; style?: string }): Promise<Competition[]> => {
+export const getOrganizerCompetitions = async (params?: { search?: string; sortBy?: string; level?: string; category?: string; style?: string; page?: number; limit?: number }): Promise<{ data: Competition[], total: number, page: number, totalPages: number }> => {
     try {
-        const queryString = params ? `?${new URLSearchParams(params).toString()}` : '';
-        console.log("Fetching organizer competitions with queryString:", params)
-        const response = await CompetitionAxios.get(`/my-competitions`);
+        const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+        console.log("Fetching organizer competitions with queryString:", queryString)
+        const response = await CompetitionAxios.get(`/my-competitions${queryString}`);
         return response.data;
     } catch (error) {
         console.error('Failed to fetch competitions:', error);
@@ -62,9 +62,10 @@ export const getOrganizerCompetitions = async (params?: { category?: string; sty
     }
 }
 
-export const getRegisteredCompetitions = async (): Promise<Competition[]> => {
+export const getRegisteredCompetitions = async (params?: { search?: string; sortBy?: string; level?: string; category?: string; style?: string; page?: number; limit?: number }): Promise<{ data: Competition[], total: number, page: number, totalPages: number }> => {
     try {
-        const response = await CompetitionAxios.get('/my-registrations');
+        const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+        const response = await CompetitionAxios.get(`/my-registrations${queryString}`);
         return response.data;
     } catch (error) {
         console.error('Failed to fetch registered competitions:', error);

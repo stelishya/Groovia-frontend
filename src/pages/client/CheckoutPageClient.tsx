@@ -1,5 +1,6 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import type { EventRequest } from './BookingsClient';
 import { toast } from 'react-hot-toast';
 import Payment from '../../components/shared/CheckoutPage';
 import { useSelector } from 'react-redux';
@@ -7,6 +8,8 @@ import type { RootState } from '../../redux/store';
 
 const CheckoutPageClient: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const eventBooking = location.state?.eventBooking as EventRequest | undefined;
 
   // Get user email from localStorage or context
   // const userEmail = localStorage.getItem('userEmail') || 'client@example.com';
@@ -28,6 +31,7 @@ const CheckoutPageClient: React.FC = () => {
       userEmail={userEmail}
       onUpgrade={handleUpgradeSuccess}
       onCancel={handleCancel}
+      eventRequest={eventBooking}
     />
   );
 };

@@ -370,27 +370,27 @@ const Dashboard = ({ userData }: { userData: any }) => {
                         {search && <X className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-300 cursor-pointer" onClick={() => setSearch('')} />}
                     </div>
                     <div className="relative space-x-4">
-                    <select
-                        className="border border-purple-300 bg-purple-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400"
-                        value={style}
-                        onChange={(e) => setStyle(e.target.value)}
-                    >
-                        <option value="">All Styles</option>
-                        <option value="Hip-Hop">Hip Hop</option>
-                        <option value="Classical">Classical</option>
-                        <option value="Contemporary">Contemporary</option>
-                        <option value="Folk">Folk</option>
-                        <option value="Breakdance">Breakdance</option>
-                    </select>
+                        <select
+                            className="border border-purple-300 bg-purple-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400"
+                            value={style}
+                            onChange={(e) => setStyle(e.target.value)}
+                        >
+                            <option value="">All Styles</option>
+                            <option value="Hip-Hop">Hip Hop</option>
+                            <option value="Classical">Classical</option>
+                            <option value="Contemporary">Contemporary</option>
+                            <option value="Folk">Folk</option>
+                            <option value="Breakdance">Breakdance</option>
+                        </select>
 
-                    <select
-                        className="border border-purple-300 bg-purple-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400"
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value)}
-                    >
-                        <option value="likes">Sort by Likes</option>
-                        <option value="name">Sort by Name</option>
-                    </select>
+                        <select
+                            className="border border-purple-300 bg-purple-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400"
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value)}
+                        >
+                            <option value="likes">Sort by Likes</option>
+                            <option value="name">Sort by Name</option>
+                        </select>
                     </div>
                     {/* <input
                         type="text"
@@ -431,32 +431,32 @@ const Dashboard = ({ userData }: { userData: any }) => {
                 <div className='flex justify-between items-center mt-8 space-x-4'>
                     {dancers.length > 0 && (
                         <>
-                        <div className="flex justify-start items-center mt-8 space-x-4">
-                            <h3>Showing {dancers.length} of {totalDancers} dancers</h3>
-                        </div>
-                    <div className="flex justify-end items-center mt-8 space-x-4">
-                        <button
-                            onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
-                            disabled={currentPage === 1}
-                            className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                            <ChevronLeft />
-                        </button>
-                        <span className="text-white">Page {currentPage} of {Math.ceil(totalDancers / pageSize)}</span>
-                        <button
-                            onClick={() => setCurrentPage(p => p + 1)}
-                            disabled={currentPage >= Math.ceil(totalDancers / pageSize)}
-                            className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                            <ChevronRight />
-                        </button>
-                    </div>
-                    </>
-                        )}
+                            <div className="flex justify-start items-center mt-8 space-x-4">
+                                <h3>Showing {dancers.length} of {totalDancers} dancers</h3>
+                            </div>
+                            <div className="flex justify-end items-center mt-8 space-x-4">
+                                <button
+                                    onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+                                    disabled={currentPage === 1}
+                                    className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <ChevronLeft />
+                                </button>
+                                <span className="text-white">Page {currentPage} of {Math.ceil(totalDancers / pageSize)}</span>
+                                <button
+                                    onClick={() => setCurrentPage(p => p + 1)}
+                                    disabled={currentPage >= Math.ceil(totalDancers / pageSize)}
+                                    className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    <ChevronRight />
+                                </button>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
 
-            
+
 
             {selectedDancer && (
                 <FormModal
@@ -477,8 +477,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
                                 setRequestData({ ...requestData, event: e.target.value });
                                 if (formErrors.event) setFormErrors({ ...formErrors, event: '' });
                             }}
-                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                                formErrors.event ? 'border-2 border-red-500' : ''
+                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.event ? 'border-2 border-red-500' : ''
                                 }`}
                             placeholder="Event Name"
                         />
@@ -496,8 +495,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
                                 setRequestData({ ...requestData, date: e.target.value });
                                 if (formErrors.date) setFormErrors({ ...formErrors, date: '' });
                             }}
-                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                                formErrors.date ? 'border-2 border-red-500' : ''
+                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.date ? 'border-2 border-red-500' : ''
                                 }`}
                         />
                         {formErrors.date && (
@@ -513,8 +511,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
                                 setRequestData({ ...requestData, venue: e.target.value });
                                 if (formErrors.venue) setFormErrors({ ...formErrors, venue: '' });
                             }}
-                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                                formErrors.venue ? 'border-2 border-red-500' : ''
+                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.venue ? 'border-2 border-red-500' : ''
                                 }`}
                             placeholder="Enter venue address"
                             readOnly={showVenueMap}
@@ -542,19 +539,39 @@ const Dashboard = ({ userData }: { userData: any }) => {
                         )}
                     </div>
                     <div>
-                        <label className="block text-white font-medium mb-2">Budget</label>
-                        <input
-                            type="text"
-                            value={requestData.budget}
-                            onChange={(e) => {
-                                setRequestData({ ...requestData, budget: e.target.value });
-                                if (formErrors.budget) setFormErrors({ ...formErrors, budget: '' });
-                            }}
-                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                                formErrors.budget ? 'border-2 border-red-500' : ''
-                                }`}
-                            placeholder="e.g., $500 - $1000"
-                        />
+                        <label className="block text-white font-medium mb-2">Budget Range (₹)</label>
+                        <div className="flex space-x-4">
+                            <div className="flex-1">
+                                <input
+                                    type="number"
+                                    value={requestData.budget.includes('-') ? requestData.budget.split('-')[0] : requestData.budget}
+                                    onChange={(e) => {
+                                        const min = e.target.value;
+                                        const max = requestData.budget.includes('-') ? requestData.budget.split('-')[1] : '';
+                                        setRequestData({ ...requestData, budget: `${min}-${max}` });
+                                        if (formErrors.budget) setFormErrors({ ...formErrors, budget: '' });
+                                    }}
+                                    className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.budget ? 'border-2 border-red-500' : ''
+                                        }`}
+                                    placeholder="Min"
+                                />
+                            </div>
+                            <div className="flex-1">
+                                <input
+                                    type="number"
+                                    value={requestData.budget.includes('-') ? requestData.budget.split('-')[1] : ''}
+                                    onChange={(e) => {
+                                        const min = requestData.budget.includes('-') ? requestData.budget.split('-')[0] : requestData.budget;
+                                        const max = e.target.value;
+                                        setRequestData({ ...requestData, budget: `${min}-${max}` });
+                                        if (formErrors.budget) setFormErrors({ ...formErrors, budget: '' });
+                                    }}
+                                    className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.budget ? 'border-2 border-red-500' : ''
+                                        }`}
+                                    placeholder="Max"
+                                />
+                            </div>
+                        </div>
                         {formErrors.budget && (
                             <p className="text-red-400 text-sm mt-1">{formErrors.budget}</p>
                         )}

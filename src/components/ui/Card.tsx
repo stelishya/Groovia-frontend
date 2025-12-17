@@ -35,7 +35,7 @@ const DancerCard = ({ dancer, isRequested, onLike, isLiked }: DancerCardProps) =
 
   return (
     // <div className="bg-gradient-to-br from-blue-500 to-pink-500 p-1 rounded-3xl transform hover:-translate-y-2 transition-all duration-300 shadow-xl hover:shadow-2xl h-full">
-    <div className="bg-gradient-to-br from-deep-purple to-purple-400 rounded-3xl p-4 h-full flex flex-col text-white border border-purple-400">
+    <div className="bg-gradient-to-br from-deep-purple to-purple-400 rounded-3xl p-4 h-full flex flex-col text-white border border-purple-400 transform transition duration-300 hover:scale-105 hover:-translate-y-1 cursor-pointer">
 
       <img
         src={dancer.profileImage || `https://img.icons8.com/?size=128&id=tZuAOUGm9AuS&format=png`}

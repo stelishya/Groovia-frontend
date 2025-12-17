@@ -167,6 +167,7 @@ const Approvals = () => {
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     className="w-full pl-10 pr-4 py-2 bg-gray-800 text-white rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
                                 />
+                                {searchQuery && <X className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 cursor-pointer" size={20} onClick={() => setSearchQuery('')} />}
                             </div>
                         </div>
 

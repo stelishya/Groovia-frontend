@@ -371,7 +371,7 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-gradient-to-br from-purple-900 via-purple-800 to-pink-900 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-purple-500/30">
+      <div className="bg-purple-900/80 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto border border-purple-500/30">
         <div className="p-6 border-b border-purple-500/30">
           <div className="flex justify-between items-center">
             {isEditing ? (

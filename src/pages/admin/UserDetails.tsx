@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useDispatch } from "react-redux"
 import { useNavigate } from "react-router-dom"
 
-import { MoreVertical, ChevronLeft, ChevronRight, Badge, Phone, Mail, Download, BadgeCheck, Landmark } from "lucide-react"
+import { MoreVertical, ChevronLeft, ChevronRight, Badge, Phone, Mail, Download, BadgeCheck, Landmark, User } from "lucide-react"
 
 import Sidebar from "../../components/admin/Sidebar"
 import { getAllUsers, updateUserStatus } from "../../services/admin/admin.service";
@@ -32,42 +32,52 @@ const UserDetails: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [searchTerm, setSearchTerm] = useState("")
-  const [sortBy, setSortBy] = useState<string>("")
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
+  const [sortBy, setSortBy] = useState<string>("createdAt")
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
+  const [filterRole, setFilterRole] = useState("")
   const [users, setUsers] = useState<User[]>([])
+  const [totalUsers, setTotalUsers] = useState(0)
   const [loading, setLoading] = useState(true)
   const [updateLoading, setUpdateLoading] = useState<string | null>(null)
   const [showBlockModal, setShowBlockModal] = useState(false)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
 
-  // const dispatch = useDispatch()
+  // Debounce search
   useEffect(() => {
-    fetchUsers()
-  }, [])
+    const timer = setTimeout(() => {
+      fetchUsers();
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchTerm, currentPage, pageSize, sortBy, sortOrder, filterRole]);
 
   const fetchUsers = async (): Promise<void> => {
     setLoading(true);
     try {
-      const response = await getAllUsers();
+      const response = await getAllUsers({
+        page: currentPage,
+        limit: pageSize,
+        search: searchTerm,
+        sortBy,
+        sortOrder,
+        role: filterRole
+      });
       console.log("response in fetchUsers in UserDetails.tsx", response)
       if (response.users && Array.isArray(response.users)) {
         const mappedUsers: User[] = response.users.map((user: any) => ({
-          // _id: user.id,
           _id: user._id.toString(),
           username: user.username,
           email: user.email,
           phone: user.phone || '',
-          // role: Array.isArray(user.role) ? user.role[0] : user.role,
           role: user.role,
           profileImage: user.profileImage || '',
           isActive: !user.isBlocked,
-          // isGoogleUser: user.isGoogleUser ?? false,
           isGoogleUser: !!user.googleId,
           createdAt: user.createdAt,
           updatedAt: user.updatedAt,
         }));
         console.log("mappedUsers", mappedUsers)
         setUsers(mappedUsers);
+        setTotalUsers(response.total || 0);
       } else {
         console.error('Failed to fetch users - Invalid response structure:', response.message);
       }
@@ -153,45 +163,7 @@ const UserDetails: React.FC = () => {
     setSelectedUser(user);
     setShowBlockModal(true);
   }
-  const filteredAndSortedData = useMemo(() => {
-    const filtered = users.filter(
-      (user) =>
-        user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (user.phone && user.phone.includes(searchTerm))
-    )
 
-    if (sortBy) {
-      filtered.sort((a, b) => {
-        const aValue = (a as unknown as Record<string, unknown>)[sortBy]
-        const bValue = (b as unknown as Record<string, unknown>)[sortBy]
-
-        if (typeof aValue === "string" && typeof bValue === "string") {
-          return sortOrder === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue)
-        }
-
-        if (typeof aValue === "number" && typeof bValue === "number") {
-          return sortOrder === "asc" ? aValue - bValue : bValue - aValue
-        }
-
-        if (typeof aValue === "boolean" && typeof bValue === "boolean") {
-          return sortOrder === "asc"
-            ? (aValue === bValue ? 0 : aValue ? 1 : -1)
-            : (aValue === bValue ? 0 : aValue ? -1 : 1)
-        }
-
-        return 0
-      })
-    }
-
-    return filtered
-  }, [users, searchTerm, sortBy, sortOrder])
-
-  // Paginate data
-  const paginatedData = useMemo(() => {
-    const startIndex = (currentPage - 1) * pageSize
-    return filteredAndSortedData.slice(startIndex, startIndex + pageSize)
-  }, [filteredAndSortedData, currentPage, pageSize])
 
   // const handleLogout = async (): Promise<void> => {
   //   try {
@@ -214,10 +186,15 @@ const UserDetails: React.FC = () => {
     setSortOrder(order)
   }
   const handlePageChange = (page: number, newPageSize?: number): void => {
-    setCurrentPage(page)
-    if (newPageSize) {
+    // Only treat the second arg as a page-size change when it's explicitly
+    // provided and different from the current pageSize. The Pagination
+    // component passes the current pageSize as the second arg for normal
+    // page navigation, so we must avoid resetting to page 1 in that case.
+    if (newPageSize !== undefined && newPageSize !== pageSize) {
       setPageSize(newPageSize)
       setCurrentPage(1)
+    } else {
+      setCurrentPage(page)
     }
   }
   const columns: TableColumn<User>[] = [
@@ -271,7 +248,7 @@ const UserDetails: React.FC = () => {
       key: "role",
       title: "Role",
       dataIndex: "role",
-      // sortable: true,
+      sortable: true,
       render: (_value: unknown, record: User) => (
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-sm text-gray-900 dark:text-gray-100">
@@ -400,6 +377,20 @@ const UserDetails: React.FC = () => {
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Manage user information and accounts</p>
             </div>
             <div className="flex items-center gap-3 w-full sm:w-auto">
+              <select
+                        value={filterRole}
+                        onChange={(e) => {
+                            setFilterRole(e.target.value);
+                            setCurrentPage(1);
+                        }}
+                        className="border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-4 py-2 text-sm focus:outline-none"
+                    >
+                        <option value="">All Roles</option>
+                        <option value="dancer">Dancer</option>
+                        <option value="organizer">Organizer</option>
+                        <option value="instructor">Instructor</option>
+                         <option value="client">Client</option>
+                    </select>
               {/* <Button
                 variant="outline"
                 onClick={()=>({})}
@@ -410,22 +401,37 @@ const UserDetails: React.FC = () => {
               </Button> */}
             </div>
           </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
 
-          {/* Stats Cards */}
-          {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-              <CardContent className="p-4 md:p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Users</p>
-                    <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.totalUsers}</p>
-                  </div>
-                  <div className="p-2 md:p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                    <User className="h-5 md:h-6 w-5 md:w-6 text-gray-600 dark:text-gray-300" />
-                  </div>
+          <div className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg">
+          <div className="p-4 md:p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Users</p>
+              <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100">{totalUsers}</p>
+            </div>
+            <div className="p-2 md:p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
+              <User className="h-5 md:h-6 w-5 md:w-6 text-gray-600 dark:text-gray-300" />
+            </div>
+          </div>
+            </div>
+          </div>
+          {/* <div className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg">
+            <div className="p-4 md:p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Blocked Users</p>
+                  <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.blockedUsers}</p>
                 </div>
-              </CardContent>
-            </Card>
+                <div className="p-2 md:p-3 bg-red-100 dark:bg-red-900/20 rounded-lg">
+                  <User className="h-5 md:h-6 w-5 md:w-6 text-red-600 dark:text-red-400" />
+                </div>
+              </div>
+            </div>
+          </div> */}
+          </div>
+          {/* Stats Cards */}
+          {/* 
 
             <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
               <CardContent className="p-4 md:p-6">
@@ -441,19 +447,6 @@ const UserDetails: React.FC = () => {
               </CardContent>
             </Card>
 
-            <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-              <CardContent className="p-4 md:p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Blocked Users</p>
-                    <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.blockedUsers}</p>
-                  </div>
-                  <div className="p-2 md:p-3 bg-red-100 dark:bg-red-900/20 rounded-lg">
-                    <User className="h-5 md:h-6 w-5 md:w-6 text-red-600 dark:text-red-400" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
 
             <Card className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
               <CardContent className="p-4 md:p-6">
@@ -480,10 +473,29 @@ const UserDetails: React.FC = () => {
                     type="text"
                     placeholder="Search customers by name, email, or phone..."
                     value={searchTerm}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      setSearchTerm(e.target.value);
+                      setCurrentPage(1); // Reset to page 1 on search
+                    }}
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400 focus:border-transparent text-sm"
                   />
                 </div>
+                 <div className="flex gap-2 w-full sm:w-auto">
+                    <select
+                        value={filterRole}
+                        onChange={(e) => {
+                            setFilterRole(e.target.value);
+                            setCurrentPage(1);
+                        }}
+                        className="border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-4 py-2 text-sm focus:outline-none"
+                    >
+                        <option value="">All Roles</option>
+                        <option value="dancer">Dancer</option>
+                        <option value="organizer">Organizer</option>
+                        <option value="admin">Admin</option>
+                        <option value="instructor">Instructor</option>
+                         <option value="client">Client</option>
+                    </select>
                 <Button
                   variant="outline"
                   onClick={()=>({})}
@@ -492,14 +504,15 @@ const UserDetails: React.FC = () => {
                   <Filter className="h-4 w-4 mr-2" />
                   Filters
                 </Button>
-              </div>
-            </CardContent>
-          </Card> */}
+        </div>
+    </div>
+            </CardContent >
+          </Card > */}
 
           {/* Table */}
           <Table
             columns={columns}
-            data={paginatedData}
+            data={users}
             loading={loading}
             sortBy={sortBy}
             sortOrder={sortOrder}
@@ -510,7 +523,7 @@ const UserDetails: React.FC = () => {
           {/* Pagination */}
           <Pagination
             current={currentPage}
-            total={filteredAndSortedData.length}
+            total={totalUsers}
             pageSize={pageSize}
             onChange={handlePageChange}
             showSizeChanger
@@ -522,8 +535,8 @@ const UserDetails: React.FC = () => {
             )}
             className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
           />
-        </div>
-      </main>
+        </div >
+      </main >
 
       {/* Footer */}
       {/* <div className="md:ml-64">
@@ -546,7 +559,7 @@ const UserDetails: React.FC = () => {
         variant={selectedUser?.isActive ? "danger" : "info"}
         isLoading={updateLoading === selectedUser?._id}
       />
-    </div>
+    </div >
   )
 }
 export default UserDetails;

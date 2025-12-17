@@ -42,6 +42,7 @@ interface EventRequest {
     venue: string;
     budget: string;
     status: 'pending' | 'accepted' | 'rejected' | 'completed';
+    paymentStatus?: string;
 }
 
 
@@ -99,18 +100,36 @@ const RequestCard = ({ request, onAcceptClick, onDeclineClick, onViewMap }: { re
                 {request.status}
             </span>
             <div className="flex space-x-2">
-                {request.status === 'pending' && (
-                    <>
-                        <button onClick={() => onAcceptClick(request._id)} className="bg-green-500 text-white px-3 py-1 rounded-md text-sm">Accept</button>
-                        <button onClick={() => onDeclineClick(request._id)} className="bg-red-500 text-white px-3 py-1 rounded-md text-sm">Decline</button>
-                    </>
-                )}
-                {request.status === 'accepted' && (
-                    <>
-                        <button className="bg-blue-500 text-white px-3 py-1 rounded-md text-sm">Send Payment Request</button>
-                        <button className="bg-purple-500 text-white px-3 py-1 rounded-md text-sm">Message</button>
-                    </>
-                )}
+                {(() => {
+                    const isDatePassed = new Date(request.date) < new Date(new Date().setHours(0, 0, 0, 0));
+
+                    if (isDatePassed && (request.status === 'pending' || (request.status === 'accepted' && request.paymentStatus !== 'paid'))) {
+                        return (
+                            <span className="text-red-400 text-sm font-medium px-3 py-1 bg-red-400/10 rounded-md border border-red-400/20">
+                                Event Date Passed
+                            </span>
+                        );
+                    }
+
+                    if (request.status === 'pending') {
+                        return (
+                            <>
+                                <button onClick={() => onAcceptClick(request._id)} className="bg-green-500 text-white px-3 py-1 rounded-md text-sm">Accept</button>
+                                <button onClick={() => onDeclineClick(request._id)} className="bg-red-500 text-white px-3 py-1 rounded-md text-sm">Decline</button>
+                            </>
+                        );
+                    }
+
+                    if (request.status === 'accepted') {
+                        return (
+                            <>
+                                <h3 className='text-sm text-white bg-blue-500/60 px-2 py-1 rounded-md'>Payment Request Sent</h3>
+                                <button className="bg-purple-500 text-white px-3 py-1 rounded-md text-sm">Message</button>
+                            </>
+                        );
+                    }
+                    return null;
+                })()}
             </div>
         </div>
     </div>
@@ -146,6 +165,8 @@ const BookingsPage = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
+    const [acceptAmount, setAcceptAmount] = useState('');
+
     useEffect(() => {
         if (location.state?.activeTab) {
             setActiveTab(location.state.activeTab);
@@ -180,10 +201,10 @@ const BookingsPage = () => {
         fetchBookedWorkshops();
     }, [activeTab, workshopPage, workshopLimit, workshopSearch, workshopSortBy]);
 
-    const handleUpdateStatus = async (id: string, status: 'accepted' | 'rejected' | 'cancelled') => {
+    const handleUpdateStatus = async (id: string, status: 'accepted' | 'rejected' | 'cancelled', amount?: number) => {
         try {
-            const response = await updateEventBookingStatus(id, status);
-            // Backend returns: { success: true, data: { message, request } }
+            const response = await updateEventBookingStatus(id, status, amount);
+            // Backend returns: {success: true, data: {message, request} }
             const updatedRequest = response.data?.request;
             if (updatedRequest) {
                 setRequests(prevRequests =>
@@ -205,10 +226,15 @@ const BookingsPage = () => {
         }
     };
 
+    const [error, setError] = useState('');
+
     const handleAcceptClick = (id: string) => {
         setSelectedRequestId(id);
         setActionType('accept');
+        setAcceptAmount(''); // Reset amount
+        setError(''); // Reset error
         setModalOpen(true);
+
     };
 
     const handleDeclineClick = (id: string) => {
@@ -219,11 +245,55 @@ const BookingsPage = () => {
 
     const confirmAction = () => {
         if (selectedRequestId && actionType) {
+            if (actionType === 'accept') {
+                if (!acceptAmount) {
+                    setError("Please enter an amount");
+                    return;
+                }
+
+                const selectedRequest = requests.find(r => r._id === selectedRequestId);
+                if (selectedRequest) {
+                    let minBudget = 0;
+                    let maxBudget = 0;
+                    // Remove non-numeric characters except hyphen
+                    const budgetStr = selectedRequest.budget.toString().replace(/[^0-9-]/g, '');
+
+                    if (budgetStr.includes('-')) {
+                        const parts = budgetStr.split('-');
+                        if (parts.length === 2) {
+                            minBudget = parseFloat(parts[0]);
+                            maxBudget = parseFloat(parts[1]);
+                        }
+                    } else {
+                        maxBudget = parseFloat(budgetStr);
+                        // If single value, treat it as max (or potentially min depending on context, but usually "Budget: 5000" implies max limit)
+                        // However user requested "between min and max". If single value, maybe strict equal? 
+                        // Assuming single value is the MAX budget for now as per previous logic.
+                    }
+
+                    const amount = parseFloat(acceptAmount);
+
+                    if (maxBudget > 0 && amount > maxBudget) {
+                        setError(`Amount cannot exceed the budget of ₹${maxBudget}`);
+                        // toast.error(`Amount cannot exceed the budget of ₹${maxBudget}`);
+                        return;
+                    }
+                    if (minBudget > 0 && amount < minBudget) {
+                        setError(`Amount must be at least ₹${minBudget}`);
+                        return;
+                    }
+                }
+            }
+
             const status = actionType === 'accept' ? 'accepted' : 'rejected';
-            handleUpdateStatus(selectedRequestId, status);
+            const amount = actionType === 'accept' ? parseFloat(acceptAmount) : undefined;
+
+            handleUpdateStatus(selectedRequestId, status, amount);
             setModalOpen(false);
             setSelectedRequestId(null);
             setActionType(null);
+            setAcceptAmount('');
+            setError('');
         }
     };
 
@@ -295,7 +365,7 @@ const BookingsPage = () => {
 
     return (
         <div className="flex-grow p-8 bg-deep-purple text-white overflow-y-auto">
-            {/* <Header user={user} /> */}
+            {/* ... header and tabs ... */}
             <UserNavbar title="Bookings Management" subTitle="Manage your client requests & workshop bookings" />
             <div className="flex border-b border-purple-700 mb-6">
                 <button
@@ -419,74 +489,136 @@ const BookingsPage = () => {
                 </div>
             </div>
             {modalOpen && (
-                <ConfirmationModal
-                    show={modalOpen}
-                    onClose={() => {
-                        setModalOpen(false);
-                        setActionType(null);
-                    }}
-                    onConfirm={confirmAction}
-                    title={actionType === 'accept' ? 'Confirm Acceptance' : 'Confirm Decline'}
-                    message={actionType === 'accept'
-                        ? 'Are you sure you want to accept this booking request?'
-                        : 'Are you sure you want to decline this booking request?'
-                    }
-                />
-            )}
-            {mapModalOpen && (
-                <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-purple-900 rounded-2xl p-6 max-w-3xl w-full border border-purple-500">
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-2xl font-bold text-white flex items-center">
-                                <MapPin className="mr-2" />
-                                Venue Location
-                            </h3>
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-purple-900 rounded-2xl p-6 max-w-md w-full border border-purple-500/30 shadow-2xl">
+                        <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center">
+                                <h3 className="text-xl font-bold text-white">
+                                    {actionType === 'accept' ? 'Confirm Acceptance' : 'Confirm Decline'}
+                                </h3>
+                            </div>
                             <button
-                                onClick={() => setMapModalOpen(false)}
-                                className="text-white hover:text-gray-300 text-2xl"
+                                onClick={() => {
+                                    setModalOpen(false);
+                                    setActionType(null);
+                                }}
+                                className="text-gray-400 hover:text-white transition-colors"
                             >
-                                ×
+                                <X size={24} />
                             </button>
                         </div>
-                        <p className="text-purple-300 mb-4">{selectedVenue}</p>
-                        {loadingCoords ? (
-                            <div className="h-96 flex items-center justify-center bg-purple-800 rounded-xl">
-                                <p className="text-white">Loading map...</p>
-                            </div>
-                        ) : venueCoords ? (
-                            <MapContainer
-                                center={venueCoords}
-                                zoom={15}
-                                className="h-96 w-full rounded-xl border-2 border-purple-500"
-                                style={{ zIndex: 0 }}
-                            >
-                                <TileLayer
-                                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                                />
-                                <Marker position={venueCoords}>
-                                    <Popup>{selectedVenue}</Popup>
-                                </Marker>
-                            </MapContainer>
-                        ) : (
-                            <div className="h-96 flex items-center justify-center bg-purple-800 rounded-xl">
-                                <p className="text-white">Unable to load location</p>
+
+                        <p className="text-gray-300 mb-6">
+                            {actionType === 'accept'
+                                ? 'Please confirm the agreed amount for this event.'
+                                : 'Are you sure you want to decline this booking request?'}
+                        </p>
+
+                        {actionType === 'accept' && (
+                            <div className="mb-6">
+                                {(() => {
+                                    const selectedRequest = requests.find(r => r._id === selectedRequestId);
+                                    return selectedRequest ? (
+                                        <>
+                                            <h2 className="text-lg font-semibold text-white mb-2">Budget : {selectedRequest.budget}</h2>
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">Agreed Amount (₹)</label>
+                                            <input
+                                                type="number"
+                                                placeholder="Enter amount"
+                                                value={acceptAmount}
+                                                onChange={(e) => {
+                                                    setAcceptAmount(e.target.value);
+                                                    if (error) setError('');
+                                                }}
+                                                className={`w-full bg-purple-800 border ${error ? 'border-red-500' : 'border-purple-600'} rounded-lg py-2 px-3 text-white focus:outline-none focus:border-purple-400`}
+                                            />
+                                            {error && <p className="text-red-400 text-sm mt-1">{error}</p>}
+                                        </>
+
+                                    ) : null;
+                                })()}
                             </div>
                         )}
+
+                        <div className="flex gap-3 justify-end">
+                            <button
+                                onClick={() => {
+                                    setModalOpen(false);
+                                    setActionType(null);
+                                }}
+                                className="px-6 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmAction}
+                                className={`px-6 py-2 text-white rounded-lg transition-colors font-semibold ${actionType === 'accept' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'
+                                    }`}
+                            >
+                                {actionType === 'accept' ? 'Confirm' : 'Decline'}
+                            </button>
+                        </div>
                     </div>
                 </div>
-                // <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-                //     <div className="bg-purple-800 rounded-lg p-6 w-full max-w-md mx-4">
-                //         <h2 className="text-xl font-bold text-white mb-4">Confirm Acceptance</h2>
-                //         <p className="text-gray-300 mb-6">Are you sure you want to accept this booking request?</p>
-                //         <div className="flex justify-end space-x-4">
-                //             <button onClick={() => setModalOpen(false)} className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors">Cancel</button>
-                //             <button onClick={confirmAccept} className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors">Confirm</button>
-                //         </div>
-                //     </div>
-                // </div>
-            )}
-        </div>
+            )
+            }
+            {/* Map Modal ... */}
+            {
+                mapModalOpen && (
+                    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                        <div className="bg-purple-900 rounded-2xl p-6 max-w-3xl w-full border border-purple-500">
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-2xl font-bold text-white flex items-center">
+                                    <MapPin className="mr-2" />
+                                    Venue Location
+                                </h3>
+                                <button
+                                    onClick={() => setMapModalOpen(false)}
+                                    className="text-white hover:text-gray-300 text-2xl"
+                                >
+                                    ×
+                                </button>
+                            </div>
+                            <p className="text-purple-300 mb-4">{selectedVenue}</p>
+                            {loadingCoords ? (
+                                <div className="h-96 flex items-center justify-center bg-purple-800 rounded-xl">
+                                    <p className="text-white">Loading map...</p>
+                                </div>
+                            ) : venueCoords ? (
+                                <MapContainer
+                                    center={venueCoords}
+                                    zoom={15}
+                                    className="h-96 w-full rounded-xl border-2 border-purple-500"
+                                    style={{ zIndex: 0 }}
+                                >
+                                    <TileLayer
+                                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                    />
+                                    <Marker position={venueCoords}>
+                                        <Popup>{selectedVenue}</Popup>
+                                    </Marker>
+                                </MapContainer>
+                            ) : (
+                                <div className="h-96 flex items-center justify-center bg-purple-800 rounded-xl">
+                                    <p className="text-white">Unable to load location</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                    // <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                    //     <div className="bg-purple-800 rounded-lg p-6 w-full max-w-md mx-4">
+                    //         <h2 className="text-xl font-bold text-white mb-4">Confirm Acceptance</h2>
+                    //         <p className="text-gray-300 mb-6">Are you sure you want to accept this booking request?</p>
+                    //         <div className="flex justify-end space-x-4">
+                    //             <button onClick={() => setModalOpen(false)} className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors">Cancel</button>
+                    //             <button onClick={confirmAccept} className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors">Confirm</button>
+                    //         </div>
+                    //     </div>
+                    // </div>
+                )
+            }
+        </div >
     );
 };
 

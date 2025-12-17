@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Star, TrendingUp, Search, MessageCircle, BarChart3, Calendar, MapPin, Clock } from 'lucide-react';
 import { upgradeService, ROLE_UPGRADE_PRICE } from '../../services/user/upgradeRole.service';
 import type { UpgradeStatus } from '../../services/user/upgradeRole.service';
-import { confirmWorkshopBooking, createBookingOrder, initiateWorkshopBooking, verifyBookingPayment } from '../../services/workshop/workshop.service';
+import { confirmWorkshopBooking, initiateWorkshopBooking } from '../../services/workshop/workshop.service';
 import type { Workshop } from '../../types/workshop.type';
 import toast from 'react-hot-toast';
 import { fetchMyProfile } from '../../services/user/auth.service';
@@ -10,7 +10,10 @@ import { loginUser } from '../../redux/slices/user.slice';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import type { RootState } from '../../redux/store';
+
+
+import { createEventBookingPayment, verifyEventBookingPayment } from '../../services/client/client.service';
+import type { EventRequest } from '../../pages/client/BookingsClient';
 
 // const { userData } = useSelector((state: RootState) => state.user);
 
@@ -20,6 +23,7 @@ interface PaymentProps {
   onCancel?: () => void;
   upgradeRequest?: UpgradeStatus; // For role upgrade payments
   workshop?: Workshop; // For workshop booking payments
+  eventRequest?: EventRequest;
 }
 
 export enum PaymentType {
@@ -36,6 +40,7 @@ interface PaymentConfig {
   currency: string;
   description: string;
   entityId?: string; // workshop ID, competition ID, etc.
+  orderId?: string;
   onSuccess: (response: any) => Promise<void>;
   onFailure?: () => void;
 }
@@ -45,7 +50,8 @@ const Payment: React.FC<PaymentProps> = ({
   onUpgrade,
   onCancel,
   upgradeRequest,
-  workshop
+  workshop,
+  eventRequest
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentUpgradeRequest, setCurrentUpgradeRequest] = useState(upgradeRequest);
@@ -87,6 +93,16 @@ const Payment: React.FC<PaymentProps> = ({
         amount: amount,
         icon: currentUpgradeRequest.type === 'instructor' ? <Star className="w-8 h-8 text-yellow-400 mr-3" /> : <Star className="w-8 h-8 text-blue-400 mr-3" />
       };
+    } else if (eventRequest) {
+      return {
+        title: `Confirm Payment for ${eventRequest.event}`,
+        subtitle: `Complete your booking confirmation with a payment of ₹${eventRequest.acceptedAmount}.`,
+        planName: `Event : ${eventRequest.event}`,
+        billing: 'One-time payment',
+        amount: eventRequest.acceptedAmount || 0,
+        icon: <Calendar className="w-8 h-8 text-purple-400 mr-3" />,
+        eventDetails: eventRequest
+      };
     } else {
       return {
         title: 'Role Upgrade',
@@ -101,20 +117,7 @@ const Payment: React.FC<PaymentProps> = ({
 
   const paymentDetails = getPaymentDetails();
 
-  // Load Razorpay SDK dynamically
-  const loadRazorpay = () => {
-    return new Promise((resolve) => {
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.onload = () => {
-        resolve(true);
-      };
-      script.onerror = () => {
-        resolve(false);
-      };
-      document.body.appendChild(script);
-    });
-  };
+
 
   const initiateRazorpayPayment = async (config: PaymentConfig) => {
     setIsProcessing(true);
@@ -139,11 +142,11 @@ const Payment: React.FC<PaymentProps> = ({
       // Configure Razorpay options
       const options = {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        // amount: order.amount,
-        // currency: order.currency,
-        // name: 'Groovia',
-        // description: config.description,
-        // order_id: order.id,
+        amount: config.amount,
+        currency: config.currency,
+        name: 'Groovia',
+        description: config.description,
+        order_id: config.orderId,
         handler: async function (response: any) {
           try {
             await config.onSuccess(response);
@@ -165,7 +168,7 @@ const Payment: React.FC<PaymentProps> = ({
           ondismiss: function () {
             setIsProcessing(false);
             config.onFailure?.();
-            toast.error('Payment cancelled');
+            toast.error('Payment Failed !!');
           }
         }
       };
@@ -195,6 +198,7 @@ const Payment: React.FC<PaymentProps> = ({
       currency: result.data.currency || 'INR',
       description: `Workshop: ${workshop.title}`,
       entityId: workshop._id,
+      orderId: result.data.id,
       onSuccess: async (response) => {
         await confirmWorkshopBooking(
           workshop._id,
@@ -223,6 +227,7 @@ const Payment: React.FC<PaymentProps> = ({
       currency: order.currency,
       description: 'Instructor Role Upgrade',
       entityId: currentUpgradeRequest.id,
+      orderId: order.id,
       onSuccess: async (response) => {
         await upgradeService.confirmPaymentCompletion(
           currentUpgradeRequest.id,
@@ -272,239 +277,47 @@ const Payment: React.FC<PaymentProps> = ({
   };
 
   const handleEventRequestPayment = async (eventId: string, amount: number) => {
-    await initiateRazorpayPayment({
-      type: PaymentType.EVENT_REQUEST_PAYMENT,
-      amount: amount,
-      currency: 'INR',
-      description: 'Event Request Payment',
-      entityId: eventId,
-      onSuccess: async (response) => {
-        // Call event request confirmation API
-        toast.success('Event request payment successful! 🎉');
+    try {
+      const result = await createEventBookingPayment(eventId);
+
+      if (!result.success || !result.order) {
+        throw new Error(result.message || "Failed to create order");
       }
-    });
+
+      const { order } = result;
+
+      await initiateRazorpayPayment({
+        type: PaymentType.EVENT_REQUEST_PAYMENT,
+        amount: order.amount, // Use amount from order
+        currency: order.currency,
+        description: 'Event Request Payment',
+        entityId: eventId,
+        orderId: order.id,
+        onSuccess: async (response) => {
+          await verifyEventBookingPayment(eventId, {
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature
+          });
+          toast.success('Event request payment successful! Booking Confirmed. 🎉');
+        }
+      });
+    } catch (error: any) {
+      toast.error(error.message || 'Payment initiation failed');
+      console.error(error);
+    }
   };
   const handlePayment = async () => {
+    console.log("handle payment called")
     if (workshop) {
       await handleWorkshopBooking();
     } else if (currentUpgradeRequest) {
       await handleInstructorUpgrade();
-    }
-    // Add more conditions as needed
-  };
-  const handlePay = async () => {
-    setIsProcessing(true);
-
-    // Load Razorpay SDK
-    const res = await loadRazorpay();
-    if (!res) {
-      toast.error('Razorpay SDK failed to load. Please check your internet connection.');
-      setIsProcessing(false);
-      return;
-    }
-
-    try {
-      let orderData;
-      if (workshop) {
-        // Handle workshop booking payment
-        // const orderRes = await createBookingOrder(workshop._id, workshop.fee);
-
-        // if (!orderRes.success) {
-        //   throw new Error(orderRes.message);
-        // }
-
-        // const order = orderRes.data;
-        const result = await initiateWorkshopBooking(workshop._id);
-        if (!result.success) {
-          toast.error(result.message || 'Failed to initiate booking');
-          setIsProcessing(false);
-          return;
-        }
-        orderData = result.data;
-
-        // const options = {
-        //   key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        //   amount: orderData.amount,
-        //   currency: orderData.currency,
-        //   name: "Groovia",
-        //   description: `Workshop: ${workshop.title}`,
-        //   order_id: orderData.id,
-        //   handler: async function (response: any) {
-        //     try {
-        //       const verifyRes = await verifyBookingPayment({
-        //         razorpay_payment_id: response.razorpay_payment_id,
-        //         razorpay_order_id: response.razorpay_order_id,
-        //         razorpay_signature: response.razorpay_signature,
-        //         workshopId: workshop._id
-        //       });
-
-        //       if (verifyRes.success) {
-        //         toast.success('Registration Successful! See you at the workshop.', {
-        //           duration: 5000,
-        //           icon: '🎉',
-        //         });
-        //         setIsProcessing(false);
-        //         onUpgrade?.();
-        //       } else {
-        //         throw new Error(verifyRes.message);
-        //       }
-        //     } catch (error) {
-        //       setIsProcessing(false);
-        //       toast.error('Payment verification failed. Please contact support.');
-        //       console.error('Payment verification failed:', error);
-        //     }
-        //   },
-        //   prefill: {
-        //     name: userEmail.split('@')[0],
-        //     email: userEmail,
-        //   },
-        //   theme: {
-        //     color: "#9333ea"
-        //   },
-        //   modal: {
-        //     ondismiss: function () {
-        //       setIsProcessing(false);
-        //       toast.error('Payment Cancelled');
-        //     }
-        //   }
-        // };
-
-        // const paymentObject = new (window as any).Razorpay(options);
-        // paymentObject.open();
-      } else if (currentUpgradeRequest) {
-        // Handle role upgrade payment
-        const order = await upgradeService.createPaymentOrder({
-          upgradeRequestId: currentUpgradeRequest.id,
-          amount: getRoleUpgradeAmount(),
-          currency: 'INR'
-        });
-
-        // 2. Configure Razorpay Checkout options
-        // const options = {
-        //   key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        //   amount: order.amount,
-        //   currency: order.currency,
-        //   name: "Groovia",
-        //   description: `${currentUpgradeRequest.type.charAt(0).toUpperCase() + currentUpgradeRequest.type.slice(1)} Role Upgrade`,
-        //   order_id: order.id,
-        //   handler: async function (response: any) {
-        //     try {
-        //       await upgradeService.confirmPaymentCompletion(
-        //         currentUpgradeRequest.id,
-        //         response.razorpay_payment_id,
-        //         getRoleUpgradeAmount(),
-        //         'INR',
-        //         response.razorpay_order_id,
-        //         response.razorpay_signature
-        //       );
-
-        //       toast.success('Payment Successful! Your role has been upgraded.', {
-        //         duration: 5000,
-        //         icon: '🎉',
-        //       });
-
-        //       // Clear stored request
-        //       localStorage.removeItem('pendingUpgradeRequest');
-
-        //       setIsProcessing(false);
-
-        //       // Refetch user profile to get updated roles
-        //       try {
-        //         const profileResponse = await fetchMyProfile();
-        //         const freshUser = profileResponse.profile;
-        //         const token = localStorage.getItem('token') || '';
-        //         dispatch(loginUser({ user: freshUser, token }));
-        //       } catch (err) {
-        //         console.error('Failed to refetch profile after payment:', err);
-        //       }
-
-        //       onUpgrade?.();
-        //     } catch (error) {
-        //       setIsProcessing(false);
-        //       toast.error('Payment verification failed. Please contact support.');
-        //       console.error('Payment verification failed:', error);
-        //     }
-        //   },
-        //   prefill: {
-        //     name: userEmail.split('@')[0],
-        //     email: userEmail,
-        //   },
-        //   theme: {
-        //     color: "#9333ea"
-        //   },
-        //   modal: {
-        //     ondismiss: async function () {
-        //       setIsProcessing(false);
-        //       try {
-        //         await upgradeService.upgradePaymentFailed(currentUpgradeRequest.id);
-        //       } catch (error) {
-        //         console.error('Failed to mark payment as failed:', error);
-        //       }
-        //       toast.error('Payment Failed! Please try again.');
-        //       // Redirect to dancer profile to show retry payment button
-        //       setTimeout(() => {
-        //         navigate('/profile');
-        //       }, 1500);
-        //     }
-        //   }
-        // };
-
-        // // 3. Open Razorpay Checkout
-        // const paymentObject = new (window as any).Razorpay(options);
-        // paymentObject.open();
-      }
-      // Create Razorpay order
-      // const order = await createOrder({
-      //   amount: orderData.amount,
-      //   currency: orderData.currency || 'INR',
-      //   receipt: `workshop_${workshop?._id}_${Date.now()}`
-      // });
-
-      // Initialize Razorpay
-      // const options = {
-      //   key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-      //   amount: order.amount,
-      //   currency: order.currency,
-      //   name: 'Groovia',
-      //   description: workshop ? `Workshop: ${workshop.title}` : 'Role Upgrade',
-      //   order_id: order.id,
-      //   handler: async function (response: any) {
-      //     try {
-      //       if (workshop) {
-      //         // Confirm workshop booking
-      //         await confirmWorkshopBooking(
-      //           workshop._id,
-      //           response.razorpay_payment_id,
-      //           response.razorpay_order_id,
-      //           response.razorpay_signature
-      //         );
-      //         toast.success('Successfully registered for workshop! 🎉');
-      //       } else {
-      //         // Handle upgrade confirmation (existing code)
-      //       }
-
-      //       setIsProcessing(false);
-      //       onSuccess?.();
-      //     } catch (error) {
-      //       setIsProcessing(false);
-      //       toast.error('Payment verification failed');
-      //     }
-      //   },
-      //   prefill: {
-      //     name: userData?.username || '',
-      //     email: userData?.email || '',
-      //   },
-      //   theme: {
-      //     color: '#9333ea'
-      //   }
-      // };
-      // const rzp = new (window as any).Razorpay(options);
-      // rzp.open();
-    } catch (error: any) {
-      setIsProcessing(false);
-      const errorMessage = error.response?.data?.message || 'Failed to initiate payment. Please try again.';
-      toast.error(errorMessage);
-      console.error('Payment initiation failed:', error);
+    } else if (eventRequest) {
+      if (!eventRequest.acceptedAmount) return;
+      console.log("Accepted Amount in checkout page: ", eventRequest.acceptedAmount);
+      const response = await handleEventRequestPayment(eventRequest._id, eventRequest.acceptedAmount);
+      console.log("Response of event request payment: ", response);
     }
   };
 
@@ -607,6 +420,7 @@ const Payment: React.FC<PaymentProps> = ({
                 <div className="flex items-baseline">
                   <span className="text-4xl font-bold text-purple-400">₹{paymentDetails.amount}</span>
                 </div>
+                <p className="text-purple-400/70 text-sm">Platform fee is not refundable</p>
               </div>
 
               {/* Benefits or Workshop Details */}
@@ -632,6 +446,31 @@ const Payment: React.FC<PaymentProps> = ({
                     </div>
                   </div>
                 </div>
+              ) : eventRequest ? (
+                <div>
+                  <h4 className="text-xl font-semibold text-white mb-3">Event Details:</h4>
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-3">
+                      <Calendar className="w-5 h-5 text-purple-400" />
+                      <span className="text-gray-300">
+                        {new Date(eventRequest.date).toLocaleDateString(undefined, {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <MapPin className="w-5 h-5 text-purple-400" />
+                      <span className="text-gray-300">{eventRequest.venue}</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <Star className="w-5 h-5 text-purple-400" />
+                      {/* <span className="text-gray-300">Dancer: {eventRequest.dancerId?.username || 'Undisclosed'}</span> */}
+                      <span className="text-gray-300">Dancer : {eventRequest.dancerId?.username}</span>
+                    </div>
+                  </div>
+                </div>
               ) : (
                 <div>
                   <h4 className="text-xl font-semibold text-white mb-3">What you'll get:</h4>
@@ -649,7 +488,7 @@ const Payment: React.FC<PaymentProps> = ({
               {/* Terms */}
               <div className="bg-gray-700/30 rounded-lg p-4 border border-purple-400/20">
                 <p className="text-sm text-gray-400 leading-relaxed">
-                  You'll be charged ₹{paymentDetails.amount} one-time for this role upgrade.
+                  You'll be charged ₹{paymentDetails.amount} one-time for this {paymentDetails.planName}.
                   You can manage or cancel your plan anytime in your account settings.
                   By upgrading, you agree to our{' '}
                   <span className="text-purple-400 hover:text-purple-300 cursor-pointer">
@@ -762,7 +601,7 @@ const Payment: React.FC<PaymentProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

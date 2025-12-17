@@ -200,7 +200,7 @@ className = "w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg p
                 </div> */}
 
                     {/* Notification Bell */}
-                    <div className="relative mr-6">
+                    <div className="relative mr-6 pt-2">
                         <button
                             onClick={() => setShowNotifications(!showNotifications)}
                             className="relative text-white text-2xl cursor-pointer hover:text-purple-300 transition-colors"
@@ -215,7 +215,8 @@ className = "w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg p
                     </div>
 
                     {/* User Profile */}
-                    <div className="relative">
+                    <div className="relative flex items-center space-x-2">
+                            <h2 className="text-white">{userData?.username}</h2>
                         <button
                             // onClick={() => setShowUserMenu(!showUserMenu)}
                             className="flex items-center space-x-2 hover:opacity-80 transition-opacity"

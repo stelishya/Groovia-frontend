@@ -67,10 +67,11 @@ export const logoutAdmin = async () => {
   }
 };
 
-export const getAllUsers = async (page: number = 1, pageSize: number = 10) => {
+export const getAllUsers = async (params: { page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: string; role?: string }) => {
   try {
-    console.log("HI from getAllUsers in admin.service.ts", page, pageSize)
-    const response = await AdminAxios.get(`/users?page=${page}&limit=${pageSize}`);
+    const queryString = `?${new URLSearchParams(params as any).toString()}`;
+    console.log("Fetching users with params:", queryString)
+    const response = await AdminAxios.get(`/users${queryString}`);
     console.log("response in getAllUsers in admin.service.ts : ", response)
     if (response.status !== 200) {
       throw new Error(`HTTP error! status: ${response.status}`);

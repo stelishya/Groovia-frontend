@@ -1,5 +1,6 @@
 import { ClientAxios } from "../../api/user.axios";
 import axios from 'axios';
+import type { EventRequest } from "../../pages/client/BookingsClient";
 
 export const getClientEventRequests = async (params: URLSearchParams) => {
     try {
@@ -29,14 +30,44 @@ export const getClientEventRequests = async (params: URLSearchParams) => {
     }
 };
 
-export const updateEventBookingStatus = async (eventId: string, status: 'accepted' | 'rejected' | 'cancelled') => {
+export const updateEventBookingStatus = async (eventId: string, status: 'accepted' | 'rejected' | 'cancelled', amount?: number) => {
     try {
-        const response = await ClientAxios.patch(`/event-requests/${eventId}/status`, { status });
+        const response = await ClientAxios.patch(`/event-requests/${eventId}/status`, { status, amount });
         return response.data;
     } catch (error) {
         console.error('Failed to update booking status:', error);
         if (axios.isAxiosError(error)) {
             const message = error.response?.data?.message || 'Failed to update status.';
+            throw new Error(message);
+        } else {
+            throw new Error('An unexpected error occurred.');
+        }
+    }
+};
+
+export const createEventBookingPayment = async (eventId: string) => {
+    try {
+        const response = await ClientAxios.post(`/event-requests/${eventId}/payment`);
+        return response.data;
+    } catch (error) {
+        console.error('Failed to create payment order:', error);
+        if (axios.isAxiosError(error)) {
+            const message = error.response?.data?.message || 'Failed to create payment order.';
+            throw new Error(message);
+        } else {
+            throw new Error('An unexpected error occurred.');
+        }
+    }
+};
+
+export const verifyEventBookingPayment = async (eventId: string, paymentDetails: any) => {
+    try {
+        const response = await ClientAxios.post(`/event-requests/${eventId}/verify-payment`, paymentDetails);
+        return response.data;
+    } catch (error) {
+        console.error('Failed to verify payment:', error);
+        if (axios.isAxiosError(error)) {
+            const message = error.response?.data?.message || 'Failed to verify payment.';
             throw new Error(message);
         } else {
             throw new Error('An unexpected error occurred.');
@@ -160,7 +191,7 @@ export interface Competition {
     results?: any;
     createdAt: string;
     updatedAt: string;
-  }
+}
 export const getOrganizerCompetitions = async (params?: { category?: string; style?: string }): Promise<Competition[]> => {
     try {
                 const queryString = params ? `?${new URLSearchParams(params).toString()}` : '';
@@ -241,4 +272,25 @@ export const getOrganizerCompetitions = async (params?: { category?: string; sty
 //   }
   
  
-  
+export const getEventById = async (id: string): Promise<EventRequest> => {
+    try {
+        const response = await ClientAxios.get(`/events/${id}`);
+        console.log("response from getEventById in client.service.ts:", response.data);
+        return response.data;
+    } catch (error) {
+        console.error('Failed to fetch event:', error);
+        if (axios.isAxiosError(error)) {
+            const message = error.response?.data?.message || 'Failed to fetch event';
+            throw new Error(message);
+        }
+        throw error;
+    }
+}
+
+export const markEventRequestPaymentFailed = async (eventId: string) => {
+    try {
+        await ClientAxios.post(`/events/${eventId}/mark-payment-failed`);
+    } catch (error) {
+        console.error('Failed to mark event request payment as failed:', error);
+    }
+};

@@ -611,8 +611,40 @@ const PublicProfile = () => {
                     )}
                 </div>
                 <div>
-                    <label className="block text-white font-medium mb-2">Budget</label>
-                    <input
+                    <label className="block text-white font-medium mb-2">Budget Range (₹)</label>
+                    <div className="flex space-x-4">
+                            <div className="flex-1">
+                                <input
+                                    type="number"
+                                    value={requestData.budget.includes('-') ? requestData.budget.split('-')[0] : requestData.budget}
+                                    onChange={(e) => {
+                                        const min = e.target.value;
+                                        const max = requestData.budget.includes('-') ? requestData.budget.split('-')[1] : '';
+                                        setRequestData({ ...requestData, budget: `${min}-${max}` });
+                                        if (formErrors.budget) setFormErrors({ ...formErrors, budget: '' });
+                                    }}
+                                    className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.budget ? 'border-2 border-red-500' : ''
+                                        }`}
+                                    placeholder="Min"
+                                />
+                            </div>
+                            <div className="flex-1">
+                                <input
+                                    type="number"
+                                    value={requestData.budget.includes('-') ? requestData.budget.split('-')[1] : ''}
+                                    onChange={(e) => {
+                                        const min = requestData.budget.includes('-') ? requestData.budget.split('-')[0] : requestData.budget;
+                                        const max = e.target.value;
+                                        setRequestData({ ...requestData, budget: `${min}-${max}` });
+                                        if (formErrors.budget) setFormErrors({ ...formErrors, budget: '' });
+                                    }}
+                                    className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.budget ? 'border-2 border-red-500' : ''
+                                        }`}
+                                    placeholder="Max"
+                                />
+                            </div>
+                        </div>
+                    {/* <input
                         type="text"
                         value={requestData.budget}
                         onChange={(e) => {
@@ -622,7 +654,7 @@ const PublicProfile = () => {
                         className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.budget ? 'border-2 border-red-500' : ''
                             }`}
                         placeholder="e.g., $500 - $1000"
-                    />
+                    /> */}
                     {formErrors.budget && <p className="text-red-400 text-sm mt-1">{formErrors.budget}</p>}
                 </div>
             </FormModal>
