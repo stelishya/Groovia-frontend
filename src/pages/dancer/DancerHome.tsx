@@ -22,7 +22,10 @@ const CompetitionsSection = () => {
             setLoading(true);
             try {
                 const data = await getAllCompetitions();
-                setCompetitions(data || []);
+                console.log("all competitions: ", data);
+                // API returns an object { data: Competition[], total, page, totalPages }
+                const list = Array.isArray(data) ? data : data?.data || [];
+                setCompetitions(list);
             } catch (error) {
                 console.error("Failed to fetch competitions:", error);
             } finally {

@@ -77,7 +77,14 @@ export const getRegisteredCompetitions = async (params?: { search?: string; sort
     }
 }
 
-export const getAllCompetitions = async (params?: any): Promise<Competition[]> => {
+export interface AllCompetitionsResponse {
+    data: Competition[];
+    total: number;
+    page: number;
+    totalPages: number;
+}
+
+export const getAllCompetitions = async (params?: any): Promise<AllCompetitionsResponse> => {
     try {
         const queryString = params ? `?${new URLSearchParams(params).toString()}` : '';
         const response = await CompetitionAxios.get(`/${queryString}`);
