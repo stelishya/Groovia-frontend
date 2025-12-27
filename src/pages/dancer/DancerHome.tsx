@@ -156,7 +156,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
                 {/* Search and Filters */}
                 <div className="flex flex-wrap gap-4 mb-8">
                     {/* Search Bar */}
-                    <div className="relative flex-1 min-w-[250px]">
+                    <div className="relative flex-1 w-[500px] min-w-[250px]">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-300" size={20} />
                         <input
                             type="text"
@@ -166,7 +166,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
                                 setSearchQuery(e.target.value);
                                 setCurrentPage(1); // Reset to first page on search
                             }}
-                            className="w-[520px] bg-purple-700 text-white placeholder-purple-300 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            className="w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-500"
                         />
                         {searchQuery && (
                             <X

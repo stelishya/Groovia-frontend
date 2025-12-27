@@ -44,7 +44,7 @@ const InstructorWorkshopCard: React.FC<InstructorWorkshopCardProps> = ({
     };
 
     return (
-        <div className="bg-gradient-to-br from-blue-600/80 to-purple-700/80 backdrop-blur-md rounded-xl p-5 border border-white/10 shadow-lg hover:shadow-purple-500/20 transition-all duration-300">
+        <div className="bg-purple-700/50 backdrop-blur-md rounded-xl p-5 border border-purple-500 shadow-lg hover:shadow-purple-500/20 transition-all duration-300">
             {/* Header */}
             <div className="flex justify-between items-start mb-4">
                 <h3 className="text-xl font-bold text-white leading-tight max-w-[70%]">

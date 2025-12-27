@@ -1,4 +1,4 @@
-import { House, MessageSquare, Calendar, Briefcase, Trophy, CreditCard, User, LogOut, Settings } from "lucide-react"
+import { House, MessageSquare, Calendar, Briefcase, Trophy, CreditCard, User, LogOut, Settings, GitPullRequest, PersonStanding } from "lucide-react"
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logoutUser as logoutUserAction } from "../../redux/slices/user.slice";
@@ -33,9 +33,9 @@ const Sidebar: React.FC<SidebarProps> = ({ activeMenu = 'Home' }) => {
     const navItems = [
         { icon: <House />, name: 'Home', action: () => navigate('/home') },
         { icon: <MessageSquare />, name: 'Messages' },
-        { icon: <Calendar />, name: 'Bookings', action: () => navigate('/bookings') },
+        { icon: <GitPullRequest />, name: 'Requests', action: () => navigate('/bookings') },
         ...(userRoles.includes('dancer') || userRoles.includes('instructor')
-            ? [{ icon: <Briefcase />, name: 'Workshops', action: () => navigate('/workshops') }]
+            ? [{ icon: <PersonStanding />, name: 'Workshops', action: () => navigate('/workshops') }]
             : []),
         ...(userRoles.includes('dancer') || userRoles.includes('organizer')
             ? [{ icon: <Trophy />, name: 'Competitions',action:()=> navigate('/competitions') }] : []),

@@ -24,7 +24,7 @@ const WorkshopCard: React.FC<WorkshopCardProps> = ({
     studioName,
     date,
     onBook,
-    actionLabel = 'Book Now',
+    actionLabel = 'View Details',
     paymentStatus,
     deadline
 }) => {
@@ -102,12 +102,13 @@ const WorkshopCard: React.FC<WorkshopCardProps> = ({
                 </div>
 
                 {/* Book Button */}
-                <div className="flex justify-end mt-auto">
+                <div className="flex w-full mt-auto">
                     <button
                         onClick={onBook}
-                        className="bg-[#c084fc] hover:bg-[#d8b4fe] text-white px-6 py-2 rounded-lg font-semibold flex items-center transition-colors duration-200 shadow-md"
+                        className="w-full justify-center bg-[#c084fc] hover:bg-[#d8b4fe] text-white px-6 py-2 rounded-lg font-semibold flex items-center transition-colors duration-200 shadow-md"
                     >
-                        {isDeadlinePassed && actionLabel === 'Book Now' ? 'Registration Closed' : actionLabel}
+                        {/* {isDeadlinePassed && actionLabel === 'Book Now' ? 'Registration Closed' : actionLabel} */}
+                        {actionLabel}
                         <ArrowUpRight size={18} className="ml-2" />
                     </button>
                 </div>

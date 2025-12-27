@@ -203,3 +203,143 @@ export function Pagination({
     </div>
   )
 }
+
+export function UserPagination({
+  current = 1,
+  total = 0,
+  pageSize = 10,
+  onChange,
+  showSizeChanger = true,
+  showQuickJumper = false,
+  showTotal = true,
+  pageSizeOptions = [10, 20, 50, 100],
+  className = "",
+  disabled = false,
+}: PaginationProps) {
+  const totalPages = Math.ceil(total / pageSize)
+  const startIndex = (current - 1) * pageSize + 1
+  const endIndex = Math.min(current * pageSize, total)
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages && page !== current && !disabled) {
+      onChange(page, pageSize)
+    }
+  }
+
+  const renderPageNumbers = () => {
+    const pages: (number | string)[] = []
+    const showPages = 5 // Number of page buttons to show
+
+    if (totalPages <= showPages) {
+      // Show all pages if total pages is small
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i)
+      }
+    } else {
+      // Show first page
+      pages.push(1)
+
+      if (current > 3) {
+        pages.push("...")
+      }
+
+      // Show pages around current page
+      const start = Math.max(2, current - 1)
+      const end = Math.min(totalPages - 1, current + 1)
+
+      for (let i = start; i <= end; i++) {
+        if (i !== 1 && i !== totalPages) {
+          pages.push(i)
+        }
+      }
+
+      if (current < totalPages - 2) {
+        pages.push("...")
+      }
+
+      // Show last page
+      if (totalPages > 1) {
+        pages.push(totalPages)
+      }
+    }
+
+    return pages
+  }
+
+  const renderTotal = () => {
+    if (!showTotal) return null
+
+    if (typeof showTotal === "function") {
+      return showTotal(total, [startIndex, endIndex])
+    }
+
+    return (
+      <span className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">
+        Showing {startIndex} to {endIndex} of {total} entries
+      </span>
+    )
+  }
+
+  if (totalPages <= 1 && !showTotal) return null
+
+  return (
+    <div
+      className={`flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 py-4 border-t border-purple-200 dark:border-purple-600 space-y-4 sm:space-y-0 ${className}`}
+    >
+      <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 w-full sm:w-auto">
+        {renderTotal()}
+      </div>
+
+      <div className="flex items-center gap-2 flex-wrap justify-center sm:justify-end">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handlePageChange(current - 1)}
+          disabled={current <= 1 || disabled}
+          className="text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-700 hover:bg-purple-50 dark:hover:bg-purple-900/50 text-xs sm:text-sm"
+        >
+          <ChevronLeft className="h-4 w-4 mr-1" />
+          Previous
+        </Button>
+
+        <div className="flex items-center gap-1 flex-wrap">
+          {renderPageNumbers().map((page, index) => (
+            <div key={index}>
+              {page === "..." ? (
+                <span className="px-2 sm:px-3 py-2 text-gray-500 dark:text-gray-400">
+                  <MoreHorizontal className="h-4 w-4" />
+                </span>
+              ) : (
+                <Button
+                  variant={current === page ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handlePageChange(page as number)}
+                  disabled={disabled}
+                  className={`
+                    ${current === page
+                      ? "bg-purple-900 dark:bg-purple-700 text-white dark:text-white hover:bg-purple-800 dark:hover:bg-purple-600"
+                      : "text-gray-600 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"}
+                    text-xs sm:text-sm
+                  `}
+                >
+                  {page}
+                </Button>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => handlePageChange(current + 1)}
+          disabled={current >= totalPages || disabled}
+          className="text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-700 hover:bg-purple-50 dark:hover:bg-purple-900/50 text-xs sm:text-sm"
+        >
+          Next
+          <ChevronRight className="h-4 w-4 ml-1" />
+        </Button>
+      </div>
+    </div>
+  )
+}

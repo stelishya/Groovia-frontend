@@ -1,7 +1,7 @@
 
-import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { Search, Bell, X, MapPin, Calendar, IndianRupee, User, PartyPopper, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Search, X, MapPin, Calendar, IndianRupee, User, PartyPopper, ChevronLeft, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getEventRequests } from '../../services/dancer/dancer.service';
 import { fetchMyProfile } from '../../services/user/auth.service';
@@ -46,18 +46,18 @@ interface EventRequest {
 }
 
 
-const Header = ({ user }: { user: Client | null }) => (
-    <header className="flex justify-between items-center mb-8">
-        <div>
-            <h1 className="text-3xl font-bold text-white">Bookings Management</h1>
-            <p className="text-gray-400">Manage your client requests & workshop bookings</p>
-        </div>
-        <div className="flex items-center space-x-4">
-            <Bell className="text-white" />
-            <img src={user?.profileImage} alt="User" className="w-10 h-10 rounded-full" />
-        </div>
-    </header>
-);
+// const Header = ({ user }: { user: Client | null }) => (
+//     <header className="flex justify-between items-center mb-8">
+//         <div>
+//             <h1 className="text-3xl font-bold text-white">Bookings Management</h1>
+//             <p className="text-gray-400">Manage your client requests & workshop bookings</p>
+//         </div>
+//         <div className="flex items-center space-x-4">
+//             <Bell className="text-white" />
+//             <img src={user?.profileImage} alt="User" className="w-10 h-10 rounded-full" />
+//         </div>
+//     </header>
+// );
 
 const RequestCard = ({ request, onAcceptClick, onDeclineClick, onViewMap }: { request: EventRequest, onAcceptClick: (id: string) => void, onDeclineClick: (id: string) => void, onViewMap: (venue: string) => void }) => (
     <div className="bg-purple-700/50 rounded-lg p-4 flex justify-between items-center border border-purple-500">
@@ -162,20 +162,23 @@ const BookingsPage = () => {
     const [workshopTotal, setWorkshopTotal] = useState(0);
 
     const [bookedWorkshops, setBookedWorkshops] = useState<Workshop[]>([]);
-    const location = useLocation();
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
 
     const [acceptAmount, setAcceptAmount] = useState('');
 
+    // Initialize activeTab from URL search params
     useEffect(() => {
-        if (location.state?.activeTab) {
-            setActiveTab(location.state.activeTab);
+        const tabParam = searchParams.get('tab');
+        if (tabParam === 'workshops' || tabParam === 'requests') {
+            setActiveTab(tabParam);
         }
-    }, [location.state]);
+    }, [searchParams]);
 
     useEffect(() => {
         const fetchBookedWorkshops = async () => {
-            // if (activeTab === 'workshops') {
+            if (activeTab !== 'workshops') return; // Only fetch when on workshops tab
+
             setLoading(true);
             try {
                 const response = await getBookedWorkshops({
@@ -195,10 +198,14 @@ const BookingsPage = () => {
             } finally {
                 setLoading(false);
             }
-            // }
         };
 
-        fetchBookedWorkshops();
+        // Debounce the search
+        const handler = setTimeout(() => {
+            fetchBookedWorkshops();
+        }, 300);
+
+        return () => clearTimeout(handler);
     }, [activeTab, workshopPage, workshopLimit, workshopSearch, workshopSortBy]);
 
     const handleUpdateStatus = async (id: string, status: 'accepted' | 'rejected' | 'cancelled', amount?: number) => {
@@ -370,13 +377,23 @@ const BookingsPage = () => {
             <div className="flex border-b border-purple-700 mb-6">
                 <button
                     className={`py-2 px-4 font-semibold ${activeTab === 'workshops' ? 'text-white border-b-2 border-purple-500' : 'text-gray-400'}`}
-                    onClick={() => setActiveTab('workshops')}
+                    onClick={() => {
+                        setActiveTab('workshops');
+                        const params = new URLSearchParams(searchParams);
+                        params.set('tab', 'workshops');
+                        setSearchParams(params);
+                    }}
                 >
                     Booked Workshops ({bookedWorkshops.length})
                 </button>
                 <button
                     className={`py-2 px-4 font-semibold ${activeTab === 'requests' ? 'text-white border-b-2 border-purple-500' : 'text-gray-400'}`}
-                    onClick={() => setActiveTab('requests')}
+                    onClick={() => {
+                        setActiveTab('requests');
+                        const params = new URLSearchParams(searchParams);
+                        params.set('tab', 'requests');
+                        setSearchParams(params);
+                    }}
                 >
                     Client Event Requests ({requests.length})
                 </button>
