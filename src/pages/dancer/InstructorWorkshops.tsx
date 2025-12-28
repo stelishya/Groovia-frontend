@@ -1,6 +1,57 @@
-import { useState, useEffect } from 'react';
-import Sidebar from '../../components/shared/Sidebar';
-import InstructorWorkshopCard from '../../components/ui/InstructorWorkshopCard';
+import { startWorkshopSession, joinWorkshopSession } from '../../services/videoCall.service';
+import { useVideoCall } from '../../context/VideoCallContext';
+
+// const InstructorWorkshops = () => {
+//     // ... (existing state)
+// const { joinSession, isConnected } = useVideoCall(); // Use context
+
+//     // ... (existing effects)
+
+// const handleStartSession = async (workshopId: string) => {
+//     const response = await startWorkshopSession(workshopId);
+//     if (response.success) {
+//         toast.success('Session started! Joining room...');
+//         if (response.data && response.data.token) {
+//             await joinSession(response.data.token);
+//         }
+//     } else {
+//         toast.error(response.message);
+//     }
+// };
+
+// const handleJoinSession = async (workshop: any) => {
+//     const response = await joinWorkshopSession(workshop._id);
+//     if (response.success) {
+//         toast.success('Joining session...');
+//         if (response.data && response.data.token) {
+//             await joinSession(response.data.token);
+//         }
+//     } else {
+//         toast.error(response.message);
+//     }
+// };
+
+//     // ... (render)
+
+//     <InstructorWorkshopCard
+//         key={workshop._id}
+//         // ... (existing props)
+//         title={workshop.title}
+//         status={getStatus(workshop)}
+//         fee={workshop.fee}
+//         date={workshop.startDate}
+//         time={workshop.sessions[0]?.startTime || 'TBA'}
+//         mode={workshop.mode}
+//         attendeesCount={workshop.participants?.length || 0}
+//         maxAttendees={workshop.maxParticipants}
+//         onViewDetails={() => handleViewDetails(workshop)}
+//         onEdit={() => handleEditClick(workshop)}
+//         onDelete={() => {
+//             setEditingWorkshop(workshop)
+//             setIsDeleteModalOpen(true)
+//         }}
+//         onStartSession={() => handleStartSession(workshop._id)}
+//     />
 import CreateWorkshopModal from '../../components/ui/CreateWorkshopModal';
 import GenericDetailsModal from '../../components/ui/EntityDetailsModal';
 import { Search, Plus, ScanLine, Bell, Filter, X } from 'lucide-react';
@@ -13,6 +64,11 @@ import UserNavbar from '../../components/shared/Navbar';
 import { UserTable } from '../../components/ui/Table';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import WorkshopCard from '../../components/ui/WorkshopCard';
+import { useEffect, useState } from 'react';
+import Sidebar from '../../components/shared/Sidebar';
+import InstructorWorkshopCard from '../../components/ui/InstructorWorkshopCard';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../../redux/store';
 
 const InstructorWorkshops = () => {
     const [workshops, setWorkshops] = useState<Workshop[]>([])
@@ -45,6 +101,10 @@ const InstructorWorkshops = () => {
     const pageSize = 8;
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
+    const { userData } = useSelector((state: RootState) => state.user);
+
+    const { joinSession, isConnected, activeRoomId } = useVideoCall(); // Use context
+
 
     // Initialize activeTab from URL search params
     useEffect(() => {
@@ -106,6 +166,37 @@ const InstructorWorkshops = () => {
         return () => clearTimeout(handler);
     }, [exploreSearch, styleFilter, modeFilter, sortBy, currentPage]);
 
+    const handleStartSession = async (workshopId: string) => {
+        if (isConnected && activeRoomId !== workshopId) {
+            toast.error('You are already in another video call. Please leave it first.');
+            return;
+        }
+        const response = await startWorkshopSession(workshopId);
+        if (response.success) {
+            toast.success('Session started! Joining room...');
+            if (response.data && response.data.token && userData) {
+                await joinSession(response.data.token, userData.username, 'instructor');
+            }
+        } else {
+            toast.error(response.message);
+        }
+    };
+
+    const handleJoinSession = async (workshop: any) => {
+        if (isConnected && activeRoomId !== workshop._id) {
+            toast.error('You are already in another video call. Please leave it first.');
+            return;
+        }
+        const response = await joinWorkshopSession(workshop._id);
+        if (response.success) {
+            toast.success('Joining session...');
+            if (response.data && response.data.token && userData) {
+                await joinSession(response.data.token, userData.username, 'dancer');
+            }
+        } else {
+            toast.error(response.message);
+        }
+    };
 
     const fetchInstructorWorkshops = async () => {
         setLoading(true);
@@ -202,12 +293,87 @@ const InstructorWorkshops = () => {
 
     const getStatus = (workshop: Workshop) => {
         const now = new Date();
-        const start = new Date(workshop.startDate);
-        const end = new Date(workshop.endDate);
 
-        if (now < start) return 'Upcoming';
-        if (now >= start && now <= end) return 'Active';
-        return 'Completed';
+        // Helper to parse date string into local day components
+        const parseToLocalDay = (dateSource: string | Date | undefined): Date => {
+            if (!dateSource) return new Date();
+            const d = new Date(dateSource);
+            if (isNaN(d.getTime())) return new Date();
+
+            // If it is an ISO string, take the YYYY-MM-DD part directly to avoid TZ shifts
+            if (typeof dateSource === 'string' && dateSource.includes('-')) {
+                const parts = dateSource.split('T')[0].split('-').map(Number);
+                if (parts.length === 3) {
+                    return new Date(parts[0], parts[1] - 1, parts[2]);
+                }
+            }
+            return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        };
+
+        const sessions = Array.isArray(workshop.sessions) ? workshop.sessions : [];
+        const hasSessions = sessions.length > 0;
+        let start: Date;
+        let logSource = 'default';
+
+        if (hasSessions) {
+            // Find the EARLIEST session start
+            const sortedSessions = [...sessions].sort((a, b) => {
+                const da = new Date(a.date || workshop.startDate).getTime();
+                const db = new Date(b.date || workshop.startDate).getTime();
+                return da - db;
+            });
+
+            const firstSession = sortedSessions[0];
+            const startTimeStr = firstSession.startTime || '00:00';
+            const [hours, minutes] = startTimeStr.split(':').map(Number);
+
+            start = parseToLocalDay(firstSession.date || workshop.startDate);
+            start.setHours(hours || 0, minutes || 0, 0, 0);
+            logSource = 'sessions';
+        } else {
+            start = parseToLocalDay(workshop.startDate);
+            start.setHours(0, 0, 0, 0);
+        }
+
+        let end: Date;
+        if (workshop.sessions && workshop.sessions.length > 0) {
+            // Find the LATEST session end
+            const sortedSessions = [...workshop.sessions].sort((a, b) => {
+                const da = new Date(a.date || workshop.endDate).getTime();
+                const db = new Date(b.date || workshop.endDate).getTime();
+                return da - db;
+            });
+            const lastSession = sortedSessions[sortedSessions.length - 1];
+            const endTimeStr = lastSession.endTime || '23:59';
+            const [hours, minutes] = endTimeStr.split(':').map(Number);
+
+            end = parseToLocalDay(lastSession.date || workshop.endDate);
+            end.setHours(hours || 23, minutes || 59, 59, 999);
+        } else {
+            end = parseToLocalDay(workshop.endDate);
+            end.setHours(23, 59, 59, 999);
+        }
+
+        const status = now < start ? 'upcoming' : (now <= end ? 'active' : 'completed');
+
+        // Granular logging for debugging the "upcoming" issue
+        if (activeTab === 'bookedWorkshops' || activeTab === 'instructorWorkshops') {
+            console.log(`[STATUS_DIAGNOSTIC] ${workshop.title} (${activeTab}):`, {
+                status,
+                has_sessions: hasSessions,
+                sessions_count: sessions.length,
+                raw_sessions: sessions,
+                raw_startDate: workshop.startDate,
+                parsed_now_local: now.toString(),
+                parsed_start_local: start.toString(),
+                parsed_end_local: end.toString(),
+                is_after_start: now >= start,
+                is_before_end: now <= end,
+                source: logSource
+            });
+        }
+
+        return status;
     };
 
     const filteredWorkshops = instructorWorkshops.filter(workshop =>
@@ -357,8 +523,8 @@ const InstructorWorkshops = () => {
                                                 title={workshop.title}
                                                 status={getStatus(workshop)}
                                                 fee={workshop.fee}
-                                                date={workshop.startDate}
-                                                time={workshop.sessions[0]?.startTime || 'TBA'}
+                                                date={workshop.sessions[0]?.date ? new Date(workshop.sessions[0].date).toISOString().split('T')[0] : new Date(workshop.startDate).toISOString().split('T')[0]} // Prefer session date, fallback to workshop start date
+                                                time={workshop.sessions[0]?.startTime || '00:00'} // Use session start time
                                                 mode={workshop.mode}
                                                 attendeesCount={workshop.participants?.length || 0}
                                                 maxAttendees={workshop.maxParticipants}
@@ -368,6 +534,9 @@ const InstructorWorkshops = () => {
                                                     setEditingWorkshop(workshop)
                                                     setIsDeleteModalOpen(true)
                                                 }}
+                                                onStartSession={() => handleStartSession(workshop._id)}
+                                                sessionStart={workshop.sessions[0]?.date ? new Date(workshop.sessions[0].date) : workshop.startDate}
+                                                isCurrentSession={activeRoomId === workshop._id}
                                             />
                                         ))
                                 ) : (
@@ -400,12 +569,9 @@ const InstructorWorkshops = () => {
                                 <p className="text-center text-gray-400 mt-10">Loading workshops...</p>
                             ) : bookedWorkshops.length > 0 ? (
                                 <UserTable
-                                    data={bookedWorkshops}
+                                    data={bookedWorkshops.map(w => ({ ...w, status: getStatus(w) }))}
                                     variant="dancer-workshop"
                                     onView={(workshop) => {
-                                        // Using default workshop card navigation logic
-                                        // Need to ensure state is passed if required by WorkshopDetails page
-                                        // The original code passed state: { isRegistered: true, paymentStatus: workshop.userParticipant.paymentStatus }
                                         navigate(`/workshop/${workshop._id}`, {
                                             state: {
                                                 isRegistered: true,
@@ -413,6 +579,8 @@ const InstructorWorkshops = () => {
                                             }
                                         });
                                     }}
+                                    onJoinSession={handleJoinSession}
+                                    activeRoomId={activeRoomId}
                                 />
                             ) : (
                                 <p>No booked workshops found.</p>

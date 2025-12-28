@@ -38,7 +38,6 @@ const CreateWorkshopModal: React.FC<CreateWorkshopModalProps> = ({ isOpen, onClo
         maxParticipants: 0,
         posterImage: '',
         location: '',
-        meetingLink: '',
         deadline: '',
         sessions: [{ date: '', startTime: '', endTime: '' }],
     });
@@ -86,7 +85,6 @@ const CreateWorkshopModal: React.FC<CreateWorkshopModalProps> = ({ isOpen, onClo
                     maxParticipants: 0,
                     posterImage: '',
                     location: '',
-                    meetingLink: '',
                     deadline: '',
                     sessions: [{ date: '', startTime: '', endTime: '' }],
                 });
@@ -118,23 +116,23 @@ const CreateWorkshopModal: React.FC<CreateWorkshopModalProps> = ({ isOpen, onClo
             newErrors.maxParticipants = 'Max participants must be greater than 0';
         };
 
-        if (!formData.startDate) {
-            newErrors.startDate = 'Start date is required'
-        } else if (formData.startDate < new Date().toISOString().split('T')[0]) {
-            newErrors.startDate = 'Start date cannot be in the past';
-        }
+        // if (!formData.startDate) {
+        //     newErrors.startDate = 'Start date is required'
+        // } else if (formData.startDate < new Date().toISOString().split('T')[0]) {
+        //     newErrors.startDate = 'Start date cannot be in the past';
+        // }
 
-        if (!formData.endDate) {
-            newErrors.endDate = 'End date is required'
-        } else if (formData.endDate < formData.startDate) {
-            newErrors.endDate = 'End date cannot be before start date';
-        }
+        // if (!formData.endDate) {
+        //     newErrors.endDate = 'End date is required'
+        // } else if (formData.endDate < formData.startDate) {
+        //     newErrors.endDate = 'End date cannot be before start date';
+        // }
 
-        if (!formData.deadline) {
-            newErrors.deadline = 'Registration deadline is required'
-        } else if (formData.deadline > formData.startDate) {
-            newErrors.deadline = 'Registration deadline should be before start date';
-        }
+        // if (!formData.deadline) {
+        //     newErrors.deadline = 'Registration deadline is required'
+        // } else if (formData.deadline > formData.startDate) {
+        //     newErrors.deadline = 'Registration deadline should be before start date';
+        // }
 
         if (!formData.posterImage) newErrors.posterImage = 'Poster image is required';
 
@@ -142,9 +140,9 @@ const CreateWorkshopModal: React.FC<CreateWorkshopModalProps> = ({ isOpen, onClo
             newErrors.location = 'Location is required for offline workshops';
         }
 
-        if (formData.mode === WorkshopMode.ONLINE && !formData.meetingLink?.trim()) {
-            newErrors.meetingLink = 'Meeting link is required for online workshops';
-        }
+        // if (formData.mode === WorkshopMode.ONLINE && !formData.meetingLink?.trim()) {
+        //     newErrors.meetingLink = 'Meeting link is required for online workshops';
+        // }
 
         formData.sessions.forEach((session, index) => {
             if (!session.date) {
@@ -305,9 +303,9 @@ const CreateWorkshopModal: React.FC<CreateWorkshopModalProps> = ({ isOpen, onClo
         formDataToSend.append('maxParticipants', String(formData.maxParticipants));
         formDataToSend.append('deadline', formData.deadline);
 
-        if (formData.mode === WorkshopMode.ONLINE && formData.meetingLink) {
-            formDataToSend.append('meetingLink', formData.meetingLink);
-        }
+        // if (formData.mode === WorkshopMode.ONLINE && formData.meetingLink) {
+        //     formDataToSend.append('meetingLink', formData.meetingLink);
+        // }
         if (formData.mode === WorkshopMode.OFFLINE && formData.location) {
             formDataToSend.append('location', formData.location);
         }
@@ -424,7 +422,7 @@ const CreateWorkshopModal: React.FC<CreateWorkshopModalProps> = ({ isOpen, onClo
                             <input
                                 type="date"
                                 name="startDate"
-                                min={new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]}
+                                // min={new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]}
                                 value={formData.startDate}
                                 onChange={handleChange}
                                 className={`w-full bg-purple-500 border-2 ${errors.startDate ? 'border-red-500' : 'border-purple-800'} rounded-lg p-2 text-white`}
@@ -436,7 +434,7 @@ const CreateWorkshopModal: React.FC<CreateWorkshopModalProps> = ({ isOpen, onClo
                             <input
                                 type="date"
                                 name="endDate"
-                                min={new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]}
+                                // min={new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]}
                                 value={formData.endDate}
                                 onChange={handleChange}
                                 className={`w-full bg-purple-500 border-2 ${errors.endDate ? 'border-red-500' : 'border-purple-800'} rounded-lg p-2 text-white`}
@@ -460,7 +458,7 @@ const CreateWorkshopModal: React.FC<CreateWorkshopModalProps> = ({ isOpen, onClo
                                         <label className="block text-xs text-purple-200 mb-1">Date</label>
                                         <input
                                             type="date"
-                                            min={new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]}
+                                            // min={new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]}
                                             value={session.date}
                                             onChange={(e) => handleSessionChange(index, 'date', e.target.value)}
                                             className={`w-full bg-purple-500 border ${errors[`session_${index}_date`] ? 'border-red-500' : 'border-purple-700'} rounded-lg p-2 text-white text-sm`}
@@ -515,7 +513,7 @@ const CreateWorkshopModal: React.FC<CreateWorkshopModalProps> = ({ isOpen, onClo
                             <input
                                 type="date"
                                 name="deadline"
-                                min={new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]}
+                                // min={new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]}
                                 value={formData.deadline}
                                 onChange={handleChange}
                                 className={`w-full bg-purple-500 border ${errors.deadline ? 'border-red-500' : 'border-purple-700'} rounded-lg p-2 text-white`}
@@ -616,7 +614,7 @@ const CreateWorkshopModal: React.FC<CreateWorkshopModalProps> = ({ isOpen, onClo
                         </div>
                     )}
 
-                    {formData.mode === WorkshopMode.ONLINE && (
+                    {/* {formData.mode === WorkshopMode.ONLINE && (
                         <div>
                             <label className="block text-sm text-purple-200 mb-1">Meeting Link *</label>
                             <input
@@ -629,7 +627,7 @@ const CreateWorkshopModal: React.FC<CreateWorkshopModalProps> = ({ isOpen, onClo
                             />
                             {errors.meetingLink && <p className="text-red-400 text-xs mt-1">{errors.meetingLink}</p>}
                         </div>
-                    )}
+                    )} */}
 
                     <div className="flex justify-end gap-4 mt-6 pt-4 border-t border-purple-500/30">
                         <button type="button" onClick={onClose} className="px-4 py-2 text-purple-200 hover:text-white">Cancel</button>
@@ -641,7 +639,7 @@ const CreateWorkshopModal: React.FC<CreateWorkshopModalProps> = ({ isOpen, onClo
             </div>
 
             {/* Image Crop Modal */}
-            < ImageCropModal
+            <ImageCropModal
                 isOpen={showCropModal}
                 imageSrc={tempImageSrc}
                 onClose={() => setShowCropModal(false)}

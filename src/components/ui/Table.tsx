@@ -156,6 +156,8 @@ export interface UserTableProps {
   onDelete?: (item: any) => void;
   onViewParticipants?: (item: any) => void;
   onRetryPayment?: (item: any) => void;
+  onJoinSession?: (item: any) => void;
+  activeRoomId?: string | null;
 }
 
 export function UserTable({
@@ -166,7 +168,9 @@ export function UserTable({
   onEdit,
   onDelete,
   onViewParticipants,
-  onRetryPayment
+  onRetryPayment,
+  onJoinSession,
+  activeRoomId
 }: UserTableProps) {
 
   const getImageUrl = (imageKey: string) => {
@@ -176,10 +180,11 @@ export function UserTable({
   };
 
   const getStatusColor = (status: string) => {
-    switch (status) {
+    switch (status?.toLowerCase()) {
       case "active": return "bg-green-500/20 text-green-400 border border-green-500/30";
       case "closed": return "bg-red-500/20 text-red-400 border border-red-500/30";
       case "completed": return "bg-blue-500/20 text-blue-400 border border-blue-500/30";
+      case "upcoming": return "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30";
       default: return "bg-gray-500/20 text-gray-400 border border-gray-500/30";
     }
   };
@@ -216,9 +221,10 @@ export function UserTable({
         location: snapshot?.location || (isOnline ? 'Online' : item.location),
         isOnline: snapshot?.location ? snapshot.location === 'Online' : isOnline,
         fee: snapshot?.fee !== undefined ? snapshot.fee : item.fee,
-        status: item.status || 'upcoming', // Workshops might not have status field same as comp
+        status: item.status || 'upcoming', // Ensure we use the status passed in (calculated by parent)
         participantsCount: item.participants?.length || 0,
-        maxParticipants: item.maxParticipants
+        maxParticipants: item.maxParticipants,
+        sessions: item.sessions // Pass through sessions for debugging if needed
       };
     }
 
@@ -340,11 +346,35 @@ export function UserTable({
                   {/* Location */}
                   <td className="px-6 py-4">
                     <div className="text-sm text-white max-w-xs truncate text-left">
-                      {display.isOnline ? (
+                      {display.isOnline && (
                         <span className="text-purple-300">🌐 Online</span>
-                      ) : (
+                      )}
+                      {!display.isOnline && (
                         <span>{display.location?.substring(0, 20) || 'TBA'}</span>
                       )}
+
+                      {/* Join Session (Dancer Only) */}
+                      {variant === 'dancer-workshop' &&
+                        onJoinSession &&
+                        (
+                          <div className="mt-2">
+                            {(display.status?.toLowerCase() === 'active' || display.status?.toLowerCase() === 'live') && paymentStatus === 'paid' ? (
+                              <button
+                                onClick={() => {
+                                  if (item._id === activeRoomId) return;
+                                  onJoinSession(item);
+                                }}
+                                disabled={item._id === activeRoomId}
+                                className={`px-3 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1 shadow-md w-fit ${item._id === activeRoomId
+                                  ? 'bg-purple-900/50 text-purple-300 border border-purple-500/50 cursor-default animate-none'
+                                  : 'bg-red-600 text-white hover:bg-red-700 animate-pulse'
+                                  }`}
+                              >
+                                {item._id === activeRoomId ? 'In Video Call 🎥' : 'Join now 🎥'}
+                              </button>
+                            ) : null}
+                          </div>
+                        )}
                     </div>
                   </td>
 

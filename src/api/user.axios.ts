@@ -10,4 +10,6 @@ export const WorkshopAxios = createBaseAxios('/workshops');
 
 export const NotificationAxios = createBaseAxios('/notifications');
 
+export const VideoCallAxios = createBaseAxios('/video-calls');
+
 export const CompetitionAxios = createBaseAxios('/competitions');

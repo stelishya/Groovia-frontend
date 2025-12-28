@@ -13,6 +13,8 @@ interface WorkshopCardProps {
     actionLabel?: string;
     paymentStatus?: 'paid' | 'failed';
     deadline?: string;
+    onJoinSession?: () => void;
+    isLive?: boolean;
 }
 
 const WorkshopCard: React.FC<WorkshopCardProps> = ({
@@ -26,9 +28,11 @@ const WorkshopCard: React.FC<WorkshopCardProps> = ({
     onBook,
     actionLabel = 'View Details',
     paymentStatus,
-    deadline
+    deadline,
+    onJoinSession,
+    isLive
 }) => {
-    const isDeadlinePassed = deadline ? new Date(deadline) < new Date() : false;
+    // const isDeadlinePassed = deadline ? new Date(deadline) < new Date() : false;
 
     return (
         <div className="border-[#a855f7] border-2 bg-purple-500/50 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-transform duration-300 ease-in-out
@@ -72,11 +76,11 @@ const WorkshopCard: React.FC<WorkshopCardProps> = ({
                         {paymentStatus === 'paid' ? '✓ Paid' : '✗ Payment Failed'}
                     </div>
                 )}
-                {isDeadlinePassed && !paymentStatus && (
+                {/* {isDeadlinePassed && !paymentStatus && (
                     <div className="mt-2 px-3 py-1 rounded-full text-xs font-semibold text-center bg-gray-500/20 text-gray-400 border border-gray-500">
                         ⏰ Registration Closed
                     </div>
-                )}
+                )} */}
 
                 {/* Details */}
                 <div className="space-y-2 mb-6 flex-grow">
@@ -101,16 +105,26 @@ const WorkshopCard: React.FC<WorkshopCardProps> = ({
                     </div>
                 </div>
 
-                {/* Book Button */}
-                <div className="flex w-full mt-auto">
+                {/* Book / Join Button */}
+                <div className="flex w-full mt-auto gap-2">
                     <button
                         onClick={onBook}
-                        className="w-full justify-center bg-[#c084fc] hover:bg-[#d8b4fe] text-white px-6 py-2 rounded-lg font-semibold flex items-center transition-colors duration-200 shadow-md"
+                        className="flex-1 justify-center bg-[#c084fc] hover:bg-[#d8b4fe] text-white px-6 py-2 rounded-lg font-semibold flex items-center transition-colors duration-200 shadow-md"
                     >
                         {/* {isDeadlinePassed && actionLabel === 'Book Now' ? 'Registration Closed' : actionLabel} */}
                         {actionLabel}
                         <ArrowUpRight size={18} className="ml-2" />
                     </button>
+
+                    {isLive && paymentStatus === 'paid' && (
+                        <button
+                            onClick={onJoinSession}
+                            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold flex items-center justify-center animate-pulse shadow-md"
+                            title="Join Live Session"
+                        >
+                            Live
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

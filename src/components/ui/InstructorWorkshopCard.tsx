@@ -4,7 +4,7 @@ import { WorkshopMode } from '../../types/workshop.type';
 
 interface InstructorWorkshopCardProps {
     title: string;
-    status: 'Upcoming' | 'Active' | 'Completed';
+    status: string; // Changed to string for flexibility or use lowercase union 'upcoming' | 'active' | 'completed'
     fee: number;
     date: string;
     time: string;
@@ -14,6 +14,9 @@ interface InstructorWorkshopCardProps {
     onViewDetails: () => void;
     onEdit: () => void;
     onDelete: () => void;
+    onStartSession: () => void;
+    sessionStart?: string | Date;
+    isCurrentSession?: boolean;
 }
 
 const InstructorWorkshopCard: React.FC<InstructorWorkshopCardProps> = ({
@@ -28,9 +31,13 @@ const InstructorWorkshopCard: React.FC<InstructorWorkshopCardProps> = ({
     onViewDetails,
     onEdit,
     onDelete,
+    onStartSession,
+    sessionStart,
+    isCurrentSession,
 }) => {
     // Status badge styling
     const getStatusStyle = (status: string) => {
+        console.log("status : ", status)
         switch (status) {
             case 'Upcoming':
                 return 'text-purple-200 bg-purple-500/20';
@@ -87,6 +94,43 @@ const InstructorWorkshopCard: React.FC<InstructorWorkshopCardProps> = ({
                 >
                     View Details
                 </button>
+
+                {/* Session Control Button */}
+                {mode === WorkshopMode.ONLINE && status !== 'Completed' && (
+                    <button
+                        onClick={() => {
+                            if (isCurrentSession) return;
+                            const now = new Date();
+                            // Use sessionStart if available properly, otherwise construct 
+                            const startDateTime = sessionStart ? new Date(sessionStart) : new Date(date + 'T' + time);
+                            const timeDiff = startDateTime.getTime() - now.getTime();
+                            const minutesDiff = timeDiff / (1000 * 60);
+
+                            // Allow starting if:
+                            // 1. It is within 15 mins before start (minutesDiff <= 15)
+                            // 2. It is AFTER start time (minutesDiff <= 0) - handled by <= 15
+                            console.log("minutesDiff : ", minutesDiff)
+                            onStartSession()
+                        }}
+                        disabled={isCurrentSession}
+                        className={`flex-1 py-2 rounded-lg font-medium transition-colors duration-200 border text-sm ${isCurrentSession
+                            ? 'bg-purple-900/50 text-purple-300 border-purple-500/50 cursor-default'
+                            : status === 'active'
+                                ? 'bg-red-600/80 hover:bg-red-700 text-white border-red-500/30 animate-pulse'
+                                : status === 'upcoming' ? 'bg-green-600/80 hover:bg-green-700 text-white border-green-500/30'
+                                    : 'bg-gray-600/80 hover:bg-gray-700 text-white border-gray-500/30'
+                            }`}
+                    >
+                        {isCurrentSession
+                            ? 'In Video Call 🎥'
+                            : status === 'active'
+                                ? 'Join Now'
+                                : status === 'upcoming'
+                                    ? 'Start Session'
+                                    : 'Session Ended'}
+                    </button>
+                )}
+
                 <button
                     onClick={onEdit}
                     className="p-2 bg-blue-600/80 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 border border-blue-500/30"
