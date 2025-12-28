@@ -149,7 +149,7 @@ import { Edit, Trash, RefreshCcw } from "lucide-react";
 
 export interface UserTableProps {
   data: any[];
-  variant: 'organizer-competition' | 'dancer-competition' | 'dancer-workshop';
+  variant: 'organizer-competition' | 'dancer-competition' | 'dancer-workshop' | 'payments';
   currentUserId?: string;
   onView?: (item: any) => void;
   onEdit?: (item: any) => void;
@@ -197,9 +197,12 @@ export function UserTable({
     // For competitions
     if (item.registeredDancers && currentUserId) {
       const registration = item.registeredDancers.find(
-        (d: any) => (d.dancerId._id || d.dancerId) === currentUserId
+        (d: any) => (d.dancerId?._id || d.dancerId) === currentUserId
       );
       return registration?.paymentStatus;
+    }
+    if (variant === 'payments') {
+      return item.status;
     }
     return null;
   };
@@ -214,17 +217,29 @@ export function UserTable({
         image: snapshot?.image || item.posterImage,
         title: snapshot?.title || item.title,
         style: item.style,
-        // Workshops don't have level usually displayed in same way, but checks exist
         level: item.level || 'All Levels',
         date: snapshot?.date ? new Date(snapshot.date) : new Date(item.startDate),
-        duration: item.duration || (snapshot?.time ? snapshot.time : null), // Workshops might not have duration string
+        duration: item.duration || (snapshot?.time ? snapshot.time : null),
         location: snapshot?.location || (isOnline ? 'Online' : item.location),
         isOnline: snapshot?.location ? snapshot.location === 'Online' : isOnline,
         fee: snapshot?.fee !== undefined ? snapshot.fee : item.fee,
-        status: item.status || 'upcoming', // Ensure we use the status passed in (calculated by parent)
+        status: item.status || 'upcoming',
         participantsCount: item.participants?.length || 0,
         maxParticipants: item.maxParticipants,
-        sessions: item.sessions // Pass through sessions for debugging if needed
+        sessions: item.sessions
+      };
+    }
+
+    if (variant === 'payments') {
+      return {
+        id: item._id,
+        title: item.description,
+        type: item.paymentType,
+        amount: item.amount,
+        status: item.status,
+        date: new Date(item.createdAt),
+        transactionId: item.transactionId,
+        orderId: item.orderId
       };
     }
 
@@ -253,38 +268,63 @@ export function UserTable({
         <table className="w-full">
           <thead className="bg-purple-900/50 border-b border-purple-700">
             <tr>
-              <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
-                {variant.includes('workshop') ? 'Workshop' : 'Competition'}
-              </th>
-              <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
-                Date
-              </th>
-              <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
-                Location
-              </th>
-              {variant === 'organizer-competition' && (
-                <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
-                  Participants
-                </th>
-              )}
-              <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
-                Fee
-              </th>
-              <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
-                View
-              </th>
-              {variant === 'organizer-competition' && (
-                <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
-                  Actions
-                </th>
-              )}
-              {variant !== 'organizer-competition' && (
-                <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
-                  Payment
-                </th>
+              {variant === 'payments' ? (
+                <>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
+                    Event/Item Name
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
+                    Type
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
+                    Date
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
+                    Amount
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
+                    Transaction ID
+                  </th>
+                </>
+              ) : (
+                <>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
+                    {variant.includes('workshop') ? 'Workshop' : 'Competition'}
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
+                    Date
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
+                    Location
+                  </th>
+                  {variant === 'organizer-competition' && (
+                    <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
+                      Participants
+                    </th>
+                  )}
+                  <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
+                    Fee
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
+                    Status
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
+                    View
+                  </th>
+                  {variant === 'organizer-competition' && (
+                    <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  )}
+                  {variant !== 'organizer-competition' && (
+                    <th className="px-6 py-4 text-left text-xs font-medium text-purple-300 uppercase tracking-wider">
+                      Payment
+                    </th>
+                  )}
+                </>
               )}
             </tr>
           </thead>
@@ -298,126 +338,30 @@ export function UserTable({
                   key={item._id}
                   className="hover:bg-purple-700/30 transition-colors"
                 >
-                  {/* Info with Image */}
-                  <td className="px-6 py-4">
-                    <div className="flex items-left gap-3">
-                      <img
-                        src={getImageUrl(display.image)}
-                        alt={display.title}
-                        className="w-12 h-12 rounded-lg object-cover border-2 border-purple-500"
-                        onError={(e) => {
-                          e.currentTarget.src = '/placeholder-competition.jpg';
-                        }}
-                      />
-                      <div className="min-w-0">
-                        <div className="text-sm font-medium text-white truncate max-w-xs">
+                  {variant === 'payments' ? (
+                    <>
+                      <td className="px-6 py-4">
+                        <div className="text-sm font-medium text-white text-left">
                           {display.title}
                         </div>
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="px-2 py-0.5 bg-purple-600/50 text-purple-200 text-xs rounded-full">
-                            {display.style}
-                          </span>
-                          {display.level && variant !== 'dancer-workshop' && (
-                            <span className="px-2 py-0.5 bg-purple-600/50 text-purple-200 text-xs rounded-full">
-                              {display.level}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-
-                  {/* Date */}
-                  <td className="px-6 py-4 whitespace-nowrap text-left">
-                    <div className="text-sm text-white">
-                      {display.date.toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                      })}
-                    </div>
-                    {display.duration && (
-                      <div className="text-xs text-purple-300">
-                        {display.duration}
-                      </div>
-                    )}
-                  </td>
-
-                  {/* Location */}
-                  <td className="px-6 py-4">
-                    <div className="text-sm text-white max-w-xs truncate text-left">
-                      {display.isOnline && (
-                        <span className="text-purple-300">🌐 Online</span>
-                      )}
-                      {!display.isOnline && (
-                        <span>{display.location?.substring(0, 20) || 'TBA'}</span>
-                      )}
-
-                      {/* Join Session (Dancer Only) */}
-                      {variant === 'dancer-workshop' &&
-                        onJoinSession &&
-                        (
-                          <div className="mt-2">
-                            {(display.status?.toLowerCase() === 'active' || display.status?.toLowerCase() === 'live') && paymentStatus === 'paid' ? (
-                              <button
-                                onClick={() => {
-                                  if (item._id === activeRoomId) return;
-                                  onJoinSession(item);
-                                }}
-                                disabled={item._id === activeRoomId}
-                                className={`px-3 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1 shadow-md w-fit ${item._id === activeRoomId
-                                  ? 'bg-purple-900/50 text-purple-300 border border-purple-500/50 cursor-default animate-none'
-                                  : 'bg-red-600 text-white hover:bg-red-700 animate-pulse'
-                                  }`}
-                              >
-                                {item._id === activeRoomId ? 'In Video Call 🎥' : 'Join now 🎥'}
-                              </button>
-                            ) : null}
-                          </div>
-                        )}
-                    </div>
-                  </td>
-
-                  {/* Participants (Organizer Only) */}
-                  {variant === 'organizer-competition' && (
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex flex-col gap-2 text-left">
-                        <div className="text-sm text-white">
-                          {display.participantsCount} / {display.maxParticipants}
-                        </div>
-                        <div className="w-full bg-purple-900 rounded-full h-1.5 mt-1">
-                          <div
-                            className="bg-purple-500 h-1.5 rounded-full"
-                            style={{
-                              width: `${(display.participantsCount / display.maxParticipants) * 100}%`
-                            }}
-                          />
-                        </div>
-                        <button
-                          onClick={() => onViewParticipants?.(item._id)}
-                          className="text-xs text-purple-300 hover:text-white hover:underline self-start"
-                        >
-                          View List
-                        </button>
-                      </div>
-                    </td>
-                  )}
-
-                  {/* Fee */}
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-semibold text-white text-left">
-                      ₹{display.fee}
-                    </div>
-                  </td>
-
-                  {/* Status */}
-                  <td className="px-6 py-4 whitespace-nowrap text-left">
-                    <span className={`text-xs px-3 py-1 rounded-full font-medium ${getStatusColor(display.status)}`}>
-                      {display.status}
-                    </span>
-                    {paymentStatus && (
-                      <div className="mt-1">
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${paymentStatus === 'paid'
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="px-2 py-0.5 bg-purple-600/50 text-purple-200 text-xs rounded-full">
+                          {display.type}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-left text-sm text-white">
+                        {display.date.toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        })}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-left text-sm font-semibold text-white">
+                        ₹{display.amount}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-left">
+                        <span className={`text-xs px-3 py-1 rounded-full font-medium ${paymentStatus === 'success' || paymentStatus === 'paid'
                           ? 'bg-green-500/20 text-green-400 border border-green-500/30'
                           : paymentStatus === 'failed'
                             ? 'bg-red-500/20 text-red-400 border border-red-500/30'
@@ -425,56 +369,192 @@ export function UserTable({
                           }`}>
                           {paymentStatus}
                         </span>
-                      </div>
-                    )}
-                  </td>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-left text-xs text-purple-300 italic">
+                        {display.transactionId || 'N/A'}
+                      </td>
+                    </>
+                  ) : (
+                    <>
+                      {/* Info with Image */}
+                      <td className="px-6 py-4">
+                        <div className="flex items-left gap-3">
+                          <img
+                            src={getImageUrl(display.image)}
+                            alt={display.title}
+                            className="w-12 h-12 rounded-lg object-cover border-2 border-purple-500"
+                            onError={(e) => {
+                              e.currentTarget.src = '/placeholder-competition.jpg';
+                            }}
+                          />
+                          <div className="min-w-0">
+                            <div className="text-sm font-medium text-white truncate max-w-xs">
+                              {display.title}
+                            </div>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="px-2 py-0.5 bg-purple-600/50 text-purple-200 text-xs rounded-full">
+                                {display.style}
+                              </span>
+                              {display.level && variant !== 'dancer-workshop' && (
+                                <span className="px-2 py-0.5 bg-purple-600/50 text-purple-200 text-xs rounded-full">
+                                  {display.level}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
 
-                  {/* View */}
-                  <td className="px-6 py-4 whitespace-nowrap text-left text-sm font-medium">
-                    <button
-                      onClick={() => onView?.(item)}
-                      className="px-3 py-1.5 bg-purple-600 text-white rounded-lg text-xs hover:bg-purple-700 transition-colors"
-                    >
-                      View
-                    </button>
-                  </td>
-
-                  {/* Actions (Organizer Only) */}
-                  {variant === 'organizer-competition' && (
-                    <td>
-                      <div className="flex justify-left gap-2">
-                        <button
-                          onClick={() => onEdit?.(item)}
-                          className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs hover:bg-blue-700 transition-colors flex items-center gap-1"
-                        >
-                          <Edit size={14} />
-                        </button>
-                        <button
-                          onClick={() => onDelete?.(item)}
-                          className="px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs hover:bg-red-700 transition-colors flex items-center gap-1"
-                        >
-                          <Trash size={14} />
-                        </button>
-                      </div>
-                    </td>
-                  )}
-
-                  {/* Payment (Dancer Only) */}
-                  {variant !== 'organizer-competition' && (
-                    <td className="px-6 py-4 whitespace-nowrap text-left">
-                      <div>
-                        {paymentStatus === 'failed' ? (
-                          <button
-                            onClick={() => onRetryPayment?.(item)}
-                            className="px-3 py-1.5 bg-orange-600 text-white rounded-lg text-xs hover:bg-orange-700 transition-colors flex items-center gap-1 mx-auto"
-                          >
-                            <RefreshCcw size={14} /> Retry
-                          </button>
-                        ) : (
-                          <span className="text-green-400 text-xs text-left block">{paymentStatus.toUpperCase()}</span>
+                      {/* Date */}
+                      <td className="px-6 py-4 whitespace-nowrap text-left">
+                        <div className="text-sm text-white">
+                          {display.date.toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                          })}
+                        </div>
+                        {display.duration && (
+                          <div className="text-xs text-purple-300">
+                            {display.duration}
+                          </div>
                         )}
-                      </div>
-                    </td>
+                      </td>
+
+                      {/* Location */}
+                      <td className="px-6 py-4">
+                        <div className="text-sm text-white max-w-xs truncate text-left">
+                          {display.isOnline && (
+                            <span className="text-purple-300">🌐 Online</span>
+                          )}
+                          {!display.isOnline && (
+                            <span>{display.location?.substring(0, 20) || 'TBA'}</span>
+                          )}
+
+                          {/* Join Session (Dancer Only) */}
+                          {variant === 'dancer-workshop' &&
+                            onJoinSession &&
+                            (
+                              <div className="mt-2">
+                                {(display.status?.toLowerCase() === 'active' || display.status?.toLowerCase() === 'live') && paymentStatus === 'paid' ? (
+                                  <button
+                                    onClick={() => {
+                                      if (item._id === activeRoomId) return;
+                                      onJoinSession(item);
+                                    }}
+                                    disabled={item._id === activeRoomId}
+                                    className={`px-3 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1 shadow-md w-fit ${item._id === activeRoomId
+                                      ? 'bg-purple-900/50 text-purple-300 border border-purple-500/50 cursor-default animate-none'
+                                      : 'bg-red-600 text-white hover:bg-red-700 animate-pulse'
+                                      }`}
+                                  >
+                                    {item._id === activeRoomId ? 'In Video Call 🎥' : 'Join now 🎥'}
+                                  </button>
+                                ) : null}
+                              </div>
+                            )}
+                        </div>
+                      </td>
+
+                      {/* Participants (Organizer Only) */}
+                      {variant === 'organizer-competition' && (
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex flex-col gap-2 text-left">
+                            <div className="text-sm text-white">
+                              {display.participantsCount} / {display.maxParticipants}
+                            </div>
+                            <div className="w-full bg-purple-900 rounded-full h-1.5 mt-1">
+                              <div
+                                className="bg-purple-500 h-1.5 rounded-full"
+                                style={{
+                                  width: `${(display.participantsCount / display.maxParticipants) * 100}%`
+                                }}
+                              />
+                            </div>
+                            <button
+                              onClick={() => onViewParticipants?.(item._id)}
+                              className="text-xs text-purple-300 hover:text-white hover:underline self-start"
+                            >
+                              View List
+                            </button>
+                          </div>
+                        </td>
+                      )}
+
+                      {/* Fee */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-semibold text-white text-left">
+                          ₹{display.fee}
+                        </div>
+                      </td>
+
+                      {/* Status */}
+                      <td className="px-6 py-4 whitespace-nowrap text-left">
+                        <span className={`text-xs px-3 py-1 rounded-full font-medium ${getStatusColor(display.status)}`}>
+                          {display.status}
+                        </span>
+                        {paymentStatus && (
+                          <div className="mt-1">
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${paymentStatus === 'paid'
+                              ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                              : paymentStatus === 'failed'
+                                ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                                : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                              }`}>
+                              {paymentStatus}
+                            </span>
+                          </div>
+                        )}
+                      </td>
+
+                      {/* View */}
+                      <td className="px-6 py-4 whitespace-nowrap text-left text-sm font-medium">
+                        <button
+                          onClick={() => onView?.(item)}
+                          className="px-3 py-1.5 bg-purple-600 text-white rounded-lg text-xs hover:bg-purple-700 transition-colors"
+                        >
+                          View
+                        </button>
+                      </td>
+
+                      {/* Actions (Organizer Only) */}
+                      {variant === 'organizer-competition' && (
+                        <td className="px-6 py-4 whitespace-nowrap text-left">
+                          <div className="flex justify-left gap-2">
+                            <button
+                              onClick={() => onEdit?.(item)}
+                              className="px-3 py-1.5 bg-blue-600 text-white rounded-lg text-xs hover:bg-blue-700 transition-colors flex items-center gap-1"
+                            >
+                              <Edit size={14} />
+                            </button>
+                            <button
+                              onClick={() => onDelete?.(item)}
+                              className="px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs hover:bg-red-700 transition-colors flex items-center gap-1"
+                            >
+                              <Trash size={14} />
+                            </button>
+                          </div>
+                        </td>
+                      )}
+
+                      {/* Payment (Dancer Only) */}
+                      {variant !== 'organizer-competition' && (
+                        <td className="px-6 py-4 whitespace-nowrap text-left">
+                          <div>
+                            {paymentStatus === 'failed' ? (
+                              <button
+                                onClick={() => onRetryPayment?.(item)}
+                                className="px-3 py-1.5 bg-orange-600 text-white rounded-lg text-xs hover:bg-orange-700 transition-colors flex items-center gap-1 mx-auto"
+                              >
+                                <RefreshCcw size={14} /> Retry
+                              </button>
+                            ) : (
+                              <span className="text-green-400 text-xs text-left block">{(paymentStatus?.toString() || 'PAID').toUpperCase()}</span>
+                            )}
+                          </div>
+                        </td>
+                      )}
+                    </>
                   )}
                 </tr>
               );

@@ -13,6 +13,7 @@ import LandingPage from "../pages/LandingPage";
 import CheckoutPageClient from "../pages/client/CheckoutPageClient";
 import CheckoutPageDancer from "../pages/dancer/CheckoutPageDancer";
 import CheckoutPage from "../pages/authorization/Checkout";
+import PaymentHistory from "../pages/shared/PaymentHistory";
 import { Role } from "../utils/constants/roles";
 import PublicProfile from "../pages/public/PublicProfile";
 // import BookingsPage from "../pages/dancer/Bookings-Dancer";
@@ -94,6 +95,12 @@ const UserRoutes = () => {
                 // allowedRoles={[Role.DANCER, Role.CLIENT]}
                 >
                     <CheckoutPage />
+                </PrivateRoute>
+            } />
+
+            <Route path="/payments" element={
+                <PrivateRoute userType="user" >
+                    <PaymentHistory />
                 </PrivateRoute>
             } />
 

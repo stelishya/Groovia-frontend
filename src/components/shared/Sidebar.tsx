@@ -32,14 +32,14 @@ const Sidebar: React.FC<SidebarProps> = ({ activeMenu = 'Home' }) => {
     }
     const navItems = [
         { icon: <House />, name: 'Home', action: () => navigate('/home') },
-        { icon: <MessageSquare />, name: 'Messages' },
+        // { icon: <MessageSquare />, name: 'Messages' },
         { icon: <GitPullRequest />, name: 'Requests', action: () => navigate('/bookings') },
         ...(userRoles.includes('dancer') || userRoles.includes('instructor')
             ? [{ icon: <PersonStanding />, name: 'Workshops', action: () => navigate('/workshops') }]
             : []),
         ...(userRoles.includes('dancer') || userRoles.includes('organizer')
-            ? [{ icon: <Trophy />, name: 'Competitions',action:()=> navigate('/competitions') }] : []),
-        { icon: <CreditCard />, name: 'Payments' },
+            ? [{ icon: <Trophy />, name: 'Competitions', action: () => navigate('/competitions') }] : []),
+        { icon: <CreditCard />, name: 'Payments', action: () => navigate('/payments') },
     ];
 
     const bottomItems = [

@@ -97,3 +97,25 @@ export const confirmPayment = async (type: PaymentType, data: any) => {
         };
     }
 };
+
+
+export interface PaymentFilters {
+    page?: number;
+    limit?: number;
+    search?: string;
+    type?: string;
+    status?: string;
+    sortBy?: string;
+}
+
+export const getPaymentHistory = async (filters: PaymentFilters) => {
+    try {
+        const response = await UserAxios.get('/payments/history', { params: filters });
+        return { success: true, data: response.data };
+    } catch (error: any) {
+        return {
+            success: false,
+            message: error.response?.data?.message || 'Failed to fetch payment history'
+        };
+    }
+};
