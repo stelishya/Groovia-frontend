@@ -74,7 +74,7 @@ const Sidebar: React.FC = () => {
           icon={<Users size={20} />} 
           label="Users" 
         />
-        <SidebarLink 
+        {/* <SidebarLink 
           to="/admin/workshops" 
           icon={<Briefcase size={20} />} 
           label="Workshops" 
@@ -83,7 +83,7 @@ const Sidebar: React.FC = () => {
           to="/admin/competitions" 
           icon={<Trophy size={20} />} 
           label="Competitions" 
-        />
+        /> */}
         <SidebarLink 
           to="/admin/payments" 
           icon={<CreditCard size={20} />} 
