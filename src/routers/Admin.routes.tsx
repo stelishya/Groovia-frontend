@@ -7,6 +7,7 @@ import { PrivateRoute } from "../protected/PrivateRoute";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import UserDetails from "../pages/admin/UserDetails";
 import Approvals from "../pages/admin/Approvals";
+import Payments from "../pages/admin/Payments";
 // import AdminDashboard from "@/pages/admin/AdminDashboard";
 // import UserDetails from "@/pages/admin/UserDetails";
 
@@ -29,6 +30,14 @@ const AdminRoutes = () => {
         element={
           <PrivateRoute userType="admin">
             <AdminDashboard />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/admin/payments"
+        element={
+          <PrivateRoute userType="admin">
+            <Payments />
           </PrivateRoute>
         }
       />

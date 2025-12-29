@@ -61,7 +61,13 @@ const AdminDashboard: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="mb-4 flex gap-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <DashboardStats title="Total Users" value={totals?.totals.users.total ?? 0} />
+                                <DashboardStats title="Total Workshops" value={totals?.totals.workshops ?? 0} />
+                                <DashboardStats title="Total Competitions" value={totals?.totals.competitions ?? 0} />
+                                <DashboardStats title="Total Revenue" value={`₹ ${totals?.totals.revenue ?? 0}`} />
+                            </div>
+                    <div className="m-4 flex gap-2">
                         <label className="text-white">Interval:</label>
                         <select
                             className="bg-[#1a2332] text-white rounded px-2 py-1"
@@ -79,12 +85,6 @@ const AdminDashboard: React.FC = () => {
                         <div className="text-gray-300">Loading...</div>
                     ) : (
                         <div className="space-y-6">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                <DashboardStats title="Total Users" value={totals?.totals.users.total ?? 0} />
-                                <DashboardStats title="Total Workshops" value={totals?.totals.workshops ?? 0} />
-                                <DashboardStats title="Total Competitions" value={totals?.totals.competitions ?? 0} />
-                                <DashboardStats title="Total Revenue" value={`₹ ${totals?.totals.revenue ?? 0}`} />
-                            </div>
 
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                 <div>
