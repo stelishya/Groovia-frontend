@@ -2,10 +2,9 @@ import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { type RootState } from '../../redux/store';
 import { loginUser } from '../../redux/slices/user.slice';
-import { User, Settings, ArrowLeft, Crown, Edit2, Camera } from 'lucide-react';
+import { User, Edit2, Camera } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { UserAxios } from '../../api/auth.axios';
 import Sidebar from '../../components/shared/Sidebar';
 import UserNavbar from '../../components/shared/Navbar';
 import FormModal from '../../components/ui/FormModal';
@@ -21,7 +20,7 @@ const Profile = () => {
     const dispatch = useDispatch();
     const { userData } = useSelector((state: RootState) => state.user);
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-    const [isRefreshing, setIsRefreshing] = useState(false);
+    // const [isRefreshing, setIsRefreshing] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [showImageModal, setShowImageModal] = useState(false);
     const [profileData, setProfileData] = useState({
@@ -89,21 +88,21 @@ const Profile = () => {
         setShowEditModal(true);
     };
 
-    const [upgradeFormData, setUpgradeFormData] = useState({
-        danceStyles: [] as string[],
-        experienceYears: '',
-        bio: '',
-        portfolioLinks: '',
-        certificate: null as File | null,
-        availableForWorkshops: false,
-        preferredLocation: '',
-        additionalMessage: ''
-    });
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            setUpgradeFormData(prev => ({ ...prev, certificate: e.target.files![0] }));
-        }
-    };
+    // const [upgradeFormData, setUpgradeFormData] = useState({
+    //     danceStyles: [] as string[],
+    //     experienceYears: '',
+    //     bio: '',
+    //     portfolioLinks: '',
+    //     certificate: null as File | null,
+    //     availableForWorkshops: false,
+    //     preferredLocation: '',
+    //     additionalMessage: ''
+    // });
+    // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    //     if (e.target.files && e.target.files[0]) {
+    //         setUpgradeFormData(prev => ({ ...prev, certificate: e.target.files![0] }));
+    //     }
+    // };
 
     const handleImageClick = () => {
         setShowImageModal(true);

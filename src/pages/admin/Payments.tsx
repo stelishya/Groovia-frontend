@@ -3,7 +3,7 @@ import { Table, type TableColumn } from "../../components/ui/Table";
 import "../../assets/scrollbar.css";
 import { AdminAxios } from "../../api/user.axios";
 import Sidebar from "../../components/admin/Sidebar";
-import {Pagination} from "../../components/ui/Pagination";
+import { Pagination } from "../../components/ui/Pagination";
 
 interface Payment {
   _id: string;
@@ -58,7 +58,7 @@ export default function AdminPaymentsPage() {
   const [data, setData] = useState<(Payment & { serialNumber: number })[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize] = useState(10);
   const [total, setTotal] = useState(0);
   const [sortBy, setSortBy] = useState<string | undefined>();
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
@@ -97,7 +97,7 @@ export default function AdminPaymentsPage() {
   }, [page, pageSize, sortBy, sortOrder, status, type, dateFrom, dateTo]);
 
   return (
-      <div className="flex bg-[#161e2d] min-h-screen">
+    <div className="flex bg-[#161e2d] min-h-screen">
       <Sidebar />
       <div className="flex-1 relative p-6 ">
         <div className="flex-1 relative p-6 ml-60 bg-[#161e2d] min-h-screen">
@@ -130,27 +130,27 @@ export default function AdminPaymentsPage() {
               emptyText="-"
             />
           </div>
-        <div className="flex items-center gap-2 mt-4 w-full max-w-5xl">
-          <Pagination
-            current={page}
-            total={total}
-            pageSize={pageSize}
-            onChange={setPage}
-            showSizeChanger
-            showQuickJumper
-            showTotal={(total: number, range: [number, number]) => (
-              <span className="text-sm text-gray-700 dark:text-gray-300">
-                Showing {range[0]} to {range[1]} of {total} payments
-              </span>
-            )}
-            className="bg-gray-400 dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 w-full"
-          />
-          {/* <select value={pageSize} onChange={e => { setPageSize(Number(e.target.value)); setPage(1); }} className="ml-2 px-2 py-1 rounded">
+          <div className="flex items-center gap-2 mt-4 w-full max-w-5xl">
+            <Pagination
+              current={page}
+              total={total}
+              pageSize={pageSize}
+              onChange={setPage}
+              showSizeChanger
+              showQuickJumper
+              showTotal={(total: number, range: [number, number]) => (
+                <span className="text-sm text-gray-700 dark:text-gray-300">
+                  Showing {range[0]} to {range[1]} of {total} payments
+                </span>
+              )}
+              className="bg-gray-400 dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 w-full"
+            />
+            {/* <select value={pageSize} onChange={e => { setPageSize(Number(e.target.value)); setPage(1); }} className="ml-2 px-2 py-1 rounded">
             {[10, 20, 50].map(size => <option key={size} value={size}>{size} / page</option>)}
           </select> */}
+          </div>
         </div>
       </div>
-    </div>
     </div>
   );
 }

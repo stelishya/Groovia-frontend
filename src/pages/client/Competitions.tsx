@@ -25,8 +25,8 @@ import {
 
 const CompetitionsPage = () => {
   const [competitions, setCompetitions] = useState<Competition[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [, setLoading] = useState(true);
+  const [, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingCompetition, setEditingCompetition] = useState<Competition | null>(null);
   const [viewingCompetition, setViewingCompetition] = useState<Competition | null>(null);
@@ -41,7 +41,7 @@ const CompetitionsPage = () => {
   const [level, setLevel] = useState('');
   const [style, setStyle] = useState('');
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [limit] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
 
@@ -64,7 +64,7 @@ const CompetitionsPage = () => {
   const fetchCompetitions = useCallback(async () => {
     try {
       setLoading(true);
-      let data: Competition[] = [];
+      // let data: Competition[] = [];
       const params = { search: debouncedSearch, sortBy, level, style, page, limit };
 
       let response;
@@ -311,27 +311,27 @@ const CompetitionsPage = () => {
             <p className="text-white font-medium">Showing {competitions.length} of {total} competitions</p>
           </div>
           <div className="flex justify-center items-center mt-6 gap-4">
-          <button
-            onClick={() => setPage(p => Math.max(1, p - 1))}
-            disabled={page === 1}
-            className="p-2 rounded-lg bg-purple-700 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-600 transition-colors"
+            <button
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="p-2 rounded-lg bg-purple-700 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-600 transition-colors"
             >
-            <ChevronLeft size={20} />
-          </button>
+              <ChevronLeft size={20} />
+            </button>
 
-          <span className="text-white font-medium">
-            Page {page} of {totalPages}
-          </span>
+            <span className="text-white font-medium">
+              Page {page} of {totalPages}
+            </span>
 
-          <button
-            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-            disabled={page === totalPages}
-            className="p-2 rounded-lg bg-purple-700 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-600 transition-colors"
+            <button
+              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages}
+              className="p-2 rounded-lg bg-purple-700 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-600 transition-colors"
             >
-            <ChevronRight size={20} />
-          </button>
+              <ChevronRight size={20} />
+            </button>
+          </div>
         </div>
-            </div>
       )}
 
       {/* Create Competition Modal */}

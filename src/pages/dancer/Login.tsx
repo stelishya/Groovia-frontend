@@ -5,6 +5,7 @@ import { userLogin } from "../../services/user/auth.service"
 import toast from "react-hot-toast"
 import { useDispatch } from "react-redux"
 import axios from "axios"
+import { UserType } from "../../utils/constants/roles"
 
 const Login: React.FC = () => {
     const navigate = useNavigate()
@@ -15,29 +16,29 @@ const Login: React.FC = () => {
             await userLogin({
                 email: formData.email,
                 password: formData.password,
-            },dispatch);
+            }, dispatch);
             navigate('/home')
             toast.success('Login successful!');
         } catch (error) {
             // toast.error('Login failed!');
-            console.log("Login failed",error)
+            console.log("Login failed", error)
             if (axios.isAxiosError(error)) {
- const errorMessage = error.response?.data?.message || 'Login failed!';
- if (errorMessage.toLowerCase().includes('blocked')) {
- toast.error('Your account has been blocked. Please contact support.', {
- duration: 5000,
- style: {
- background: '#FEE2E2',
- color: '#DC2626',
- border: '1px solid #F87171'
- }
- });
- } else {
- toast.error(errorMessage);
- }
- } else {
- toast.error('Login failed!');
- }
+                const errorMessage = error.response?.data?.message || 'Login failed!';
+                if (errorMessage.toLowerCase().includes('blocked')) {
+                    toast.error('Your account has been blocked. Please contact support.', {
+                        duration: 5000,
+                        style: {
+                            background: '#FEE2E2',
+                            color: '#DC2626',
+                            border: '1px solid #F87171'
+                        }
+                    });
+                } else {
+                    toast.error(errorMessage);
+                }
+            } else {
+                toast.error('Login failed!');
+            }
             throw error
         }
     }
@@ -46,8 +47,8 @@ const Login: React.FC = () => {
             signupRoute="/signup"
             onSubmit={handleSubmit}
             title="Login"
-            role="user"
-            />
+            role={UserType.USER}
+        />
     )
 }
 export default Login;

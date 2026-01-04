@@ -27,7 +27,7 @@ const SimpleLineChart: React.FC<{ data: Point[]; height?: number }> = ({ data, h
     <div className="bg-[#0f1724] text-white rounded-lg p-3 border border-gray-800">
       <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none">
         <polyline fill="none" stroke="#60a5fa" strokeWidth={2} points={polyline} />
-        {data.map((d, i) => {
+        {data.map((_d, i) => {
           const [x, y] = points[i].split(',').map(Number);
           return <circle key={i} cx={x} cy={y} r={3} fill="#60a5fa" />;
         })}

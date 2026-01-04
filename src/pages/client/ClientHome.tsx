@@ -1,10 +1,5 @@
-import {
-    House, MessageSquare, Calendar, Briefcase, Trophy, CreditCard,
-    User as UserIcon, LogOut, Settings, Search, Bell, X,
-    ChevronLeft,
-    ChevronRight
-} from "lucide-react"
-import { useDispatch, useSelector } from "react-redux";
+import { Search, X, ChevronLeft, ChevronRight } from "lucide-react"
+import { useSelector } from "react-redux";
 // import { useNavigate } from "react-router-dom";
 // import { logoutUser } from "../../redux/slices/user.slice";
 import { type RootState } from "../../redux/store";
@@ -22,16 +17,16 @@ import UserNavbar from "../../components/shared/Navbar";
 
 
 
-const Header = () => (
-    <header className="flex justify-end items-center p-4">
-        {/* <div className="relative w-80 mr-6">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-300" />
-            <input type="text" placeholder="Search Workshops, Competitions..." className="w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg py-2 pl-10 focus:outline-none" />
-        </div> */}
-        <Bell className="text-white text-2xl mr-6 cursor-pointer" />
-        <img src="https://img.icons8.com/?size=128&id=tZuAOUGm9AuS&format=png" alt="User" className="w-10 h-10 rounded-full cursor-pointer" />
-    </header>
-);
+// const Header = () => (
+//     <header className="flex justify-end items-center p-4">
+//         {/* <div className="relative w-80 mr-6">
+//             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-300" />
+//             <input type="text" placeholder="Search Workshops, Competitions..." className="w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg py-2 pl-10 focus:outline-none" />
+//         </div> */}
+//         <Bell className="text-white text-2xl mr-6 cursor-pointer" />
+//         <img src="https://img.icons8.com/?size=128&id=tZuAOUGm9AuS&format=png" alt="User" className="w-10 h-10 rounded-full cursor-pointer" />
+//     </header>
+// );
 interface Dancer {
     _id: string;
     username: string;
@@ -66,7 +61,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
     const [sortBy, setSortBy] = useState('likes');
     const [style, setStyle] = useState('');
     // const [city, setCity] = useState('');
-    const [loading, setLoading] = useState(true)
+    const [, setLoading] = useState(true)
     const [dancers, setDancers] = useState<Dancer[]>([])
     const [selectedDancer, setSelectedDancer] = useState<Dancer | null>(null)
     const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
@@ -181,23 +176,23 @@ const Dashboard = ({ userData }: { userData: any }) => {
     }
 
 
-    const handleOpenRequestModal = (dancer: Dancer) => {
-        setSelectedDancer(dancer);
-        setIsRequestModalOpen(true);
-        // Reset form data and errors when opening modal
-        setRequestData({
-            event: '',
-            date: '',
-            venue: '',
-            budget: '',
-        });
-        setFormErrors({
-            event: '',
-            date: '',
-            venue: '',
-            budget: '',
-        });
-    };
+    // const handleOpenRequestModal = (dancer: Dancer) => {
+    //     setSelectedDancer(dancer);
+    //     setIsRequestModalOpen(true);
+    //     // Reset form data and errors when opening modal
+    //     setRequestData({
+    //         event: '',
+    //         date: '',
+    //         venue: '',
+    //         budget: '',
+    //     });
+    //     setFormErrors({
+    //         event: '',
+    //         date: '',
+    //         venue: '',
+    //         budget: '',
+    //     });
+    // };
 
     const handleCloseRequestModal = () => {
         setIsRequestModalOpen(false);

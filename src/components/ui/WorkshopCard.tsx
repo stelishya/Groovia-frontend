@@ -28,7 +28,6 @@ const WorkshopCard: React.FC<WorkshopCardProps> = ({
     onBook,
     actionLabel = 'View Details',
     paymentStatus,
-    deadline,
     onJoinSession,
     isLive
 }) => {

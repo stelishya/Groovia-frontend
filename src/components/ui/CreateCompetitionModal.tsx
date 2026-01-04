@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Plus, Trash, Upload, MapPin, Crop } from 'lucide-react';
+import { X, Upload, MapPin, Crop } from 'lucide-react';
 import { type CreateCompetitionData, CompetitionMode } from '../../types/competition.type';
 import VenueMap from '../ui/VenueMap';
 import ImageCropModal from '../ui/ImageCropModal';
@@ -13,18 +13,18 @@ interface CreateCompetitionModalProps {
   isEditing?: boolean;
 }
 
-const DANCE_STYLES = [
-  'Hip-Hop',
-  'Classical',
-  'Contemporary',
-  'Ballet',
-  'Jazz',
-  'Breakdance',
-  'Folk',
-  'Salsa',
-  'Ballroom',
-  'Other'
-];
+// const DANCE_STYLES = [
+//   'Hip-Hop',
+//   'Classical',
+//   'Contemporary',
+//   'Ballet',
+//   'Jazz',
+//   'Breakdance',
+//   'Folk',
+//   'Salsa',
+//   'Ballroom',
+//   'Other'
+// ];
 
 const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
   isOpen,
@@ -218,7 +218,7 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
 
         const reader = new FileReader();
         reader.onloadend = () => {
-          const result = reader.result as string;
+          // const result = reader.result as string;
           // onSetTempImageSrc(result);
           // onShowCropModal(true);
         };

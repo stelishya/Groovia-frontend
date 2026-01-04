@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Bell, X, MapPin, DollarSign, Calendar, ChevronRight, ChevronLeft, IndianRupee } from 'lucide-react';
+import { Search, X, MapPin, Calendar, ChevronRight, ChevronLeft, IndianRupee } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getClientEventRequests, updateEventBookingStatus } from '../../services/client/client.service';
 import Sidebar from '../../components/shared/Sidebar';
@@ -41,18 +41,18 @@ export interface EventRequest {
 }
 
 
-const Header = () => (
-    <header className="flex justify-between items-center mb-8">
-        <div>
-            <h1 className="text-3xl font-bold text-white">Bookings Management</h1>
-            <p className="text-gray-400">Manage your event requests</p>
-        </div>
-        <div className="flex items-center space-x-4">
-            <Bell className="text-white" />
-            <img src="https://i.pravatar.cc/40?img=33" alt="User" className="w-10 h-10 rounded-full" />
-        </div>
-    </header>
-);
+// const Header = () => (
+//     <header className="flex justify-between items-center mb-8">
+//         <div>
+//             <h1 className="text-3xl font-bold text-white">Bookings Management</h1>
+//             <p className="text-gray-400">Manage your event requests</p>
+//         </div>
+//         <div className="flex items-center space-x-4">
+//             <Bell className="text-white" />
+//             <img src="https://i.pravatar.cc/40?img=33" alt="User" className="w-10 h-10 rounded-full" />
+//         </div>
+//     </header>
+// );
 
 const RequestCard = ({
     request,
@@ -163,8 +163,8 @@ const RequestCard = ({
                         <button
                             onClick={() => onPaymentClick(request)}
                             className={`font-bold px-3 py-2 border rounded-md text-sm transition-colors ${request.paymentStatus === 'failed'
-                                    ? 'bg-red-600/50 text-white border-red-800 hover:bg-red-700'
-                                    : 'bg-purple-600/50 text-white border-purple-800 hover:bg-purple-700'
+                                ? 'bg-red-600/50 text-white border-red-800 hover:bg-red-700'
+                                : 'bg-purple-600/50 text-white border-purple-800 hover:bg-purple-700'
                                 }`}
                         >
                             {request.paymentStatus === 'failed' ? 'Retry Payment' : `Pay ₹${request.acceptedAmount || 0} to Confirm`}
@@ -187,7 +187,7 @@ const BookingsPage = () => {
     const [requests, setRequests] = useState<EventRequest[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(5);
+    const [pageSize] = useState(5);
     const [totalRequests, setTotalRequests] = useState(0);
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState('');

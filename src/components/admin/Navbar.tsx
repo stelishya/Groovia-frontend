@@ -1,10 +1,6 @@
-"use client"
-
 import type React from "react"
 import { useState } from "react"
 import { Search, Bell, MessageSquare, X } from "lucide-react"
-import { useDispatch } from "react-redux"
-import { useNavigate } from "react-router-dom"
 
 interface NavbarProps {
   userName?: string
@@ -23,8 +19,6 @@ const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState("")
   const [showUserMenu, setShowUserMenu] = useState(false)
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault()

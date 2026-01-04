@@ -66,7 +66,7 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ title, subTitle }) => {
         // Handle upgrade approved - update user role in Redux
         if (notification.type === 'upgrade_approved' && userData) {
             // Only add instructor role if it doesn't already exist
-            const currentRoles = userData.role || [];
+            // const currentRoles = userData.role || [];
         }
         // Handle upgrade rejected
         else if (notification.type === 'upgrade_rejected') {

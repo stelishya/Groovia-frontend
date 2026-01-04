@@ -1,4 +1,4 @@
-import { Calendar, Clock, MapPin, Users, Video, AlertCircle, ArrowLeft, X, FileText, Award } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, Video, AlertCircle, ArrowLeft, FileText, Award } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { getCompetitionById } from "../../services/competition.service";
@@ -6,8 +6,6 @@ import type { Competition } from "../../services/competition.service";
 import { CompetitionMode } from "../../types/competition.type";
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 
-import VenueMap from "../../components/ui/VenueMap";
-import { geocodeVenue } from "../../utils/mapUtils";
 // import { CompetitionMode, type Competition } from "../../types/competition.type";
 
 export default function CompetitionDetails() {
@@ -51,13 +49,13 @@ export default function CompetitionDetails() {
         });
     };
 
-    const formatTime = (timeString: string) => {
-        const [hours, minutes] = timeString.split(':');
-        const hour = parseInt(hours);
-        const ampm = hour >= 12 ? 'PM' : 'AM';
-        const hour12 = hour % 12 || 12;
-        return `${hour12}:${minutes} ${ampm}`;
-    };
+    // const formatTime = (timeString: string) => {
+    //     const [hours, minutes] = timeString.split(':');
+    //     const hour = parseInt(hours);
+    //     const ampm = hour >= 12 ? 'PM' : 'AM';
+    //     const hour12 = hour % 12 || 12;
+    //     return `${hour12}:${minutes} ${ampm}`;
+    // };
     const [selectedVenue, setSelectedVenue] = useState<string | null>(null);
     const [mapModalOpen, setMapModalOpen] = useState(false);
     const handleViewMap = async (venue: string) => {

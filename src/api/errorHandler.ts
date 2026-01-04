@@ -1,4 +1,4 @@
-import { AxiosError, type InternalAxiosRequestConfig, type AxiosInstance } from 'axios';
+import { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import toast from 'react-hot-toast';
 import { refreshToken } from '../services/user/auth.service';
 import { store } from '../redux/store';

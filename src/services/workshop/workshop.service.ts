@@ -1,5 +1,5 @@
 import { WorkshopAxios } from "../../api/user.axios";
-import type { CreateWorkshopData, Workshop } from "../../types/workshop.type";
+import type { CreateWorkshopData } from "../../types/workshop.type";
 
 export const createWorkshop = async (data: CreateWorkshopData | FormData) => {
     try {

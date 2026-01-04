@@ -47,10 +47,10 @@ export default function AuthSignup({
     return emailRegex.test(email)
   }
 
-  const validatePhone = (phone: string) => {
-    const phoneRegex = /^[+]?[\d\s\-()]{10,}$/
-    return phoneRegex.test(phone)
-  }
+  // const validatePhone = (phone: string) => {
+  //   const phoneRegex = /^[+]?[\d\s\-()]{10,}$/
+  //   return phoneRegex.test(phone)
+  // }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target

@@ -1,4 +1,4 @@
-import { Calendar, Clock, MapPin, Users, Video, AlertCircle, ArrowLeft, X } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, Video, AlertCircle, ArrowLeft } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { getWorkshopById } from "../../services/workshop/workshop.service";
@@ -6,8 +6,6 @@ import type { Workshop } from "../../types/workshop.type";
 import { WorkshopMode } from "../../types/workshop.type";
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 
-import VenueMap from "../../components/ui/VenueMap";
-import { geocodeVenue } from "../../utils/mapUtils";
 
 export default function WorkshopDetails() {
   const { id } = useParams<{ id: string }>();

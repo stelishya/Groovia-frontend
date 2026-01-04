@@ -1,5 +1,3 @@
-"use client"
-
 import type React from "react"
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react"
 import { Button } from "../../components/ui/Button"
@@ -22,10 +20,7 @@ export function Pagination({
   total = 0,
   pageSize = 10,
   onChange,
-  showSizeChanger = true,
-  showQuickJumper = false,
   showTotal = true,
-  pageSizeOptions = [10, 20, 50, 100],
   className = "",
   disabled = false,
 }: PaginationProps) {
@@ -39,12 +34,12 @@ export function Pagination({
     }
   }
 
-  const handlePageSizeChange = (newPageSize: number) => {
-    if (!disabled) {
-      const newPage = Math.min(current, Math.ceil(total / newPageSize))
-      onChange(newPage, newPageSize)
-    }
-  }
+  // const handlePageSizeChange = (newPageSize: number) => {
+  //   if (!disabled) {
+  //     const newPage = Math.min(current, Math.ceil(total / newPageSize))
+  //     onChange(newPage, newPageSize)
+  //   }
+  // }
 
   const renderPageNumbers = () => {
     const pages: (number | string)[] = []
@@ -209,10 +204,7 @@ export function UserPagination({
   total = 0,
   pageSize = 10,
   onChange,
-  showSizeChanger = true,
-  showQuickJumper = false,
   showTotal = true,
-  pageSizeOptions = [10, 20, 50, 100],
   className = "",
   disabled = false,
 }: PaginationProps) {
