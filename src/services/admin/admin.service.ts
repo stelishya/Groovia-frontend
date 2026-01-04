@@ -15,8 +15,12 @@ export const loginAdmin = async (data: LoginForm, dispatch: AppDispatch) => {
     console.log("HI from loginAdmin in admin.service.ts", data)
     const response = await AuthAxiosAdmin.post('/login', data);
     console.log("response in loginAdmin in admin.service.ts", response)
-    const { admin, token } = response.data;
-    dispatch(loginAdminAction({ admin, token }))
+    const { admin, accessToken } = response.data;
+    console.log("admin and accessToken in loginAdmin in admin.service.ts", admin, accessToken)
+    if (accessToken) {
+      localStorage.setItem('token', accessToken);
+    }
+    dispatch(loginAdminAction({ admin, token: accessToken }))
     return response.data;
   } catch (error: any) {
     const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
@@ -41,8 +45,10 @@ export const logoutAdmin = async () => {
   try {
     await AuthAxiosAdmin.post('/logout');
     // Clear local storage
+    localStorage.removeItem('token');
     localStorage.removeItem('adminToken');
     localStorage.removeItem('adminData');
+
     toast.dismiss(loadingToast);
     toast.success('Logged out successfully! See you soon! 👋', {
       position: 'top-right',
@@ -56,6 +62,7 @@ export const logoutAdmin = async () => {
     return { success: true };
   } catch (error) {
     toast.dismiss(loadingToast);
+    localStorage.removeItem('token');
     localStorage.removeItem('adminToken');
     localStorage.removeItem('adminData');
 

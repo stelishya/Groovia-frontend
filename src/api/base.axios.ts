@@ -18,8 +18,15 @@ export const createBaseAxios = (basePath: string): AxiosInstance => {
       if (token && !skipAuth) {
         config.headers.Authorization = `Bearer ${token}`;
       }
-      
-      // store instance on config so errorHandler can retry on the same instance
+
+      // Optionally, decode token and check role in frontend logic if needed
+      // Example:
+      // import { decodeJwt } from '../utils/auth';
+      // const payload = decodeJwt(token);
+      // if (payload?.role && !payload.role.includes('admin')) {
+      //   // Optionally block or redirect if not admin
+      // }
+
       (config as any).__axiosInstance = instance;
       return config;
     },
