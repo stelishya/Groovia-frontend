@@ -223,11 +223,11 @@ export const getOrganizerCompetitions = async (params?: { category?: string; sty
 // }
 
   
-  interface ApiResponse<T> {
-    success: boolean;
-    data: T;
-    message?: string;
-  }
+//   interface ApiResponse<T> {
+//     success: boolean;
+//     data: T;
+//     message?: string;
+//   }
   
 //   class CompetitionService {
 //     async getAllCompetitions(params?: { category?: string; style?: string }): Promise<Competition[]> {

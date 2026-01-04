@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Calendar, MapPin, Video, Users, DollarSign, IndianRupee, Clock } from 'lucide-react';
+import { X, Calendar, MapPin, Video, Users, IndianRupee, Clock } from 'lucide-react';
 import { WorkshopMode, type Workshop } from '../../types/workshop.type';
 import type { Competition } from '../../services/competition.service';
 

@@ -1,10 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { Navigate } from 'react-router-dom';
-import { type RootState } from '../../redux/store';
-import DancerProfile from '../dancer/DancerProfile'; // renders the dancer profile
-import ClientProfile from '../client/ClientProfile'; // renders the client profile
-import BookingsClient from '../client/BookingsClient';
+import { type RootState } from '../../redux/store';import BookingsClient from '../client/BookingsClient';
 import BookingsDancer from '../dancer/BookingsDancer';
 
 const BookingsPage: React.FC = () => {

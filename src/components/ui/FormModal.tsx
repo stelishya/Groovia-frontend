@@ -1,6 +1,4 @@
-// components/ui/FormModal.tsx
 import React, { type ReactNode } from 'react';
-import { X } from 'lucide-react';
 
 interface FormModalProps {
     isOpen: boolean;

@@ -10,7 +10,6 @@ import { updateEventBookingStatus } from '../../services/client/client.service';
 import { getBookedWorkshops } from '../../services/workshop/workshop.service';
 import { UserTable } from '../../components/ui/Table';
 import type { Workshop } from '../../types/workshop.type';
-import ConfirmationModal from '../../components/ui/ConfirmationModal';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -136,11 +135,12 @@ const RequestCard = ({ request, onAcceptClick, onDeclineClick, onViewMap }: { re
 );
 
 const BookingsPage = () => {
-    const [user, setUser] = useState<Client | null>(null);
+    const [, setUser] = useState<Client | null>(null);
     const [requests, setRequests] = useState<EventRequest[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(5);
+    // const [pageSize, setPageSize] = useState(5);
+    const pageSize = 5
     const [totalRequests, setTotalRequests] = useState(0);
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState('');
@@ -157,9 +157,9 @@ const BookingsPage = () => {
     // State for booked workshops
     const [workshopSearch, setWorkshopSearch] = useState('');
     const [workshopSortBy, setWorkshopSortBy] = useState('date');
-    const [workshopPage, setWorkshopPage] = useState(1);
-    const [workshopLimit, setWorkshopLimit] = useState(10);
-    const [workshopTotal, setWorkshopTotal] = useState(0);
+    const [workshopPage] = useState(1);
+    const [workshopLimit] = useState(10);
+
 
     const [bookedWorkshops, setBookedWorkshops] = useState<Workshop[]>([]);
     const navigate = useNavigate();

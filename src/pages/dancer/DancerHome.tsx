@@ -94,7 +94,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalWorkshops, setTotalWorkshops] = useState(0);
     const pageSize = 8; // 8 workshops per page (2 rows of 4)
-
+    console.log("userdata in dancerhome",userData)
     const fetchWorkshops = async () => {
         setLoading(true);
         try {

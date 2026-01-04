@@ -1,8 +1,7 @@
 import {
-  User as UserIcon, Heart, Briefcase, Link as LinkIcon,
+  User as UserIcon, Heart, Link as LinkIcon,
   Instagram, Youtube, Facebook
 } from "lucide-react";
-import React from "react";
 import { useNavigate } from "react-router-dom";
 
 

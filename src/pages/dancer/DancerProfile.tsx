@@ -2,11 +2,10 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { type RootState } from '../../redux/store';
-import { User, Settings, ArrowLeft, Crown, Edit2, Heart, Instagram, Linkedin, Facebook, LinkIcon, Youtube, Twitter, Camera, CreditCard, CheckCircle, FileImage, Eye, Minus, Trash2, ShieldCheck, EyeOff } from 'lucide-react';
+import { User, Settings, Edit2, Heart, Instagram, Linkedin, Facebook, LinkIcon, Youtube, Twitter, Camera, FileImage, Eye, Minus, Trash2, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { UserAxios } from '../../api/auth.axios';
 import { loginUser } from '../../redux/slices/user.slice';
-import { validateImageFile, validateExperienceYears } from '../../utils/validation';
+import { validateExperienceYears } from '../../utils/validation';
 import { Role, hasRole, hasAnyRole } from '../../utils/constants/roles';
 import Sidebar from '../../components/shared/Sidebar';
 import UserNavbar from '../../components/shared/Navbar';
@@ -15,7 +14,7 @@ import UpgradeRoleModal, { UpgradeRoleSection } from '../../components/shared/Up
 import ProfileImageModal from '../../components/ui/ProfileImageModal';
 import { uploadProfilePicture, uploadCertificate } from '../../services/dancer/dancer.service';
 import { DancerAxios } from '../../api/user.axios';
-import { upgradeService, type UpgradeStatus, ROLE_UPGRADE_PRICE } from '../../services/user/upgradeRole.service';
+import { upgradeService, type UpgradeStatus } from '../../services/user/upgradeRole.service';
 import { changePassword } from '../../services/user/auth.service';
 
 const Profile = () => {
@@ -63,19 +62,19 @@ const Profile = () => {
         'Hip-Hop', 'Contemporary', 'Ballet', 'Jazz', 'Salsa',
         'Bollywood', 'Folk', 'Freestyle', 'Ballroom', 'Tap', 'Breakdance', 'Other'
     ];
-    const handleDanceStyleToggle = (style: string) => {
-        setProfileData(prev => ({
-            ...prev,
-            danceStyles: prev.danceStyles.includes(style)
-                ? prev.danceStyles.filter(s => s !== style)
-                : [...prev.danceStyles, style]
-        }));
-    };
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            setProfileData(prev => ({ ...prev, certificate: e.target.files![0] }));
-        }
-    };
+    // const handleDanceStyleToggle = (style: string) => {
+    //     setProfileData(prev => ({
+    //         ...prev,
+    //         danceStyles: prev.danceStyles.includes(style)
+    //             ? prev.danceStyles.filter(s => s !== style)
+    //             : [...prev.danceStyles, style]
+    //     }));
+    // };
+    // const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    //     if (e.target.files && e.target.files[0]) {
+    //         setProfileData(prev => ({ ...prev, certificate: e.target.files![0] }));
+    //     }
+    // };
 
     const handleImageChange = () => {
         // Open modal in edit mode (no imageUrl means edit mode)
@@ -339,16 +338,16 @@ const Profile = () => {
             profileData.danceStyles.length > 0
         );
     };
-    const handleLike = async () => {
-        try {
-            const response = await UserAxios.post(`/dancers/${userData?._id}/like`);
-            if (response.status === 200) {
-                toast.success('Liked!');
-            }
-        } catch (error: any) {
-            toast.error('Failed to like');
-        }
-    };
+    // const handleLike = async () => {
+    //     try {
+    //         const response = await UserAxios.post(`/dancers/${userData?._id}/like`);
+    //         if (response.status === 200) {
+    //             toast.success('Liked!');
+    //         }
+    //     } catch (error: any) {
+    //         toast.error('Failed to like');
+    //     }
+    // };
     const likeCount =
         Array.isArray(userData?.likes) ? userData.likes.length
             : typeof userData?.likes === 'number' ? userData.likes

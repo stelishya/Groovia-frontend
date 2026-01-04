@@ -3,9 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../redux/store';
 import { User, MapPin, Edit2, Star, Instagram, Youtube, Mail, Phone, Link as LinkIcon, FileImage, Eye, Facebook, Linkedin, Twitter, CircleSmall, Heart, GitPullRequest } from 'lucide-react';
-import { ClientAxios } from '../../api/user.axios';
 import UserNavbar from '../../components/shared/Navbar';
-import Sidebar from '../../components/shared/Sidebar';
 import { getDancerProfile } from '../../services/client/client.service';
 import FormModal from '../../components/ui/FormModal';
 import VenueMap from '../../components/ui/VenueMap';
@@ -13,21 +11,6 @@ import { sendRequestToDancers } from '../../services/client/browseDancers.servic
 import { toggleLike } from '../../services/dancer/dancer.service';
 import toast from 'react-hot-toast';
 import { getClientEventRequests } from '../../services/client/client.service';
-
-
-// Mock Data for development
-// Mock Data for development
-// const MOCK_ACHIEVEMENTS = [
-//     { title: "National Dance Championship - 1st Place", year: "2023" },
-//     { title: "Prestigious Gala Performance - Lead Dancer", year: "2022" },
-//     { title: "Certified Dance Instructor - Advanced Level", year: "2021" },
-//     { title: "International Dance Festival - Audience Award", year: "2019" }
-// ];
-
-const MOCK_REVIEWS = [
-    { id: 1, name: "Emily R.", text: "Absolutely mesmerizing performance. Elena's grace and power were incredible to witness. She truly lights up the stage!", date: "January 24, 2024", rating: 5 },
-    { id: 2, name: "Mark K.", text: "Professional, punctual, and an absolute talent. Elena delivered a flawless routine for our corporate event. Highly recommend!", date: "December 10, 2023", rating: 5 }
-];
 
 const PublicProfile = () => {
     const { id } = useParams();

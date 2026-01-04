@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Users, Briefcase, Trophy, CreditCard, LogOut, Settings, VerifiedIcon } from 'lucide-react';
+import { LayoutDashboard, Users, CreditCard, LogOut, Settings, VerifiedIcon } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { logoutAdmin } from '../../services/admin/admin.service';
 import {logoutAdmin as logoutAdminAction} from '../../redux/slices/admin.slice';

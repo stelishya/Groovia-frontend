@@ -54,8 +54,8 @@ import { useVideoCall } from '../../context/VideoCallContext';
 //     />
 import CreateWorkshopModal from '../../components/ui/CreateWorkshopModal';
 import GenericDetailsModal from '../../components/ui/EntityDetailsModal';
-import { Search, Plus, ScanLine, Bell, Filter, X } from 'lucide-react';
-import { Pagination, UserPagination } from '../../components/ui/Pagination';
+import { Search, Plus, ScanLine, Filter, X } from 'lucide-react';
+import { UserPagination } from '../../components/ui/Pagination';
 import { getInstructorWorkshops, createWorkshop, updateWorkshop, deleteWorkshop, getBookedWorkshops, getAllWorkshops } from '../../services/workshop/workshop.service';
 import type { Workshop, CreateWorkshopData } from '../../types/workshop.type';
 import toast from 'react-hot-toast';
@@ -76,7 +76,7 @@ const InstructorWorkshops = () => {
     const [modeFilter, setModeFilter] = useState(''); // Online/Offline
     const [sortBy, setSortBy] = useState('startDate'); // startDate, fee, title
 
-    const [filter, setFilter] = useState('All Types');
+    // const [filter, setFilter] = useState('All Types');
     const [exploreSearch, setExploreSearch] = useState('');
     const [instructorSearch, setInstructorSearch] = useState('');
     const [bookedSearch, setBookedSearch] = useState('');
@@ -97,7 +97,7 @@ const InstructorWorkshops = () => {
     const [explorePage, setExplorePage] = useState(1);
     const [instructorPage, setInstructorPage] = useState(1);
     const [currentPage, setCurrentPage] = useState(1);
-    const [totalWorkshops, setTotalWorkshops] = useState(0);
+    // const [totalWorkshops, setTotalWorkshops] = useState(0);
     const pageSize = 8;
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
@@ -149,7 +149,7 @@ const InstructorWorkshops = () => {
                 const response = await getAllWorkshops(params);
                 if (response.success && response.data) {
                     setWorkshops(Array.isArray(response.data) ? response.data : response.data.workshops || []);
-                    setTotalWorkshops(response.data.total || response.data.length || 0);
+                    // setTotalWorkshops(response.data.total || response.data.length || 0);
                 }
             } catch (error) {
                 console.error("Failed to fetch workshops:", error);

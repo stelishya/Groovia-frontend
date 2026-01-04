@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { X, Edit2, Upload, RotateCw, ZoomIn, ZoomOut } from 'lucide-react';
+import { X, Edit2, Upload, ZoomOut } from 'lucide-react';
 import Cropper, { type Point, type Area } from 'react-easy-crop';
 import { getCroppedImg } from '../../utils/CropImage';
 
@@ -42,7 +42,7 @@ const ProfileImageModal: React.FC<ProfileImageModalProps> = ({
         }
     }, [isOpen, imageUrl]);
 
-    const onCropComplete = useCallback((croppedArea: Area, croppedAreaPixels: Area) => {
+    const onCropComplete = useCallback((_croppedArea: Area, croppedAreaPixels: Area) => {
         setCroppedAreaPixels(croppedAreaPixels);
     }, []);
 
@@ -86,10 +86,10 @@ const ProfileImageModal: React.FC<ProfileImageModalProps> = ({
                 croppedAreaPixels,
                 rotation
             );
-            
+
             // Call the async onUploadComplete (which handles upload)
             await onUploadComplete(croppedImageBlob);
-            
+
             // Close modal after successful upload
             handleClose();
         } catch (error) {

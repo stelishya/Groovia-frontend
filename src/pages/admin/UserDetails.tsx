@@ -1,15 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
-import { useDispatch } from "react-redux"
-import { useNavigate } from "react-router-dom"
+import { useEffect, useState } from "react";
 
-import { MoreVertical, ChevronLeft, ChevronRight, Badge, Phone, Mail, Download, BadgeCheck, Landmark, User } from "lucide-react"
+import {Phone, Mail, BadgeCheck, Landmark, User } from "lucide-react"
 
 import Sidebar from "../../components/admin/Sidebar"
 import { getAllUsers, updateUserStatus } from "../../services/admin/admin.service";
 import { Table, type TableColumn } from "../../components/ui/Table";
-import { Switch } from "../../components/ui/Switch";
 import toast from "react-hot-toast";
-import { Button } from "../../components/ui/Button";
 import { Pagination } from "../../components/ui/Pagination";
 import Navbar from "../../components/admin/Navbar";
 import ConfirmationModal from "../../components/ui/ConfirmationModal";

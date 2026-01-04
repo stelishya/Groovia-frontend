@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import Cropper, { type Area } from 'react-easy-crop';
-import { X, RotateCw, ZoomIn } from 'lucide-react';
+import { X, ZoomIn } from 'lucide-react';
 import { getCroppedImg } from '../../utils/CropImage';
 
 interface ImageCropModalProps {
@@ -20,14 +20,14 @@ const ImageCropModal: React.FC<ImageCropModalProps> = ({
 }) => {
     const [crop, setCrop] = useState({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(1);
-    const [rotation, setRotation] = useState(0);
+    const [rotation] = useState(0);
     const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
 
     const onCropChange = (location: { x: number; y: number }) => {
         setCrop(location);
     };
 
-    const onCropAreaChange = useCallback((croppedArea: Area, croppedAreaPixels: Area) => {
+    const onCropAreaChange = useCallback((_croppedArea: Area, croppedAreaPixels: Area) => {
         setCroppedAreaPixels(croppedAreaPixels);
     }, []);
 

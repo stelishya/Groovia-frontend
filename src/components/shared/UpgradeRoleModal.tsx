@@ -300,7 +300,6 @@ const InstructorForm = ({
     setUpgradeFormData,
     danceStyles,
     handleDanceStyleToggle,
-    handleFileChange,
 }: {
     upgradeFormData: InstructorFormData;
     setUpgradeFormData: (data: any) => void;
@@ -421,7 +420,6 @@ const InstructorForm = ({
 const OrganizerForm = ({
     upgradeFormData,
     setUpgradeFormData,
-    handleFileChange,
 }: {
     upgradeFormData: OrganizerFormData;
     setUpgradeFormData: (data: any) => void;
@@ -518,9 +516,7 @@ export const UpgradeRoleSection: React.FC<UpgradeRoleSectionProps> = ({
     upgradeRequests,
     onRequestUpgrade,
     onPaymentClick,
-    onRefreshStatus,
     roleType,
-    userType,
     hasRole = false
 }) => {
     // Don't show if user already has the role

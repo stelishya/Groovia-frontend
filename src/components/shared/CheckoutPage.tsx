@@ -9,7 +9,6 @@ import { fetchMyProfile } from '../../services/user/auth.service';
 import { loginUser } from '../../redux/slices/user.slice';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
 
 
 import { createEventBookingPayment, verifyEventBookingPayment } from '../../services/client/client.service';
@@ -257,26 +256,26 @@ const Payment: React.FC<PaymentProps> = ({
     });
   };
 
-  const handleOrganizerUpgrade = async () => {
-    // Similar to instructor upgrade
-    // ... implementation
-  };
+  // const handleOrganizerUpgrade = async () => {
+  //   // Similar to instructor upgrade
+  //   // ... implementation
+  // };
 
-  const handleCompetitionPayment = async (competitionId: string, amount: number) => {
-    await initiateRazorpayPayment({
-      type: PaymentType.COMPETITION_PAYMENT,
-      amount: amount,
-      currency: 'INR',
-      description: 'Competition Registration',
-      entityId: competitionId,
-      onSuccess: async (response) => {
-        // Call competition booking confirmation API
-        toast.success('Successfully registered for competition! 🎉');
-      }
-    });
-  };
+  // const handleCompetitionPayment = async (competitionId: string, amount: number) => {
+  //   await initiateRazorpayPayment({
+  //     type: PaymentType.COMPETITION_PAYMENT,
+  //     amount: amount,
+  //     currency: 'INR',
+  //     description: 'Competition Registration',
+  //     entityId: competitionId,
+  //     onSuccess: async (response) => {
+  //       // Call competition booking confirmation API
+  //       toast.success('Successfully registered for competition! 🎉');
+  //     }
+  //   });
+  // };
 
-  const handleEventRequestPayment = async (eventId: string, amount: number) => {
+  const handleEventRequestPayment = async (eventId: string, _amount: number) => {
     try {
       const result = await createEventBookingPayment(eventId);
 
