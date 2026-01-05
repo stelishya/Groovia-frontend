@@ -75,8 +75,11 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({
         iceServers: [
             { urls: 'stun:stun.l.google.com:19302' },
             { urls: 'stun:global.stun.twilio.com:3478' },
+            { urls: "stun:stun1.l.google.com:19302" },
+            { urls: "stun:stun2.l.google.com:19302" },
         ],
     };
+
 
     const joinSession = async (token: string, name: string, role: string) => {
         // 1. Decode token to get roomId (simplified) or send token in auth
@@ -103,8 +106,11 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({
             setupAudioAnalyzer('local', stream);
 
             // 3. Connect Socket
-            const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5000';
+            const backendUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:5000';
+            console.log("Socket connecting to:", `${backendUrl}/video-calls`);
             socketRef.current = io(`${backendUrl}/video-calls`, {
+                // path: '/socket.io', // Default is /socket.io
+                transports: ['websocket'], // Force websocket to avoid polling issues
                 auth: { token }, // Send token for validation
                 query: { userId } // Pass userId for tracking
             });

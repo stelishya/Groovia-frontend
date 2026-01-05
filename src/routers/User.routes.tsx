@@ -33,7 +33,7 @@ const UserRoutes = () => {
                     <Signup />
                 </PublicRoute>
             } />
-            <Route path="/landing" element={
+            <Route path="/" element={
                 <PublicRoute userType="dancer">
                     <LandingPage />
                 </PublicRoute>

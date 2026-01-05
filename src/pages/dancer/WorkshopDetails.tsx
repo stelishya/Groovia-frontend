@@ -5,7 +5,7 @@ import { getWorkshopById } from "../../services/workshop/workshop.service";
 import type { Workshop } from "../../types/workshop.type";
 import { WorkshopMode } from "../../types/workshop.type";
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-
+import bgImage from "../../assets/bg.jpg"
 
 export default function WorkshopDetails() {
   const { id } = useParams<{ id: string }>();
@@ -108,7 +108,8 @@ export default function WorkshopDetails() {
       <div className="relative h-[60vh] overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-purple-900 via-purple-700 to-pink-600 opacity-90" />
         <img
-          src="/src/assets/bg.jpg"
+          // src="/src/assets/bg.jpg"
+          src={bgImage}
           alt="background image"
           // src={workshop.posterImage}
           // alt={workshop.title}

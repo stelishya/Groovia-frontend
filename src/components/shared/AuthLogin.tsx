@@ -11,7 +11,7 @@ import axios from "axios";
 import { fetchMyProfile } from '../../services/user/auth.service';
 import { loginUser } from '../../redux/slices/user.slice';
 import { Role, UserType } from '../../utils/constants/roles';
-
+import loginImage from '../../assets/loginImage.png'
 
 export interface AuthLoginProps {
   signupRoute: string
@@ -307,7 +307,8 @@ export default function AuthLogin({
         {/* Right Side: Image */}
         <div className="hidden md:block relative">
           <img
-            src="/src/assets/LoginImage.png"
+            // src="/src/assets/LoginImage.png"
+            src={loginImage}
             alt="Dancer"
             className="absolute inset-0 w-full h-full object-cover"
           />

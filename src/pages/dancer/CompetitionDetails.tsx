@@ -5,6 +5,7 @@ import { getCompetitionById } from "../../services/competition.service";
 import type { Competition } from "../../services/competition.service";
 import { CompetitionMode } from "../../types/competition.type";
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import bgImage from "../../assets/bg.jpg"
 
 // import { CompetitionMode, type Competition } from "../../types/competition.type";
 
@@ -114,7 +115,8 @@ export default function CompetitionDetails() {
             <div className="relative h-[60vh] overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-900 via-purple-700 to-pink-600 opacity-90" />
                 <img
-                    src="/src/assets/bg.jpg"
+                    // src="/src/assets/bg.jpg"
+                    src={bgImage}
                     alt="background image"
                     className="absolute inset-0 w-full h-full object-cover mix-blend-overlay"
                 />

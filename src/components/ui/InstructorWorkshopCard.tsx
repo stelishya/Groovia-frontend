@@ -37,18 +37,20 @@ const InstructorWorkshopCard: React.FC<InstructorWorkshopCardProps> = ({
 }) => {
     // Status badge styling
     const getStatusStyle = (status: string) => {
-        console.log("status : ", status)
-        switch (status) {
-            case 'Upcoming':
+        // console.log("status : ", status)
+        switch (status?.toLowerCase()) {
+            case 'upcoming':
                 return 'text-purple-200 bg-purple-500/20';
-            case 'Active':
+            case 'active':
                 return 'text-green-300 bg-green-500/20';
-            case 'Completed':
+            case 'completed':
                 return 'text-gray-400 bg-gray-500/20';
             default:
                 return 'text-gray-300 bg-gray-500/20';
         }
     };
+
+    console.log(`[Card Debug] ${title}: mode=${mode}, status=${status}, showButton=${mode?.toLowerCase() === 'online' && status?.toLowerCase() !== 'completed'}`);
 
     return (
         <div className="bg-purple-700/50 backdrop-blur-md rounded-xl p-5 border border-purple-500 shadow-lg hover:shadow-purple-500/20 transition-all duration-300">
@@ -96,7 +98,7 @@ const InstructorWorkshopCard: React.FC<InstructorWorkshopCardProps> = ({
                 </button>
 
                 {/* Session Control Button */}
-                {mode === WorkshopMode.ONLINE && status !== 'Completed' && (
+                {mode?.toLowerCase() === 'online' && status?.toLowerCase() !== 'completed' && (
                     <button
                         onClick={() => {
                             if (isCurrentSession) return;
@@ -115,17 +117,17 @@ const InstructorWorkshopCard: React.FC<InstructorWorkshopCardProps> = ({
                         disabled={isCurrentSession}
                         className={`flex-1 py-2 rounded-lg font-medium transition-colors duration-200 border text-sm ${isCurrentSession
                             ? 'bg-purple-900/50 text-purple-300 border-purple-500/50 cursor-default'
-                            : status === 'active'
+                            : status.toLowerCase() === 'active'
                                 ? 'bg-red-600/80 hover:bg-red-700 text-white border-red-500/30 animate-pulse'
-                                : status === 'upcoming' ? 'bg-green-600/80 hover:bg-green-700 text-white border-green-500/30'
+                                : status.toLowerCase() === 'upcoming' ? 'bg-green-600/80 hover:bg-green-700 text-white border-green-500/30'
                                     : 'bg-gray-600/80 hover:bg-gray-700 text-white border-gray-500/30'
                             }`}
                     >
                         {isCurrentSession
                             ? 'In Video Call 🎥'
-                            : status === 'active'
+                            : status.toLowerCase() === 'active'
                                 ? 'Join Now'
-                                : status === 'upcoming'
+                                : status.toLowerCase() === 'upcoming'
                                     ? 'Start Session'
                                     : 'Session Ended'}
                     </button>

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Instagram, Youtube } from 'lucide-react';
+import LandingImage from '../assets/LandingImage.jpg'
 
 const LandingPage = () => {
   return (
@@ -13,18 +14,20 @@ const LandingPage = () => {
                 Groovia
               </Link>
               <nav className="hidden md:flex space-x-8">
-                <Link to="/workshops" className="text-gray-300 hover:text-white transition">
+                <Link to="/login" className="text-gray-300 hover:text-white transition">
                   Workshops
                 </Link>
-                <Link to="/competitions" className="text-gray-300 hover:text-white transition">
+                <Link to="/login" className="text-gray-300 hover:text-white transition">
                   Competitions
                 </Link>
-                <Link to="/hire-dancers" className="text-gray-300 hover:text-white transition">
-                  Hire Dancers
+                <Link to="/login" className="text-gray-300 hover:text-white transition">
+                  Dancers
                 </Link>
-                <Link to="/contact" className="text-gray-300 hover:text-white transition">
+                {/* <Link to="/contact"  */}
+                <h2 className="text-gray-300 hover:text-white transition">
                   Contact
-                </Link>
+                </h2>
+                {/* </Link> */}
               </nav>
             </div>
             <div className="flex items-center space-x-4">
@@ -57,7 +60,7 @@ const LandingPage = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              to="/workshops"
+              to="/login"
               className="bg-gradient-to-r from-pink-500 to-purple-500 text-white px-8 py-3 rounded-full hover:from-pink-600 hover:to-purple-600 transition font-medium"
             >
               Explore Workshops
@@ -78,9 +81,10 @@ const LandingPage = () => {
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div className="bg-gradient-to-br from-purple-600 to-purple-800 rounded-lg overflow-hidden h-96">
               <div className="w-full h-full flex items-center justify-center">
-                <div className="text-center p-8">
-                  <div className="text-6xl mb-4">💃🕺</div>
-                  <p className="text-gray-300">Dance Image Placeholder</p>
+                <div className="text-center">
+                  <img src={LandingImage} alt="Landing Image" />
+                  {/* <div className="text-6xl mb-4">💃🕺</div>
+                  <p className="text-gray-300">Dance Image Placeholder</p> */}
                 </div>
               </div>
             </div>
@@ -92,10 +96,10 @@ const LandingPage = () => {
                 Learn, compete and book unforgettable dance experiences
               </h1>
               <p className="text-gray-300 mb-4">
-                <span className="text-pink-400 font-bold ">Groovia</span> is the all-in-one platform for workshops, competitions and program bookings. Discover events,
+                <span className="text-pink-400 font-bold ">Groovia</span> is the all-in-one platform for workshops, competitions and program bookings.
               </p>
               <p className="text-gray-300">
-                manage registrations and get paid—effortlessly.
+                Discover events, manage registrations and get paid—effortlessly.
               </p>
             </div>
           </div>
@@ -130,7 +134,7 @@ const LandingPage = () => {
                   Level up your skills with expert-led sessions covering various dance styles and techniques.
                 </p>
                 <Link
-                  to="/workshops"
+                  to="/login"
                   className="bg-purple-600 text-white px-6 py-2 rounded-md hover:bg-purple-700 transition inline-block"
                 >
                   Explore Workshops
@@ -152,7 +156,7 @@ const LandingPage = () => {
                   Showcase your talent and compete with dancers from around the world in exciting competitions.
                 </p>
                 <Link
-                  to="/competitions"
+                  to="/login"
                   className="bg-purple-600 text-white px-6 py-2 rounded-md hover:bg-purple-700 transition inline-block"
                 >
                   View Competitions
@@ -174,7 +178,7 @@ const LandingPage = () => {
                   Find exceptional talent for your productions, events, or creative projects.
                 </p>
                 <Link
-                  to="/hire-dancers"
+                  to="/login"
                   className="bg-purple-600 text-white px-6 py-2 rounded-md hover:bg-purple-700 transition inline-block"
                 >
                   Find Talent
@@ -192,7 +196,7 @@ const LandingPage = () => {
             Ready to take the next step in your dance journey?
           </h2>
           <Link
-            to="/register"
+            to="/signup"
             className="bg-gradient-to-r from-pink-500 to-purple-500 text-white px-10 py-4 rounded-md hover:from-pink-600 hover:to-purple-600 transition font-medium text-lg inline-block"
           >
             Get Started Today
@@ -217,19 +221,25 @@ const LandingPage = () => {
               <h3 className="font-semibold mb-4">About Us</h3>
               <ul className="space-y-2">
                 <li>
-                  <Link to="/about" className="text-sm text-gray-100 hover:text-white transition">
+                  {/* <Link to="/about"  */}
+                  <h2 className="text-sm text-gray-100 hover:text-white transition">
                     Our Story
-                  </Link>
+                  </h2>
+                  {/* </Link> */}
                 </li>
                 <li>
-                  <Link to="/careers" className="text-sm text-gray-100 hover:text-white transition">
+                  {/* <Link to="/careers"  */}
+                  <h2 className="text-sm text-gray-100 hover:text-white transition">
                     Careers
-                  </Link>
+                  </h2>
+                  {/* </Link> */}
                 </li>
                 <li>
-                  <Link to="/blog" className="text-sm text-gray-100 hover:text-white transition">
+                  {/* <Link to="/blog"  */}
+                  <h2 className="text-sm text-gray-100 hover:text-white transition">
                     Groovia Blog
-                  </Link>
+                  </h2>
+                  {/* </Link> */}
                 </li>
               </ul>
             </div>
@@ -260,7 +270,7 @@ const LandingPage = () => {
 
           <div className="mt-8 pt-6 border-t border-purple-400 text-center">
             <p className="text-sm text-gray-100">
-              ©2025 Groovia. All rights reserved.
+              ©{new Date().getFullYear()} Groovia. All rights reserved.
             </p>
           </div>
         </div>

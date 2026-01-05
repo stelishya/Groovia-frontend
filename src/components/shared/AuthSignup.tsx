@@ -3,6 +3,7 @@ import { useState } from "react";
 // import { Link } from "react-router-dom"
 
 import type { SignupForm } from "../../types/auth.type";
+import signupImage from "../../assets/SignupImage.png"
 
 import {
   Eye,
@@ -202,7 +203,8 @@ export default function AuthSignup({
 
             {/* You can replace this with an actual image */}
             <img
-              src="/src/assets/SignupImage.png"
+              // src="/src/assets/SignupImage.png"
+              src={signupImage}
               alt="Groovia signup"
               className="absolute inset-0 w-full h-full object-cover"
             />
