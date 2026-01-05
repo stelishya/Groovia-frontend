@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import {Phone, Mail, BadgeCheck, Landmark, User } from "lucide-react"
+import { Phone, Mail, BadgeCheck, Landmark, User } from "lucide-react"
 
 import Sidebar from "../../components/admin/Sidebar"
 import { getAllUsers, updateUserStatus } from "../../services/admin/admin.service";
@@ -374,19 +374,19 @@ const UserDetails: React.FC = () => {
             </div>
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <select
-                        value={filterRole}
-                        onChange={(e) => {
-                            setFilterRole(e.target.value);
-                            setCurrentPage(1);
-                        }}
-                        className="border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-4 py-2 text-sm focus:outline-none"
-                    >
-                        <option value="">All Roles</option>
-                        <option value="dancer">Dancer</option>
-                        <option value="organizer">Organizer</option>
-                        <option value="instructor">Instructor</option>
-                         <option value="client">Client</option>
-                    </select>
+                value={filterRole}
+                onChange={(e) => {
+                  setFilterRole(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-4 py-2 text-sm focus:outline-none"
+              >
+                <option value="">All Roles</option>
+                <option value="dancer">Dancer</option>
+                <option value="organizer">Organizer</option>
+                <option value="instructor">Instructor</option>
+                <option value="client">Client</option>
+              </select>
               {/* <Button
                 variant="outline"
                 onClick={()=>({})}
@@ -399,20 +399,20 @@ const UserDetails: React.FC = () => {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
 
-          <div className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg">
-          <div className="p-4 md:p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Users</p>
-              <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100">{totalUsers}</p>
+            <div className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg">
+              <div className="p-4 md:p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Users</p>
+                    <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100">{totalUsers}</p>
+                  </div>
+                  <div className="p-2 md:p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                    <User className="h-5 md:h-6 w-5 md:w-6 text-gray-600 dark:text-gray-300" />
+                  </div>
+                </div>
+              </div>
             </div>
-            <div className="p-2 md:p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
-              <User className="h-5 md:h-6 w-5 md:w-6 text-gray-600 dark:text-gray-300" />
-            </div>
-          </div>
-            </div>
-          </div>
-          {/* <div className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg">
+            {/* <div className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 rounded-lg">
             <div className="p-4 md:p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -506,15 +506,17 @@ const UserDetails: React.FC = () => {
           </Card > */}
 
           {/* Table */}
-          <Table
-            columns={columns}
-            data={users}
-            loading={loading}
-            sortBy={sortBy}
-            sortOrder={sortOrder}
-            onSort={handleSort}
-            className="shadow-sm overflow-x-auto"
-          />
+          <div className="overflow-x-auto max-w-full rounded-lg border border-gray-200 dark:border-gray-700">
+            <Table
+              columns={columns}
+              data={users}
+              loading={loading}
+              sortBy={sortBy}
+              sortOrder={sortOrder}
+              onSort={handleSort}
+              className="shadow-sm w-full"
+            />
+          </div>
 
           {/* Pagination */}
           <Pagination

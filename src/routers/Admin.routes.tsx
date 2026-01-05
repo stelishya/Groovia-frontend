@@ -1,5 +1,5 @@
 // AdminRoutes.tsx 
-import { Routes, Route } from "react-router-dom";
+import { Route } from "react-router-dom";
 // import {PrivateRoute} from '../protected/PrivateRoute';
 import { PublicRoute } from '../protected/PublicRoute';
 import AdminLogin from "../pages/admin/AdminLogin";
@@ -8,14 +8,15 @@ import AdminDashboard from "../pages/admin/AdminDashboard";
 import UserDetails from "../pages/admin/UserDetails";
 import Approvals from "../pages/admin/Approvals";
 import Payments from "../pages/admin/Payments";
+// import ErrorPage from "../pages/shared/ErrorPage";
 // import AdminDashboard from "@/pages/admin/AdminDashboard";
 // import UserDetails from "@/pages/admin/UserDetails";
 
 
 const AdminRoutes = () => {
   return (
-    <Routes>
-
+    // <Routes>
+<>
       <Route
         path="/admin/login"
         element={
@@ -62,7 +63,10 @@ const AdminRoutes = () => {
       />
 
 
-    </Routes>
+
+      {/* <Route path="*" element={<ErrorPage />} /> */}
+    {/* </Routes> */}
+    </>
   );
 };
 

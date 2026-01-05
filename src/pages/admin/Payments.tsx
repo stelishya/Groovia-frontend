@@ -97,58 +97,57 @@ export default function AdminPaymentsPage() {
   }, [page, pageSize, sortBy, sortOrder, status, type, dateFrom, dateTo]);
 
   return (
-    <div className="flex bg-[#161e2d] min-h-screen">
+    <div className="min-h-screen bg-[#161e2d]">
       <Sidebar />
-      <div className="flex-1 relative p-6 ">
-        <div className="flex-1 relative p-6 ml-60 bg-[#161e2d] min-h-screen">
-          <h2 className="text-2xl  sm:text-3xl text-white font-bold mb-4">Payments</h2>
-          {/* Filters */}
-          <div className="flex flex-wrap gap-2 mb-4">
-            <select value={status} onChange={e => setStatus(e.target.value)} className="px-2 py-1 rounded border bg-[#374151] text-white">
-              <option value="">All Status</option>
-              <option value="success">Success</option>
-              <option value="pending">Pending</option>
-              <option value="failed">Failed</option>
-              <option value="refunded">Refunded</option>
-            </select>
-            {/* <select value */}
-            <label htmlFor="dateFrom" className="text-white">From:</label>
-            <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="px-2 py-1 rounded border bg-[#374151] text-white" />
-            <label htmlFor="dateTo" className="text-white">To:</label>
-            <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="px-2 py-1 rounded border bg-[#374151] text-white" />
-            <button onClick={() => { setStatus(""); setType(""); setDateFrom(""); setDateTo(""); }} className="px-2 py-1 rounded bg-[#374151] text-white">Reset</button>
-          </div>
-          <div className="overflow-x-auto custom-scrollbar bg-gray rounded-lg shadow mb-4">
-            <Table
-              columns={columns}
-              data={data}
-              loading={loading}
-              sortBy={sortBy}
-              sortOrder={sortOrder}
-              onSort={(key, order) => { setSortBy(key); setSortOrder(order); }}
-              rowKey="_id"
-              emptyText="-"
-            />
-          </div>
-          <div className="flex items-center gap-2 mt-4 w-full max-w-5xl">
-            <Pagination
-              current={page}
-              total={total}
-              pageSize={pageSize}
-              onChange={setPage}
-              showSizeChanger
-              showQuickJumper
-              showTotal={(total: number, range: [number, number]) => (
-                <span className="text-sm text-gray-700 dark:text-gray-300">
-                  Showing {range[0]} to {range[1]} of {total} payments
-                </span>
-              )}
-              className="bg-gray-400 dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 w-full"
-            />
-            {/* <select value={pageSize} onChange={e => { setPageSize(Number(e.target.value)); setPage(1); }} className="ml-2 px-2 py-1 rounded">
+      <div className="md:ml-64 p-6">
+        <h2 className="text-2xl sm:text-3xl text-white font-bold mb-4">Payments</h2>
+        {/* Filters */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          <select value={status} onChange={e => setStatus(e.target.value)} className="px-2 py-1 rounded border bg-[#374151] text-white">
+            <option value="">All Status</option>
+            <option value="success">Success</option>
+            <option value="pending">Pending</option>
+            <option value="failed">Failed</option>
+            <option value="refunded">Refunded</option>
+          </select>
+          {/* <select value */}
+          <label htmlFor="dateFrom" className="text-white">From:</label>
+          <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="px-2 py-1 rounded border bg-[#374151] text-white" />
+          <label htmlFor="dateTo" className="text-white">To:</label>
+          <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="px-2 py-1 rounded border bg-[#374151] text-white" />
+          <button onClick={() => { setStatus(""); setType(""); setDateFrom(""); setDateTo(""); }} className="px-2 py-1 rounded bg-[#374151] text-white">Reset</button>
+        </div>
+        <div className="overflow-x-auto max-w-full custom-scrollbar bg-gray rounded-lg shadow mb-4 border border-gray-200 dark:border-gray-700">
+          <Table
+            columns={columns}
+            data={data}
+            loading={loading}
+            sortBy={sortBy}
+            sortOrder={sortOrder}
+            onSort={(key, order) => { setSortBy(key); setSortOrder(order); }}
+            rowKey="_id"
+            emptyText="-"
+            className="w-full"
+          />
+        </div>
+        <div className="flex items-center gap-2 mt-4 w-full max-w-5xl">
+          <Pagination
+            current={page}
+            total={total}
+            pageSize={pageSize}
+            onChange={setPage}
+            showSizeChanger
+            showQuickJumper
+            showTotal={(total: number, range: [number, number]) => (
+              <span className="text-sm text-gray-700 dark:text-gray-300">
+                Showing {range[0]} to {range[1]} of {total} payments
+              </span>
+            )}
+            className="bg-gray-400 dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 w-full"
+          />
+          {/* <select value={pageSize} onChange={e => { setPageSize(Number(e.target.value)); setPage(1); }} className="ml-2 px-2 py-1 rounded">
             {[10, 20, 50].map(size => <option key={size} value={size}>{size} / page</option>)}
           </select> */}
-          </div>
         </div>
       </div>
     </div>

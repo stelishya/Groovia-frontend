@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Crown, Check, X, Calendar, Mail, User as UserIcon, MapPin, Award, Search } from 'lucide-react';
-import axios from 'axios';
 import toast from 'react-hot-toast';
 import AdminSidebar from '../../components/admin/Sidebar';
+import { UserAxios } from '../../api/user.axios';
 
 interface UpgradeRequest {
     _id: string;
@@ -39,7 +39,7 @@ const Approvals = () => {
 
     useEffect(() => {
         // Filter requests based on search query
-        const filtered = requests.filter(request => 
+        const filtered = requests.filter(request =>
             request.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
             request.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
             request.danceStyles.some(style => style.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -51,11 +51,11 @@ const Approvals = () => {
     const fetchRequests = async () => {
         try {
             setLoading(true);
-            const endpoint = filter === 'pending' 
-                ? 'http://localhost:5000/users/upgrade-requests/pending'
-                : 'http://localhost:5000/users/upgrade-requests';
-            
-            const response = await axios.get(endpoint);
+            const endpoint = filter === 'pending'
+                ? '/upgrade-requests/pending'
+                : '/upgrade-requests';
+
+            const response = await UserAxios.get(endpoint);
             const data = filter === 'all' ? response.data : response.data.filter((r: UpgradeRequest) => r.status === filter);
             setRequests(data);
             setFilteredRequests(data);
@@ -75,10 +75,10 @@ const Approvals = () => {
 
     const handleApprove = async (id: string) => {
         try {
-            const response = await axios.patch(`http://localhost:5000/users/upgrade-requests/${id}/approve`, {
+            const response = await UserAxios.patch(`/upgrade-requests/${id}/approve`, {
                 adminNote
             });
-            console.log("Approve response",response.data);
+            console.log("Approve response", response.data);
             toast.success('Request approved!', {
                 duration: 5000,
                 style: {
@@ -98,7 +98,7 @@ const Approvals = () => {
 
     const handleReject = async (id: string) => {
         try {
-            await axios.patch(`http://localhost:5000/users/upgrade-requests/${id}/reject`, {
+            await UserAxios.patch(`/upgrade-requests/${id}/reject`, {
                 adminNote
             });
             toast.success('Request rejected', {
@@ -143,11 +143,10 @@ const Approvals = () => {
                                         <button
                                             key={f}
                                             onClick={() => setFilter(f)}
-                                            className={`px-4 py-2 rounded-lg font-medium capitalize transition-colors ${
-                                                filter === f
-                                                    ? 'bg-blue-600 text-white'
-                                                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                                            }`}
+                                            className={`px-4 py-2 rounded-lg font-medium capitalize transition-colors ${filter === f
+                                                ? 'bg-blue-600 text-white'
+                                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                                                }`}
                                         >
                                             {f}
                                         </button>
@@ -182,7 +181,7 @@ const Approvals = () => {
                                 <Crown className="text-gray-600 mx-auto mb-4" size={64} />
                                 <h3 className="text-xl font-semibold text-gray-300 mb-2">No Requests Found</h3>
                                 {/* <p className="text-gray-500">There are no {filter} upgrade requests at the moment.</p> */}
-                                 <p className="text-gray-500">{searchQuery ? 'No requests match your search criteria.' : `There are no ${filter} upgrade requests at the moment.`}</p>
+                                <p className="text-gray-500">{searchQuery ? 'No requests match your search criteria.' : `There are no ${filter} upgrade requests at the moment.`}</p>
                             </div>
                         ) : (
                             <div className="grid gap-6">
@@ -262,7 +261,7 @@ const Approvals = () => {
 
                                         {request.certificateUrl && (
                                             <div className="mb-4">
-                                                <a 
+                                                <a
                                                     href={`http://localhost:5000${request.certificateUrl}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"

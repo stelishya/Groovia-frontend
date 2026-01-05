@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom"
+import { Route } from "react-router-dom"
 import { PublicRoute } from "../protected/PublicRoute";
 import { PrivateRoute } from "../protected/PrivateRoute";
 import Signup from "../pages/dancer/Signup";
@@ -13,6 +13,7 @@ import LandingPage from "../pages/LandingPage";
 import CheckoutPage from "../pages/authorization/Checkout";
 import PaymentHistory from "../pages/shared/PaymentHistory";
 import PublicProfile from "../pages/public/PublicProfile";
+// import ErrorPage from "../pages/shared/ErrorPage";
 // import BookingsPage from "../pages/dancer/Bookings-Dancer";
 
 // import Home from "../pages/dancer/Home";
@@ -22,7 +23,8 @@ import PublicProfile from "../pages/public/PublicProfile";
 
 const UserRoutes = () => {
     return (
-        <Routes>
+        // <Routes>
+        <>
             <Route path="/login" element={
                 <PublicRoute userType="dancer">
                     <Login />
@@ -102,7 +104,9 @@ const UserRoutes = () => {
             } />
 
             <Route path='/logout' element={<Login />} />
-        </Routes>
+            {/* <Route path="*" element={<ErrorPage />} /> */}
+            </>
+        // </Routes>
     )
 }
 export default UserRoutes;

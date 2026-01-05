@@ -1,6 +1,7 @@
 import { createBaseAxios } from './base.axios.ts';
 
 export const AdminAxios = createBaseAxios('/admins');
+export const UserAxios = createBaseAxios('/users');
 
 export const DancerAxios = createBaseAxios('/dancers');
 

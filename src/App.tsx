@@ -1,4 +1,5 @@
-import { BrowserRouter as Router } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import ErrorPage from './pages/shared/ErrorPage'
 import './App.css'
 import UserRoutes from './routers/User.routes'
 import { Toaster } from 'react-hot-toast'
@@ -45,10 +46,13 @@ function App() {
           }}
         />
         <VideoCallProvider>
-          <UserRoutes />
-          <AdminRoutes />
-          <DancerRoutes />
-          <ClientRoutes />
+          <Routes>
+            {UserRoutes()} 
+            {AdminRoutes()} 
+            {DancerRoutes()} 
+            {ClientRoutes()} 
+            <Route path="*" element={<ErrorPage />} />
+          </Routes>
           <VideoRoomWrapper />
         </VideoCallProvider>
       </>

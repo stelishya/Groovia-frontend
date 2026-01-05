@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom"
+import { Route } from "react-router-dom"
 import { PrivateRoute } from "../protected/PrivateRoute";
 import InstructorWorkshops from "../pages/dancer/InstructorWorkshops";
 import WorkshopDetails from "../pages/dancer/WorkshopDetails";
@@ -8,7 +8,8 @@ import CompetitionCheckoutPage from "../pages/dancer/CompetitionCheckout";
 
 const DancerRoutes = () => {
     return (
-        <Routes>
+        // <Routes>
+        <>
             <Route path="/workshops" element={
                 <PrivateRoute userType="user" >
                     <InstructorWorkshops />
@@ -39,7 +40,8 @@ const DancerRoutes = () => {
                 </PrivateRoute>
             }
             />
-        </Routes>
+            </>
+        // </Routes>
     )
 }
 

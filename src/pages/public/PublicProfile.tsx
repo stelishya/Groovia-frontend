@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../redux/store';
-import { User, MapPin, Edit2, Star, Instagram, Youtube, Mail, Phone, Link as LinkIcon, FileImage, Eye, Facebook, Linkedin, Twitter, CircleSmall, Heart, GitPullRequest } from 'lucide-react';
+import { User, MapPin, Star, Instagram, Youtube, Mail, Phone, Link as LinkIcon, FileImage, Eye, Facebook, Linkedin, Twitter, CircleSmall, Heart, GitPullRequest } from 'lucide-react';
 import UserNavbar from '../../components/shared/Navbar';
 import { getDancerProfile } from '../../services/client/client.service';
 import FormModal from '../../components/ui/FormModal';
@@ -310,14 +310,14 @@ const PublicProfile = () => {
                                     {/* Action Buttons */}
                                     <div className="flex gap-4 pt-4">
                                         <button
-                                            onClick={handleLike}
+                                            onClick={isOwnProfile ? () => { } : handleLike}
                                             className="px-6 py-2.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg font-semibold transition-all flex items-center gap-2"
                                         >
                                             <Heart className={`${isLiked ? 'fill-pink-500 text-pink-500' : 'text-white'}`} size={20} />
                                             <span>{likeCount} {likeCount === 1 ? 'Like' : 'Likes'}</span>
                                         </button>
 
-                                        {!isOwnProfile && (
+                                        {!isOwnProfile && userData?.role.includes('client') && (
                                             hasRequested ? (
                                                 <button
                                                     disabled
@@ -337,7 +337,7 @@ const PublicProfile = () => {
                                             )
                                         )}
 
-                                        {isOwnProfile && (
+                                        {/* {isOwnProfile && (
                                             <button
                                                 onClick={() => navigate('/profile/edit')}
                                                 className="px-6 py-2.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-lg font-semibold transition-all flex items-center gap-2"
@@ -345,7 +345,7 @@ const PublicProfile = () => {
                                                 <Edit2 size={18} />
                                                 Edit Profile
                                             </button>
-                                        )}
+                                        )} */}
                                     </div>
                                 </div>
                             </div>

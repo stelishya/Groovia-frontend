@@ -1,11 +1,12 @@
-import { Route, Routes } from "react-router-dom"
+import { Route } from "react-router-dom"
 import { PrivateRoute } from "../protected/PrivateRoute";
 import Competitions from "../pages/client/Competitions";
 import EventCheckoutPage from "../pages/client/EventCheckout";
 
 const ClientRoutes = () => {
     return (
-        <Routes>
+        // <Routes>
+        <>
             <Route path="/competitions" element={
                 <PrivateRoute userType="user">
                     <Competitions />
@@ -17,7 +18,8 @@ const ClientRoutes = () => {
                 </PrivateRoute>
             }
             />
-        </Routes>
+            </>
+        // </Routes>
     )
 }
 

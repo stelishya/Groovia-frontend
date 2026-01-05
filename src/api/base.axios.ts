@@ -3,7 +3,7 @@ import { handleAxiosError } from './errorHandler';
 
 export const createBaseAxios = (basePath: string): AxiosInstance => {
   const instance = axios.create({
-    baseURL: `${import.meta.env.VITE_SERVER_URL}${basePath}`,
+    baseURL: `${import.meta.env.VITE_SERVER_URL}${basePath.startsWith('/api') ? '' : '/api'}${basePath}`,
     withCredentials: true,
     headers: {
       'Content-Type': 'application/json',
