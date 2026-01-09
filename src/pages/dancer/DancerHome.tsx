@@ -277,13 +277,13 @@ const Dashboard = ({ userData }: { userData: any }) => {
                         )}
                     </>
                 )}
-                <div className="mt-8 text-center text-gray-500 text-sm">
-                    © {new Date().getFullYear()} Groovia. All rights reserved.
-                </div>
             </div>
 
             {/* Competitions Feed Section */}
             <CompetitionsSection />
+                <div className="mt-8 text-center text-gray-500 text-sm">
+                    © {new Date().getFullYear()} Groovia. All rights reserved.
+                </div>
         </main >
     )
 };
