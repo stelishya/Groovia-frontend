@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { Plus, Search, ScanLine, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Search, 
+  // ScanLine,
+   X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import type { RootState } from "../../redux/store";
@@ -194,10 +196,10 @@ const CompetitionsPage = () => {
 
       {isOrganizer && (
         <div className="flex justify-end gap-2">
-          <button className="flex items-center gap-2 px-6 py-3 bg-transparent border border-purple-500 text-white rounded-lg hover:bg-purple-500/10 transition-colors">
+          {/* <button className="flex items-center gap-2 px-6 py-3 bg-transparent border border-purple-500 text-white rounded-lg hover:bg-purple-500/10 transition-colors">
             <ScanLine size={20} className="text-purple-400" />
             <span>QR Scanner</span>
-          </button>
+          </button> */}
           <button
             onClick={handleCreateCompetition}
             className="flex items-center gap-2 px-6 py-3 bg-transparent border border-purple-500 text-white rounded-lg hover:bg-purple-500/10 transition-colors"
