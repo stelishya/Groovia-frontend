@@ -69,6 +69,8 @@ import Sidebar from '../../components/shared/Sidebar';
 import InstructorWorkshopCard from '../../components/ui/InstructorWorkshopCard';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../redux/store';
+import { DanceStyles } from '../../utils/constants/danceStyles';
+import CustomSelect from '../../components/ui/CustomSelect';
 
 const InstructorWorkshops = () => {
     const [workshops, setWorkshops] = useState<Workshop[]>([])
@@ -472,22 +474,6 @@ const InstructorWorkshops = () => {
                         <>
                             {/* Controls Bar */}
                             <div className="pb-4 pr-3 flex flex-wrap justify-between items-center gap-4">
-                                <div className="flex gap-4">
-                                    <button className="flex items-center gap-2 px-6 py-3 bg-transparent border border-purple-500 text-white rounded-lg hover:bg-purple-500/10 transition-colors">
-                                        <ScanLine size={20} className="text-purple-400" />
-                                        <span>QR Scanner</span>
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            setEditingWorkshop(null);
-                                            setIsCreateModalOpen(true);
-                                        }}
-                                        className="flex items-center gap-2 px-6 py-3 bg-transparent border border-purple-500 text-white rounded-lg hover:bg-purple-500/10 transition-colors"
-                                    >
-                                        <Plus size={20} className="text-purple-400" />
-                                        <span>Create Workshop</span>
-                                    </button>
-                                </div>
 
                                 <div className="flex gap-4">
                                     <div className="relative">
@@ -507,9 +493,25 @@ const InstructorWorkshops = () => {
                                             />
                                         )}
                                     </div>
-                                    <button className="flex items-center gap-2 px-4 py-2 bg-[#7c3aed] text-white rounded-lg hover:bg-[#6d28d9] transition-colors">
+                                    {/* <button className="flex items-center gap-2 px-4 py-2 bg-[#7c3aed] text-white rounded-lg hover:bg-[#6d28d9] transition-colors">
                                         <span>All Types</span>
                                         <Filter size={16} />
+                                    </button> */}
+                                </div>
+                                <div className="flex gap-4">
+                                    {/* <button className="flex items-center gap-2 px-6 py-3 bg-transparent border border-purple-500 text-white rounded-lg hover:bg-purple-500/10 transition-colors">
+                                        <ScanLine size={20} className="text-purple-400" />
+                                        <span>QR Scanner</span>
+                                    </button> */}
+                                    <button
+                                        onClick={() => {
+                                            setEditingWorkshop(null);
+                                            setIsCreateModalOpen(true);
+                                        }}
+                                        className="flex items-center gap-2 px-6 py-3 bg-transparent border border-purple-500 text-white rounded-lg hover:bg-purple-500/10 transition-colors"
+                                    >
+                                        <Plus size={20} className="text-purple-400" />
+                                        <span>Create Workshop</span>
                                     </button>
                                 </div>
                             </div>
@@ -611,28 +613,16 @@ const InstructorWorkshops = () => {
 
 
                                 {/* Dance Style Filter */}
-                                <select
+                                <CustomSelect
+                                    options={Object.values(DanceStyles)}
                                     value={styleFilter}
-                                    onChange={(e) => {
-                                        setStyleFilter(e.target.value);
+                                    onChange={(val) => {
+                                        setStyleFilter(val);
                                         setCurrentPage(1);
                                     }}
-                                    className="bg-[#a855f7] text-white px-4 py-2 rounded-lg focus:outline-none"
-                                >
-                                    <option value="">All Styles</option>
-                                    <option value="Ballet">Ballet</option>
-                                    <option value="Hip-Hop">Hip-Hop</option>
-                                    <option value="Contemporary">Contemporary</option>
-                                    <option value="Jazz">Jazz</option>
-                                    <option value="Salsa">Salsa</option>
-                                    <option value="Bharatanatyam">Bharatanatyam</option>
-                                    <option value="Kathak">Kathak</option>
-                                    <option value="Popping">Popping</option>
-                                    <option value="Break">Break</option>
-                                    <option value="Locking">Locking</option>
-                                    <option value="Tap">Tap</option>
-                                    <option value="Belly">Belly</option>
-                                </select>
+                                    placeholder="All Styles"
+                                    className="min-w-[160px]"
+                                />
 
                                 {/* Mode Filter */}
                                 <select
@@ -745,7 +735,7 @@ const InstructorWorkshops = () => {
                         />
                     )}
                     <div className="mt-8 text-center text-gray-500 text-sm">
-                        © 2025 Groovia. All rights reserved.
+                        © {new Date().getFullYear()} Groovia. All rights reserved.
                     </div>
                 </div>
             </div>

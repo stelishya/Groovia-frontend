@@ -11,6 +11,8 @@ import { getAllCompetitions } from "../../services/competition.service";
 import type { Workshop } from "../../types/workshop.type";
 import type { Competition } from "../../services/competition.service";
 import type { RootState } from "../../redux/store";
+import { DanceStyles } from "../../utils/constants/danceStyles";
+import CustomSelect from "../../components/ui/CustomSelect";
 
 const CompetitionsSection = () => {
     const [competitions, setCompetitions] = useState<Competition[]>([]);
@@ -94,7 +96,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalWorkshops, setTotalWorkshops] = useState(0);
     const pageSize = 8; // 8 workshops per page (2 rows of 4)
-    console.log("userdata in dancerhome",userData)
+    console.log("userdata in dancerhome", userData)
     const fetchWorkshops = async () => {
         setLoading(true);
         try {
@@ -179,28 +181,16 @@ const Dashboard = ({ userData }: { userData: any }) => {
 
 
                     {/* Dance Style Filter */}
-                    <select
+                    <CustomSelect
+                        options={Object.values(DanceStyles)}
                         value={styleFilter}
-                        onChange={(e) => {
-                            setStyleFilter(e.target.value);
+                        onChange={(val) => {
+                            setStyleFilter(val);
                             setCurrentPage(1);
                         }}
-                        className="bg-[#a855f7] text-white px-4 py-2 rounded-lg focus:outline-none"
-                    >
-                        <option value="">All Styles</option>
-                        <option value="Ballet">Ballet</option>
-                        <option value="Hip-Hop">Hip-Hop</option>
-                        <option value="Contemporary">Contemporary</option>
-                        <option value="Jazz">Jazz</option>
-                        <option value="Salsa">Salsa</option>
-                        <option value="Bharatanatyam">Bharatanatyam</option>
-                        <option value="Kathak">Kathak</option>
-                        <option value="Popping">Popping</option>
-                        <option value="Break">Break</option>
-                        <option value="Locking">Locking</option>
-                        <option value="Tap">Tap</option>
-                        <option value="Belly">Belly</option>
-                    </select>
+                        placeholder="All Styles"
+                        className="min-w-[160px]"
+                    />
 
                     {/* Mode Filter */}
                     <select
@@ -287,11 +277,14 @@ const Dashboard = ({ userData }: { userData: any }) => {
                         )}
                     </>
                 )}
+                <div className="mt-8 text-center text-gray-500 text-sm">
+                    © {new Date().getFullYear()} Groovia. All rights reserved.
+                </div>
             </div>
 
             {/* Competitions Feed Section */}
             <CompetitionsSection />
-        </main>
+        </main >
     )
 };
 

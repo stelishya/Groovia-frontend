@@ -216,7 +216,7 @@ className = "w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg p
 
                     {/* User Profile */}
                     <div className="relative flex items-center space-x-2">
-                            <h2 className="text-white">{userData?.username}</h2>
+                        <h2 className="text-white">{userData?.username}</h2>
                         <button
                             // onClick={() => setShowUserMenu(!showUserMenu)}
                             className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
@@ -285,7 +285,7 @@ className = "w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg p
             {/* Notification Dropdown Panel */}
 
             {showNotifications && (
-                <div className="fixed top-20 right-4 w-96 bg-purple-500 border-2 border-purple-300 rounded-lg shadow-2xl border border-gray-200 z-50 max-h-[600px] flex flex-col">
+                <div className="fixed top-20 right-4 w-96 bg-purple-500 border-2 border-purple-300 rounded-lg shadow-2xl border border-gray-200 z-50 max-h-96 flex flex-col">
                     {/* Header */}
                     <div className="p-4 border-b border-gray-200">
                         <div className="flex items-center justify-between mb-3">

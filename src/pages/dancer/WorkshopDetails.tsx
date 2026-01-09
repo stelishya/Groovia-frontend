@@ -1,6 +1,8 @@
 import { Calendar, Clock, MapPin, Users, Video, AlertCircle, ArrowLeft } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import type { RootState } from "../../redux/store";
 import { getWorkshopById } from "../../services/workshop/workshop.service";
 import type { Workshop } from "../../types/workshop.type";
 import { WorkshopMode } from "../../types/workshop.type";
@@ -14,9 +16,31 @@ export default function WorkshopDetails() {
   const [loading, setLoading] = useState(true);
   const [venueCoords, setVenueCoords] = useState<[number, number]>([20.5937, 78.9629]);
   const [loadingCoords, setLoadingCoords] = useState(false);
-  const location = useLocation();
-  const isRegistered = location.state?.isRegistered;
-  const paymentStatus = location.state?.paymentStatus;
+
+  // Get user data from Redux
+  const { userData } = useSelector((state: RootState) => state.user);
+
+  // Derive status from workshop data and user ID
+  const participantRecord = workshop?.participants?.find(p => {
+    const pDancerId = typeof p.dancerId === 'object' && p.dancerId !== null
+      ? (p.dancerId as any)._id
+      : p.dancerId;
+
+    // Defensive check
+    if (!pDancerId || !userData?._id) return false;
+
+    return String(pDancerId) === String(userData._id);
+  });
+
+  const isRegistered = !!participantRecord;
+  const paymentStatus = participantRecord?.paymentStatus;
+
+  // useEffect(() => {
+  //   console.log("Workshop:", workshop);
+  //   console.log("User Data:", userData);
+  //   console.log("Is Registered:", isRegistered);
+  //   console.log("Payment Status:", paymentStatus);
+  // }, [workshop, userData, isRegistered, paymentStatus]);
 
   useEffect(() => {
     const fetchWorkshop = async () => {
@@ -34,8 +58,9 @@ export default function WorkshopDetails() {
     };
 
     fetchWorkshop();
+    // console.log("isBooked", isRegistered);
+    // console.log("paymentStatus", paymentStatus);
   }, [id]);
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       month: "long",

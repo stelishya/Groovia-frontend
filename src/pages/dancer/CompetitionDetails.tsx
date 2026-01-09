@@ -1,6 +1,8 @@
 import { Calendar, Clock, MapPin, Users, Video, AlertCircle, ArrowLeft, FileText, Award } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import type { RootState } from "../../redux/store";
 import { getCompetitionById } from "../../services/competition.service";
 import type { Competition } from "../../services/competition.service";
 import { CompetitionMode } from "../../types/competition.type";
@@ -16,9 +18,34 @@ export default function CompetitionDetails() {
     const [loading, setLoading] = useState(true);
     const [venueCoords, setVenueCoords] = useState<[number, number]>([20.5937, 78.9629]);
     const [loadingCoords, setLoadingCoords] = useState(false);
-    const location = useLocation();
-    const isRegistered = location.state?.isRegistered;
-    const paymentStatus = location.state?.paymentStatus;
+
+    // Get user data from Redux
+    const { userData } = useSelector((state: RootState) => state.user);
+
+    // Derive status from competition data and user ID
+    const participantRecord = competition?.registeredDancers?.find(p => {
+        const pDancerId = typeof p.dancerId === 'object' && p.dancerId !== null
+            ? (p.dancerId as any)._id
+            : p.dancerId;
+
+        // Defensive check
+        if (!pDancerId || !userData?._id) {
+            return false;
+        }
+
+        return String(pDancerId) === String(userData._id);
+    });
+
+    const isRegistered = !!participantRecord;
+    const paymentStatus = participantRecord?.paymentStatus;
+
+    // useEffect(() => {
+    //     console.log("Competition:", competition);
+    //     console.log("User Data:", userData);
+    //     console.log("Is Registered:", isRegistered);
+    //     console.log("Payment Status:", paymentStatus);
+    // }, [competition, userData, isRegistered, paymentStatus]);
+
 
     useEffect(() => {
         const fetchCompetition = async () => {
@@ -41,7 +68,6 @@ export default function CompetitionDetails() {
 
         fetchCompetition();
     }, [id]);
-
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString("en-IN", {
             month: "long",
@@ -106,7 +132,7 @@ export default function CompetitionDetails() {
             </div>
         );
     }
-    console.log("typeof competition.organizer_id",typeof competition.organizer_id )
+    console.log("typeof competition.organizer_id", typeof competition.organizer_id)
     const organizer = typeof competition.organizer_id === 'object' ? competition.organizer_id : { _id: competition.organizer_id, username: 'Unknown Organizer', profileImage: '' };
 
     return (
@@ -126,7 +152,7 @@ export default function CompetitionDetails() {
                     <button
                         onClick={() => navigate(-1)}
                         className="absolute top-2 left-3 w-14 h-14  rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center hover:bg-white/30 transition-all duration-200 z-10"
-                        // className="flex items-center gap-2 px-4 py-2 bg-purple-600/80 hover:bg-purple-700 rounded-lg transition-colors w-fit z-10"
+                    // className="flex items-center gap-2 px-4 py-2 bg-purple-600/80 hover:bg-purple-700 rounded-lg transition-colors w-fit z-10"
                     >
                         <ArrowLeft size={20} />
                     </button>

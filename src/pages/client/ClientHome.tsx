@@ -14,6 +14,8 @@ import { toggleLike } from "../../services/dancer/dancer.service";
 import { getClientEventRequests } from '../../services/client/client.service';
 import toast from "react-hot-toast";
 import UserNavbar from "../../components/shared/Navbar";
+import { DanceStyles } from "../../utils/constants/danceStyles";
+import CustomSelect from "../../components/ui/CustomSelect";
 
 
 
@@ -365,18 +367,13 @@ const Dashboard = ({ userData }: { userData: any }) => {
                         {search && <X className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-300 cursor-pointer" onClick={() => setSearch('')} />}
                     </div>
                     <div className="relative space-x-4">
-                        <select
-                            className="border border-purple-300 bg-purple-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400"
+                        <CustomSelect
+                            options={Object.values(DanceStyles)}
                             value={style}
-                            onChange={(e) => setStyle(e.target.value)}
-                        >
-                            <option value="">All Styles</option>
-                            <option value="Hip-Hop">Hip Hop</option>
-                            <option value="Classical">Classical</option>
-                            <option value="Contemporary">Contemporary</option>
-                            <option value="Folk">Folk</option>
-                            <option value="Breakdance">Breakdance</option>
-                        </select>
+                            onChange={(val) => setStyle(val)}
+                            placeholder="All Styles"
+                            className="min-w-[160px]"
+                        />
 
                         <select
                             className="border border-purple-300 bg-purple-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-400"
@@ -453,128 +450,130 @@ const Dashboard = ({ userData }: { userData: any }) => {
 
 
 
-            {selectedDancer && (
-                <FormModal
-                    isOpen={isRequestModalOpen}
-                    onClose={handleCloseRequestModal}
-                    title={`Send Request to ${selectedDancer.username}`}
-                    icon={<GitPullRequest className="text-purple-300" size={32} />}
-                    onSubmit={handleConfirmSend}
-                    submitText="Send Request"
-                    submitButtonClass="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                >
-                    <div>
-                        <label className="block text-white font-medium mb-2">Event</label>
-                        <input
-                            type="text"
-                            value={requestData.event}
-                            onChange={(e) => {
-                                setRequestData({ ...requestData, event: e.target.value });
-                                if (formErrors.event) setFormErrors({ ...formErrors, event: '' });
-                            }}
-                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.event ? 'border-2 border-red-500' : ''
-                                }`}
-                            placeholder="Event Name"
-                        />
-                        {formErrors.event && (
-                            <p className="text-red-400 text-sm mt-1">{formErrors.event}</p>
-                        )}
-                    </div>
-                    <div>
-                        <label className="block text-white font-medium mb-2">Date</label>
-                        <input
-                            type="date"
-                            value={requestData.date}
-                            min={new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]}
-                            onChange={(e) => {
-                                setRequestData({ ...requestData, date: e.target.value });
-                                if (formErrors.date) setFormErrors({ ...formErrors, date: '' });
-                            }}
-                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.date ? 'border-2 border-red-500' : ''
-                                }`}
-                        />
-                        {formErrors.date && (
-                            <p className="text-red-400 text-sm mt-1">{formErrors.date}</p>
-                        )}
-                    </div>
-                    <div>
-                        <label className="block text-white font-medium mb-2">Venue</label>
-                        <input
-                            type="text"
-                            value={requestData.venue}
-                            onChange={(e) => {
-                                setRequestData({ ...requestData, venue: e.target.value });
-                                if (formErrors.venue) setFormErrors({ ...formErrors, venue: '' });
-                            }}
-                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.venue ? 'border-2 border-red-500' : ''
-                                }`}
-                            placeholder="Enter venue address"
-                            readOnly={showVenueMap}
-                        />
-                        {formErrors.venue && (
-                            <p className="text-red-400 text-sm mt-1">{formErrors.venue}</p>
-                        )}
-                        <button
-                            type="button"
-                            onClick={() => setShowVenueMap(!showVenueMap)}
-                            className="mt-2 text-purple-300 hover:text-purple-100 text-sm underline"
-                        >
-                            {showVenueMap ? 'Hide Map' : 'Select from Map'}
-                        </button>
-                        {showVenueMap && (
-                            <div className="mt-3">
-                                <VenueMap
-                                    onVenueSelect={(venue) => {
-                                        setRequestData({ ...requestData, venue: venue.address });
-                                        if (formErrors.venue) setFormErrors({ ...formErrors, venue: '' });
-                                    }}
-                                    initialCenter={[20.5937, 78.9629]}
-                                />
-                            </div>
-                        )}
-                    </div>
-                    <div>
-                        <label className="block text-white font-medium mb-2">Budget Range (₹)</label>
-                        <div className="flex space-x-4">
-                            <div className="flex-1">
-                                <input
-                                    type="number"
-                                    value={requestData.budget.includes('-') ? requestData.budget.split('-')[0] : requestData.budget}
-                                    onChange={(e) => {
-                                        const min = e.target.value;
-                                        const max = requestData.budget.includes('-') ? requestData.budget.split('-')[1] : '';
-                                        setRequestData({ ...requestData, budget: `${min}-${max}` });
-                                        if (formErrors.budget) setFormErrors({ ...formErrors, budget: '' });
-                                    }}
-                                    className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.budget ? 'border-2 border-red-500' : ''
-                                        }`}
-                                    placeholder="Min"
-                                />
-                            </div>
-                            <div className="flex-1">
-                                <input
-                                    type="number"
-                                    value={requestData.budget.includes('-') ? requestData.budget.split('-')[1] : ''}
-                                    onChange={(e) => {
-                                        const min = requestData.budget.includes('-') ? requestData.budget.split('-')[0] : requestData.budget;
-                                        const max = e.target.value;
-                                        setRequestData({ ...requestData, budget: `${min}-${max}` });
-                                        if (formErrors.budget) setFormErrors({ ...formErrors, budget: '' });
-                                    }}
-                                    className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.budget ? 'border-2 border-red-500' : ''
-                                        }`}
-                                    placeholder="Max"
-                                />
-                            </div>
+            {
+                selectedDancer && (
+                    <FormModal
+                        isOpen={isRequestModalOpen}
+                        onClose={handleCloseRequestModal}
+                        title={`Send Request to ${selectedDancer.username}`}
+                        icon={<GitPullRequest className="text-purple-300" size={32} />}
+                        onSubmit={handleConfirmSend}
+                        submitText="Send Request"
+                        submitButtonClass="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                    >
+                        <div>
+                            <label className="block text-white font-medium mb-2">Event</label>
+                            <input
+                                type="text"
+                                value={requestData.event}
+                                onChange={(e) => {
+                                    setRequestData({ ...requestData, event: e.target.value });
+                                    if (formErrors.event) setFormErrors({ ...formErrors, event: '' });
+                                }}
+                                className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.event ? 'border-2 border-red-500' : ''
+                                    }`}
+                                placeholder="Event Name"
+                            />
+                            {formErrors.event && (
+                                <p className="text-red-400 text-sm mt-1">{formErrors.event}</p>
+                            )}
                         </div>
-                        {formErrors.budget && (
-                            <p className="text-red-400 text-sm mt-1">{formErrors.budget}</p>
-                        )}
-                    </div>
-                </FormModal>
-            )}
+                        <div>
+                            <label className="block text-white font-medium mb-2">Date</label>
+                            <input
+                                type="date"
+                                value={requestData.date}
+                                min={new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]}
+                                onChange={(e) => {
+                                    setRequestData({ ...requestData, date: e.target.value });
+                                    if (formErrors.date) setFormErrors({ ...formErrors, date: '' });
+                                }}
+                                className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.date ? 'border-2 border-red-500' : ''
+                                    }`}
+                            />
+                            {formErrors.date && (
+                                <p className="text-red-400 text-sm mt-1">{formErrors.date}</p>
+                            )}
+                        </div>
+                        <div>
+                            <label className="block text-white font-medium mb-2">Venue</label>
+                            <input
+                                type="text"
+                                value={requestData.venue}
+                                onChange={(e) => {
+                                    setRequestData({ ...requestData, venue: e.target.value });
+                                    if (formErrors.venue) setFormErrors({ ...formErrors, venue: '' });
+                                }}
+                                className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.venue ? 'border-2 border-red-500' : ''
+                                    }`}
+                                placeholder="Enter venue address"
+                                readOnly={showVenueMap}
+                            />
+                            {formErrors.venue && (
+                                <p className="text-red-400 text-sm mt-1">{formErrors.venue}</p>
+                            )}
+                            <button
+                                type="button"
+                                onClick={() => setShowVenueMap(!showVenueMap)}
+                                className="mt-2 text-purple-300 hover:text-purple-100 text-sm underline"
+                            >
+                                {showVenueMap ? 'Hide Map' : 'Select from Map'}
+                            </button>
+                            {showVenueMap && (
+                                <div className="mt-3">
+                                    <VenueMap
+                                        onVenueSelect={(venue) => {
+                                            setRequestData({ ...requestData, venue: venue.address });
+                                            if (formErrors.venue) setFormErrors({ ...formErrors, venue: '' });
+                                        }}
+                                        initialCenter={[20.5937, 78.9629]}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                        <div>
+                            <label className="block text-white font-medium mb-2">Budget Range (₹)</label>
+                            <div className="flex space-x-4">
+                                <div className="flex-1">
+                                    <input
+                                        type="number"
+                                        value={requestData.budget.includes('-') ? requestData.budget.split('-')[0] : requestData.budget}
+                                        onChange={(e) => {
+                                            const min = e.target.value;
+                                            const max = requestData.budget.includes('-') ? requestData.budget.split('-')[1] : '';
+                                            setRequestData({ ...requestData, budget: `${min}-${max}` });
+                                            if (formErrors.budget) setFormErrors({ ...formErrors, budget: '' });
+                                        }}
+                                        className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.budget ? 'border-2 border-red-500' : ''
+                                            }`}
+                                        placeholder="Min"
+                                    />
+                                </div>
+                                <div className="flex-1">
+                                    <input
+                                        type="number"
+                                        value={requestData.budget.includes('-') ? requestData.budget.split('-')[1] : ''}
+                                        onChange={(e) => {
+                                            const min = requestData.budget.includes('-') ? requestData.budget.split('-')[0] : requestData.budget;
+                                            const max = e.target.value;
+                                            setRequestData({ ...requestData, budget: `${min}-${max}` });
+                                            if (formErrors.budget) setFormErrors({ ...formErrors, budget: '' });
+                                        }}
+                                        className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.budget ? 'border-2 border-red-500' : ''
+                                            }`}
+                                        placeholder="Max"
+                                    />
+                                </div>
+                            </div>
+                            {formErrors.budget && (
+                                <p className="text-red-400 text-sm mt-1">{formErrors.budget}</p>
+                            )}
+                        </div>
+                    </FormModal>
+                )
+            }
 
-        </main>
+        </main >
     )
 };
 

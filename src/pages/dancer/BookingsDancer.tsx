@@ -505,6 +505,9 @@ const BookingsPage = () => {
                     </button>
                 </div>
             </div>
+            <div className="mt-8 text-center text-gray-500 text-sm">
+                © {new Date().getFullYear()} Groovia. All rights reserved.
+            </div>
             {modalOpen && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                     <div className="bg-purple-900 rounded-2xl p-6 max-w-md w-full border border-purple-500/30 shadow-2xl">
