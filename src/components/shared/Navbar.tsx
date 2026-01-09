@@ -282,19 +282,19 @@ className = "w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg p
                 </div>
             </header>
 
-            {/* Notification Dropdown Pane l */}
+            {/* Notification Dropdown Panel */}
 
             {showNotifications && (
-                <div className="fixed top-20 right-4 w-96 bg-white rounded-lg shadow-2xl border border-gray-200 z-50 max-h-[600px] flex flex-col">
+                <div className="fixed top-20 right-4 w-96 bg-purple-500 border-2 border-purple-300 rounded-lg shadow-2xl border border-gray-200 z-50 max-h-[600px] flex flex-col">
                     {/* Header */}
                     <div className="p-4 border-b border-gray-200">
                         <div className="flex items-center justify-between mb-3">
                             <h3 className="text-lg font-bold text-gray-800">Notifications</h3>
                             <button
                                 onClick={() => setShowNotifications(false)}
-                                className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                                className="p-1 hover:bg-pink-100 rounded-lg transition-colors"
                             >
-                                <X className="h-5 w-5 text-gray-500" />
+                                <X className="h-5 w-5 text-pink-300 hover:text-purple-500" />
                             </button>
                         </div>
 
@@ -305,7 +305,7 @@ className = "w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg p
                                     key={tab}
                                     onClick={() => setNotificationTab(tab)}
                                     className={`flex-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors capitalize ${notificationTab === tab
-                                        ? 'bg-purple-600 text-white'
+                                        ? 'bg-purple-600 text-white border-2 border-purple-300'
                                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                         }`}
                                 >
@@ -331,7 +331,7 @@ className = "w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg p
                                     <div
                                         key={notification._id}
                                         onClick={() => !notification.isRead && markAsRead(notification._id)}
-                                        className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${!notification.isRead ? 'bg-purple-50' : ''
+                                        className={`p-4 bg-purple-400 hover:bg-purple-300 cursor-pointer transition-colors ${!notification.isRead ? 'bg-purple-200' : ''
                                             }`}
                                     >
                                         <div className="flex items-start">
@@ -347,7 +347,7 @@ className = "w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg p
                                                         <span className="h-2 w-2 bg-purple-600 rounded-full ml-2 mt-1"></span>
                                                     )}
                                                 </div>
-                                                <p className="text-sm text-gray-600 mt-1">
+                                                <p className="text-sm text-purple-600 mt-1">
                                                     {notification.message}
                                                 </p>
                                                 {notification.adminNote && (
@@ -356,7 +356,7 @@ className = "w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg p
                                                         {notification.adminNote}
                                                     </div>
                                                 )}
-                                                <p className="text-xs text-gray-400 mt-2">
+                                                <p className="text-xs text-gray-200 mt-2">
                                                     {formatTime(notification.createdAt)}
                                                 </p>
                                             </div>
@@ -372,7 +372,7 @@ className = "w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg p
                         <div className="p-3 border-t border-gray-200">
                             <button
                                 onClick={markAllAsRead}
-                                className="w-full text-center text-sm text-purple-600 hover:text-purple-700 font-medium">
+                                className="w-full text-center text-sm text-purple-200 hover:text-purple-700 font-medium">
                                 Mark all as read
                             </button>
                         </div>
