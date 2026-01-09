@@ -129,7 +129,18 @@ const PublicProfile = () => {
             if (selectedDate <= today) { errors.date = 'Event date must be in the future'; isValid = false; }
         }
         if (!requestData.venue.trim()) { errors.venue = 'Venue is required'; isValid = false; }
-        if (!requestData.budget.trim()) { errors.budget = 'Budget is required'; isValid = false; }
+        if (!requestData.budget.trim()) {
+            errors.budget = 'Budget is required';
+            isValid = false;
+        } else if (requestData.budget.includes('-')) {
+            const [minStr, maxStr] = requestData.budget.split('-');
+            const min = parseFloat(minStr);
+            const max = parseFloat(maxStr);
+            if (!isNaN(min) && !isNaN(max) && max <= min) {
+                errors.budget = 'Maximum budget must be greater than minimum budget';
+                isValid = false;
+            }
+        }
 
         setFormErrors(errors);
         return isValid;
@@ -243,25 +254,25 @@ const PublicProfile = () => {
 
                                     {/* Location */}
                                     {profileUser.preferredLocation && (
-                                    <div className="flex items-center gap-2 text-purple-200">
-                                        <MapPin size={18} />
-                                        <span>{profileUser.preferredLocation || "Location not available"}</span>
-                                    </div>
+                                        <div className="flex items-center gap-2 text-purple-200">
+                                            <MapPin size={18} />
+                                            <span>{profileUser.preferredLocation || "Location not available"}</span>
+                                        </div>
                                     )}
 
                                     {/* Gender, Experience, Email, Phone */}
                                     <div className="grid grid-cols-2 gap-3 text-sm">
                                         {profileUser.gender && (
-                                        <div className="flex items-center gap-2 text-purple-200">
-                                            <CircleSmall size={16} />
-                                            <span>{profileUser.gender || "Gender not specified"}</span>
-                                        </div>
+                                            <div className="flex items-center gap-2 text-purple-200">
+                                                <CircleSmall size={16} />
+                                                <span>{profileUser.gender || "Gender not specified"}</span>
+                                            </div>
                                         )}
                                         {profileUser.experienceYears && (
-                                        <div className="flex items-center gap-2 text-purple-200">
-                                            <Star size={16} />
-                                            <span>{profileUser.experienceYears || 0} Years Experience</span>
-                                        </div>
+                                            <div className="flex items-center gap-2 text-purple-200">
+                                                <Star size={16} />
+                                                <span>{profileUser.experienceYears || 0} Years Experience</span>
+                                            </div>
                                         )}
                                         {profileUser.email && (
                                             <div className="flex items-center gap-2 text-purple-200">
@@ -596,37 +607,37 @@ const PublicProfile = () => {
                 <div>
                     <label className="block text-white font-medium mb-2">Budget Range (₹)</label>
                     <div className="flex space-x-4">
-                            <div className="flex-1">
-                                <input
-                                    type="number"
-                                    value={requestData.budget.includes('-') ? requestData.budget.split('-')[0] : requestData.budget}
-                                    onChange={(e) => {
-                                        const min = e.target.value;
-                                        const max = requestData.budget.includes('-') ? requestData.budget.split('-')[1] : '';
-                                        setRequestData({ ...requestData, budget: `${min}-${max}` });
-                                        if (formErrors.budget) setFormErrors({ ...formErrors, budget: '' });
-                                    }}
-                                    className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.budget ? 'border-2 border-red-500' : ''
-                                        }`}
-                                    placeholder="Min"
-                                />
-                            </div>
-                            <div className="flex-1">
-                                <input
-                                    type="number"
-                                    value={requestData.budget.includes('-') ? requestData.budget.split('-')[1] : ''}
-                                    onChange={(e) => {
-                                        const min = requestData.budget.includes('-') ? requestData.budget.split('-')[0] : requestData.budget;
-                                        const max = e.target.value;
-                                        setRequestData({ ...requestData, budget: `${min}-${max}` });
-                                        if (formErrors.budget) setFormErrors({ ...formErrors, budget: '' });
-                                    }}
-                                    className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.budget ? 'border-2 border-red-500' : ''
-                                        }`}
-                                    placeholder="Max"
-                                />
-                            </div>
+                        <div className="flex-1">
+                            <input
+                                type="number"
+                                value={requestData.budget.includes('-') ? requestData.budget.split('-')[0] : requestData.budget}
+                                onChange={(e) => {
+                                    const min = e.target.value;
+                                    const max = requestData.budget.includes('-') ? requestData.budget.split('-')[1] : '';
+                                    setRequestData({ ...requestData, budget: `${min}-${max}` });
+                                    if (formErrors.budget) setFormErrors({ ...formErrors, budget: '' });
+                                }}
+                                className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.budget ? 'border-2 border-red-500' : ''
+                                    }`}
+                                placeholder="Min"
+                            />
                         </div>
+                        <div className="flex-1">
+                            <input
+                                type="number"
+                                value={requestData.budget.includes('-') ? requestData.budget.split('-')[1] : ''}
+                                onChange={(e) => {
+                                    const min = requestData.budget.includes('-') ? requestData.budget.split('-')[0] : requestData.budget;
+                                    const max = e.target.value;
+                                    setRequestData({ ...requestData, budget: `${min}-${max}` });
+                                    if (formErrors.budget) setFormErrors({ ...formErrors, budget: '' });
+                                }}
+                                className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.budget ? 'border-2 border-red-500' : ''
+                                    }`}
+                                placeholder="Max"
+                            />
+                        </div>
+                    </div>
                     {/* <input
                         type="text"
                         value={requestData.budget}
