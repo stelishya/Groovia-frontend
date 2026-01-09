@@ -1,60 +1,10 @@
 import { startWorkshopSession, joinWorkshopSession } from '../../services/videoCall.service';
 import { useVideoCall } from '../../context/VideoCallContext';
-
-// const InstructorWorkshops = () => {
-//     // ... (existing state)
-// const { joinSession, isConnected } = useVideoCall(); // Use context
-
-//     // ... (existing effects)
-
-// const handleStartSession = async (workshopId: string) => {
-//     const response = await startWorkshopSession(workshopId);
-//     if (response.success) {
-//         toast.success('Session started! Joining room...');
-//         if (response.data && response.data.token) {
-//             await joinSession(response.data.token);
-//         }
-//     } else {
-//         toast.error(response.message);
-//     }
-// };
-
-// const handleJoinSession = async (workshop: any) => {
-//     const response = await joinWorkshopSession(workshop._id);
-//     if (response.success) {
-//         toast.success('Joining session...');
-//         if (response.data && response.data.token) {
-//             await joinSession(response.data.token);
-//         }
-//     } else {
-//         toast.error(response.message);
-//     }
-// };
-
-//     // ... (render)
-
-//     <InstructorWorkshopCard
-//         key={workshop._id}
-//         // ... (existing props)
-//         title={workshop.title}
-//         status={getStatus(workshop)}
-//         fee={workshop.fee}
-//         date={workshop.startDate}
-//         time={workshop.sessions[0]?.startTime || 'TBA'}
-//         mode={workshop.mode}
-//         attendeesCount={workshop.participants?.length || 0}
-//         maxAttendees={workshop.maxParticipants}
-//         onViewDetails={() => handleViewDetails(workshop)}
-//         onEdit={() => handleEditClick(workshop)}
-//         onDelete={() => {
-//             setEditingWorkshop(workshop)
-//             setIsDeleteModalOpen(true)
-//         }}
-//         onStartSession={() => handleStartSession(workshop._id)}
-//     />
 import CreateWorkshopModal from '../../components/ui/CreateWorkshopModal';
 import GenericDetailsModal from '../../components/ui/EntityDetailsModal';
-import { Search, Plus, ScanLine, Filter, X } from 'lucide-react';
+import { Search, Plus, 
+    // ScanLine, Filter,
+     X } from 'lucide-react';
 import { UserPagination } from '../../components/ui/Pagination';
 import { getInstructorWorkshops, createWorkshop, updateWorkshop, deleteWorkshop, getBookedWorkshops, getAllWorkshops } from '../../services/workshop/workshop.service';
 import type { Workshop, CreateWorkshopData } from '../../types/workshop.type';
