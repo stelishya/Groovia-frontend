@@ -11,7 +11,7 @@ import axios from "axios";
 import { fetchMyProfile } from '../../services/user/auth.service';
 import { loginUser } from '../../redux/slices/user.slice';
 import { Role, UserType } from '../../utils/constants/roles';
-import loginImage from '../../assets/loginImage.png'
+import loginImage from '../../assets/LoginImage.png'
 
 export interface AuthLoginProps {
   signupRoute: string
