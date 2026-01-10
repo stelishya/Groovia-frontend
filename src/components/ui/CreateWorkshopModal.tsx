@@ -422,7 +422,7 @@ const CreateWorkshopModal: React.FC<CreateWorkshopModalProps> = ({ isOpen, onClo
                             <input
                                 type="date"
                                 name="startDate"
-                                min={new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]}
+                                min={new Date(new Date().setDate(new Date().getDate())).toISOString().split('T')[0]}
                                 value={formData.startDate}
                                 onChange={handleChange}
                                 className={`w-full bg-purple-500 border-2 ${errors.startDate ? 'border-red-500' : 'border-purple-800'} rounded-lg p-2 text-white`}
@@ -434,7 +434,7 @@ const CreateWorkshopModal: React.FC<CreateWorkshopModalProps> = ({ isOpen, onClo
                             <input
                                 type="date"
                                 name="endDate"
-                                min={new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]}
+                                min={new Date(new Date().setDate(new Date().getDate())).toISOString().split('T')[0]}
                                 value={formData.endDate}
                                 onChange={handleChange}
                                 className={`w-full bg-purple-500 border-2 ${errors.endDate ? 'border-red-500' : 'border-purple-800'} rounded-lg p-2 text-white`}
@@ -458,7 +458,7 @@ const CreateWorkshopModal: React.FC<CreateWorkshopModalProps> = ({ isOpen, onClo
                                         <label className="block text-xs text-purple-200 mb-1">Date</label>
                                         <input
                                             type="date"
-                                            min={new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]}
+                                            min={new Date(new Date().setDate(new Date().getDate())).toISOString().split('T')[0]}
                                             value={session.date}
                                             onChange={(e) => handleSessionChange(index, 'date', e.target.value)}
                                             className={`w-full bg-purple-500 border ${errors[`session_${index}_date`] ? 'border-red-500' : 'border-purple-700'} rounded-lg p-2 text-white text-sm`}
@@ -513,7 +513,7 @@ const CreateWorkshopModal: React.FC<CreateWorkshopModalProps> = ({ isOpen, onClo
                             <input
                                 type="date"
                                 name="deadline"
-                                min={new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]}
+                                min={new Date(new Date().setDate(new Date().getDate())).toISOString().split('T')[0]}
                                 value={formData.deadline}
                                 onChange={handleChange}
                                 className={`w-full bg-purple-500 border ${errors.deadline ? 'border-red-500' : 'border-purple-700'} rounded-lg p-2 text-white`}
