@@ -533,6 +533,7 @@ const InstructorWorkshops = () => {
                                     }}
                                     onJoinSession={handleJoinSession}
                                     activeRoomId={activeRoomId}
+                                    onRetryPayment={(workshop) => navigate(`/workshop/${workshop._id}/checkout`)}
                                 />
                             ) : (
                                 <p>No booked workshops found.</p>
