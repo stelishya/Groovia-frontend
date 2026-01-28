@@ -22,8 +22,10 @@ export const loginAdmin = async (data: LoginForm, dispatch: AppDispatch) => {
     }
     dispatch(loginAdminAction({ admin, token: accessToken }))
     return response.data;
-  } catch (error: any) {
-    const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
+  } catch (error: unknown) {
+    const errorMessage = axios.isAxiosError(error)
+      ? error.response?.data?.message || 'Login failed. Please try again.'
+      : 'Login failed. Please try again.';
     toast.error(errorMessage, {
       position: 'top-right',
       duration: 4000,
@@ -76,7 +78,7 @@ export const logoutAdmin = async () => {
 
 export const getAllUsers = async (params: { page?: number; limit?: number; search?: string; sortBy?: string; sortOrder?: string; role?: string }) => {
   try {
-    const queryString = `?${new URLSearchParams(params as any).toString()}`;
+    const queryString = `?${new URLSearchParams(params as Record<string, string>).toString()}`;
     console.log("Fetching users with params:", queryString)
     const response = await AdminAxios.get(`/users${queryString}`);
     console.log("response in getAllUsers in admin.service.ts : ", response)

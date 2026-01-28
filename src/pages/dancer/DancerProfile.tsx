@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { type RootState } from '../../redux/store';
 import { User, Settings, Edit2, Heart, Instagram, Linkedin, Facebook, LinkIcon, Youtube, Twitter, Camera, FileImage, Eye, Minus, Trash2, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
+import axios from 'axios';
 import { loginUser } from '../../redux/slices/user.slice';
 import { validateExperienceYears } from '../../utils/validation';
 import { Role, hasRole, hasAnyRole } from '../../utils/constants/roles';
@@ -16,6 +17,7 @@ import { uploadProfilePicture, uploadCertificate } from '../../services/dancer/d
 import { DancerAxios } from '../../api/user.axios';
 import { upgradeService, type UpgradeStatus } from '../../services/user/upgradeRole.service';
 import { changePassword } from '../../services/user/auth.service';
+import type { Certificate, Achievement } from '../../types/profile.types';
 
 const Profile = () => {
     const navigate = useNavigate();
@@ -96,8 +98,8 @@ const Profile = () => {
             // Update Redux state with new user data
             const { user } = response;
             dispatch(loginUser({ user, token: localStorage.getItem('token') || '' }));
-        } catch (error: any) {
-            const errorMessage = error.message || 'Failed to upload profile image';
+        } catch (error: unknown) {
+            const errorMessage = axios.isAxiosError(error) ? error.message : 'Failed to upload profile image';
             toast.error(errorMessage);
             console.error('Upload error:', error);
             throw error; // Re-throw to let modal handle it
@@ -244,7 +246,7 @@ const Profile = () => {
 
             // Handle deferred certificate uploads
             const updatedCertificates = await Promise.all(
-                (profileData.certificates || []).map(async (cert: any) => {
+                (profileData.certificates || []).map(async (cert: Certificate) => {
                     if (!cert) return null; // Skip null certificates
                     if (cert.file) {
                         // This is a new certificate that needs uploading
@@ -294,8 +296,10 @@ const Profile = () => {
                 dispatch(loginUser({ user, token: localStorage.getItem('token') || '' }));
                 setShowEditModal(false);
             }
-        } catch (error: any) {
-            const errorMessage = error.response?.data?.message || 'Failed to update profile';
+        } catch (error: unknown) {
+            const errorMessage = axios.isAxiosError(error)
+                ? error.response?.data?.message || 'Failed to update profile'
+                : 'Failed to update profile';
             toast.error(errorMessage);
             console.error('Profile update error:', error);
         }
@@ -560,7 +564,7 @@ const Profile = () => {
                                 <div className="mt-6 max-w-6xl">
                                     <h3 className="text-xl font-bold text-white mb-4">Certificates</h3>
                                     <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-                                        {userData.certificates.map((cert: any, index: number) => {
+                                        {userData.certificates.map((cert: Certificate, index: number) => {
                                             if (!cert) return null;
                                             return (
                                                 <div key={index} className="bg-purple-900/30 p-4 rounded-lg border border-purple-500/20">
@@ -582,7 +586,7 @@ const Profile = () => {
                                 <div className="mt-6 max-w-6xl">
                                     <h3 className="text-xl font-bold text-white mb-4">Achievements</h3>
                                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                        {userData.achievements.map((achievement: any, index: number) => (
+                                        {userData.achievements.map((achievement: Achievement, index: number) => (
                                             <div key={index} className="bg-purple-900/30 p-4 rounded-lg border border-purple-500/20">
                                                 <h4 className="text-white font-semibold text-lg">{achievement.awardName}</h4>
                                                 <p className="text-purple-200 text-sm mt-1">{achievement.position}</p>
@@ -740,9 +744,9 @@ const Profile = () => {
                                 <div key={idx} className="flex items-center justify-between bg-purple-900/50 p-3 rounded-lg">
                                     <span className="text-white font-medium">{style}</span>
                                     <select
-                                        value={(profileData.danceStyleLevels as any)?.[style] || 'Beginner'}
+                                        value={profileData.danceStyleLevels[style] || 'Beginner'}
                                         onChange={(e) => {
-                                            const newLevels = { ...(profileData.danceStyleLevels as any) || {} };
+                                            const newLevels = { ...profileData.danceStyleLevels || {} };
                                             newLevels[style] = e.target.value;
                                             setProfileData({ ...profileData, danceStyleLevels: newLevels });
                                         }}
@@ -842,7 +846,7 @@ const Profile = () => {
                 <div>
                     <label className="block text-white font-medium mb-2">Achievements</label>
                     <div className="space-y-2">
-                        {(profileData.achievements as any[] || []).map((achievement: any, index: number) => (
+                        {(profileData.achievements || []).map((achievement: Achievement, index: number) => (
                             <div key={index} className="bg-purple-900/50 p-2 rounded-lg flex items-center gap-2">
                                 <div className="grid grid-cols-3 gap-2 flex-1">
                                     <input
@@ -884,7 +888,7 @@ const Profile = () => {
                                 <button
                                     type="button"
                                     onClick={() => {
-                                        const newAchievements = (profileData.achievements as any[]).filter((_: any, i: number) => i !== index);
+                                        const newAchievements = profileData.achievements.filter((_, i: number) => i !== index);
                                         setProfileData({ ...profileData, achievements: newAchievements });
                                     }}
                                     className="p-2 bg-red-500/20 text-red-300 rounded-lg hover:bg-red-500/30 transition-colors"
@@ -912,7 +916,7 @@ const Profile = () => {
                     <label className="block text-white font-medium mb-2">Certificates</label>
                     <div className="space-y-3">
                         {/* List of uploaded certificates */}
-                        {(profileData.certificates as any[] || []).map((certificate: any, index: number) => {
+                        {(profileData.certificates || []).map((certificate: Certificate, index: number) => {
                             if (!certificate) return null;
                             console.log("certificate : ", certificate);
                             return (
@@ -945,7 +949,7 @@ const Profile = () => {
                                             <button
                                                 type="button"
                                                 onClick={() => {
-                                                    const newCertificates = (profileData.certificates as any[]).filter((_: any, i: number) => i !== index);
+                                                    const newCertificates = profileData.certificates.filter((_, i: number) => i !== index);
                                                     setProfileData({ ...profileData, certificates: newCertificates });
                                                 }}
                                                 className="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-md transition-colors"

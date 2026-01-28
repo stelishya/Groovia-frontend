@@ -11,12 +11,14 @@ import { sendRequestToDancers } from '../../services/client/browseDancers.servic
 import { toggleLike } from '../../services/dancer/dancer.service';
 import toast from 'react-hot-toast';
 import { getClientEventRequests } from '../../services/client/client.service';
+import type { Certificate, Achievement, ProfileUser } from '../../types/profile.types';
+import type { EventRequest } from '../client/BookingsClient';
 
 const PublicProfile = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { userData } = useSelector((state: RootState) => state.user);
-    const [profileUser, setProfileUser] = useState<any>(null);
+    const [profileUser, setProfileUser] = useState<ProfileUser | null>(null);
     const [loading, setLoading] = useState(true);
     const [isLiked, setIsLiked] = useState(false);
     const [likeCount, setLikeCount] = useState(0);
@@ -67,9 +69,9 @@ const PublicProfile = () => {
         const checkRequestedStatus = async () => {
             if (!userData || !id) return;
             try {
-                const response: { success: boolean; data?: { requests: any[] } } = await getClientEventRequests(new URLSearchParams());
+                const response: { success: boolean; data?: { requests: EventRequest[] } } = await getClientEventRequests(new URLSearchParams());
                 if (response.success && response.data && Array.isArray(response.data.requests)) {
-                    const isReq = response.data.requests.some((req: any) => req.dancerId?._id === id);
+                    const isReq = response.data.requests.some((req: EventRequest) => req.dancerId?._id === id);
                     setHasRequested(isReq);
                 }
             } catch (error) {
@@ -90,6 +92,10 @@ const PublicProfile = () => {
             toast.error('Please login to like');
             return;
         }
+        if (!profileUser) {
+            toast.error('Profile not loaded');
+            return;
+        }
         try {
             const response = await toggleLike(profileUser._id);
             const updatedDancer = response.data?.dancer || response.dancer;
@@ -97,7 +103,7 @@ const PublicProfile = () => {
             if (updatedDancer) {
                 setIsLiked(updatedDancer.likes.includes(userData._id));
                 setLikeCount(updatedDancer.likes.length);
-                setProfileUser((prev: any) => ({ ...prev, likes: updatedDancer.likes }));
+                setProfileUser((prev) => prev ? ({ ...prev, likes: updatedDancer.likes }) : null);
             }
         } catch (error) {
             console.error("Failed to toggle like", error);
@@ -149,8 +155,21 @@ const PublicProfile = () => {
     const handleConfirmSend = async () => {
         try {
             if (!validateForm()) return;
+            if (!profileUser) {
+                toast.error('Profile not loaded');
+                return;
+            }
 
-            const response = await sendRequestToDancers(profileUser._id, requestData);
+            const eventRequestData = {
+                dancerId: profileUser._id,
+                event: requestData.event,
+                date: requestData.date,
+                duration: '2', // Default duration in hours
+                venue: requestData.venue,
+                description: `Budget: ${requestData.budget}`,
+            };
+
+            const response = await sendRequestToDancers(profileUser._id, eventRequestData);
             handleCloseRequestModal();
 
             if (response.success) {
@@ -390,7 +409,7 @@ const PublicProfile = () => {
                                 <h2 className="text-2xl font-bold mb-6 text-purple-100">Achievements</h2>
                                 <div className="space-y-6">
                                     {(profileUser.achievements && profileUser.achievements.length > 0) ? (
-                                        profileUser.achievements.map((achievement: any, index: number) => (
+                                        profileUser.achievements.map((achievement, index) => (
                                             <div key={index}>
                                                 <h3 className="font-semibold text-lg">{achievement.awardName}</h3>
                                                 <p className="text-purple-300 text-sm mt-1">{achievement.position} ({achievement.year})</p>
@@ -408,7 +427,7 @@ const PublicProfile = () => {
                             <div className="bg-[#1e1b4b] rounded-3xl p-8 border border-purple-500">
                                 <h2 className="text-2xl font-bold mb-6 text-purple-100">Certificates</h2>
                                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                    {profileUser.certificates.map((cert: any, index: number) => {
+                                    {profileUser.certificates.map((cert, index) => {
                                         if (!cert) return null;
                                         return (
                                             <div key={index} className="bg-purple-900/30 p-4 rounded-lg border border-purple-500/20">

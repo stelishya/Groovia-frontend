@@ -1,8 +1,24 @@
 import { ClientAxios } from "../../api/user.axios";
 import axios from 'axios';
 import type { EventRequest } from "../../pages/client/BookingsClient";
+import type { EventPaymentDetails } from "../../types/event.types";
+import type { RegisteredDancer } from "../competition.service";
 
-export const getClientEventRequests = async (params: URLSearchParams) => {
+export interface StandardResponse<T = unknown> {
+    success: boolean;
+    message?: string;
+    data?: T;
+}
+
+export interface ClientEventRequestsResponse { // Specific response structure based on getClientEventRequests
+    success: boolean;
+    data: {
+        requests: EventRequest[];
+        total: number;
+    }
+}
+
+export const getClientEventRequests = async (params: URLSearchParams): Promise<ClientEventRequestsResponse> => {
     try {
         const response = await ClientAxios.get(`/event-requests?${params.toString()}`);
         console.log('Raw API Response:', response.data);
@@ -30,7 +46,7 @@ export const getClientEventRequests = async (params: URLSearchParams) => {
     }
 };
 
-export const updateEventBookingStatus = async (eventId: string, status: 'accepted' | 'rejected' | 'cancelled', amount?: number) => {
+export const updateEventBookingStatus = async (eventId: string, status: 'accepted' | 'rejected' | 'cancelled', amount?: number): Promise<StandardResponse> => {
     try {
         const response = await ClientAxios.patch(`/event-requests/${eventId}/status`, { status, amount });
         return response.data;
@@ -45,7 +61,7 @@ export const updateEventBookingStatus = async (eventId: string, status: 'accepte
     }
 };
 
-export const createEventBookingPayment = async (eventId: string) => {
+export const createEventBookingPayment = async (eventId: string): Promise<StandardResponse> => {
     try {
         const response = await ClientAxios.post(`/event-requests/${eventId}/payment`);
         return response.data;
@@ -60,7 +76,7 @@ export const createEventBookingPayment = async (eventId: string) => {
     }
 };
 
-export const verifyEventBookingPayment = async (eventId: string, paymentDetails: any) => {
+export const verifyEventBookingPayment = async (eventId: string, paymentDetails: EventPaymentDetails): Promise<StandardResponse> => {
     try {
         const response = await ClientAxios.post(`/event-requests/${eventId}/verify-payment`, paymentDetails);
         return response.data;
@@ -86,7 +102,8 @@ export interface UpdateClientProfileData {
 /**
  * Get client profile
  */
-export const getClientProfile = async () => {
+export const getClientProfile = async (): Promise<unknown> => { // Using unknown as User type isn't imported
+    // Ideally this should return User profile interface
     try {
         const response = await ClientAxios.get('/profile');
         return response.data;
@@ -103,7 +120,7 @@ export const getClientProfile = async () => {
 /**
  * Update client profile
  */
-export const updateClientProfile = async (profileData: UpdateClientProfileData) => {
+export const updateClientProfile = async (profileData: UpdateClientProfileData): Promise<StandardResponse> => {
     try {
         const response = await ClientAxios.patch('/profile', profileData);
         return response.data;
@@ -120,7 +137,7 @@ export const updateClientProfile = async (profileData: UpdateClientProfileData) 
 /**
  * Upload profile picture
  */
-export const uploadClientProfilePicture = async (file: File) => {
+export const uploadClientProfilePicture = async (file: File): Promise<StandardResponse> => {
     try {
         const formData = new FormData();
         formData.append('profileImage', file);
@@ -187,14 +204,14 @@ export interface Competition {
     date: string;
     registrationDeadline: string;
     status: string;
-    registeredDancers: any[];
-    results?: any;
+    registeredDancers: RegisteredDancer[];
+    results?: Record<string, unknown> | Record<string, unknown>[];
     createdAt: string;
     updatedAt: string;
 }
 export const getOrganizerCompetitions = async (params?: { category?: string; style?: string }): Promise<Competition[]> => {
     try {
-                const queryString = params ? `?${new URLSearchParams(params).toString()}` : '';
+        const queryString = params ? `?${new URLSearchParams(params).toString()}` : '';
         const response = await ClientAxios.get(`/competitions${queryString}`);
         console.log("response from getCompetitions in client.service.ts:", response.data);
         return response.data;
@@ -222,13 +239,13 @@ export const getOrganizerCompetitions = async (params?: { category?: string; sty
 //     }
 // }
 
-  
+
 //   interface ApiResponse<T> {
 //     success: boolean;
 //     data: T;
 //     message?: string;
 //   }
-  
+
 //   class CompetitionService {
 //     async getAllCompetitions(params?: { category?: string; style?: string }): Promise<Competition[]> {
 //       try {
@@ -240,7 +257,7 @@ export const getOrganizerCompetitions = async (params?: { category?: string; sty
 //         throw error;
 //       }
 //     }
-  
+
 //     async getActiveCompetitions(): Promise<Competition[]> {
 //       try {
 //         const response = await apiClient.get<ApiResponse<Competition[]>>('/competitions/active');
@@ -250,7 +267,7 @@ export const getOrganizerCompetitions = async (params?: { category?: string; sty
 //         throw error;
 //       }
 //     }
-  
+
 //     async getCompetitionById(id: string): Promise<Competition> {
 //       try {
 //         const response = await apiClient.get<ApiResponse<Competition>>(`/competitions/${id}`);
@@ -260,7 +277,7 @@ export const getOrganizerCompetitions = async (params?: { category?: string; sty
 //         throw error;
 //       }
 //     }
-  
+
 //     async registerForCompetition(competitionId: string): Promise<void> {
 //       try {
 //         await apiClient.post(`/competitions/${competitionId}/register`, {});
@@ -270,8 +287,8 @@ export const getOrganizerCompetitions = async (params?: { category?: string; sty
 //       }
 //     }
 //   }
-  
- 
+
+
 export const getEventById = async (id: string): Promise<EventRequest> => {
     try {
         const response = await ClientAxios.get(`/events/${id}`);

@@ -2,6 +2,13 @@ import axios from "axios";
 import { CompetitionAxios } from "../api/user.axios";
 import type { CreateCompetitionData } from "../types/competition.type";
 
+export interface RegisteredDancer {
+    dancerId: string;
+    paymentStatus: string;
+    registeredAt: string;
+    score?: number;
+}
+
 export interface Competition {
     _id: string;
     organizer_id: string | {
@@ -26,8 +33,8 @@ export interface Competition {
     date: string;
     registrationDeadline: string;
     status: string;
-    registeredDancers: any[];
-    results?: any;
+    registeredDancers: RegisteredDancer[];
+    results?: Record<string, unknown> | Record<string, unknown>[];
     createdAt: string;
     updatedAt: string;
 }
@@ -48,7 +55,7 @@ export const getCompetitionById = async (id: string): Promise<Competition> => {
 
 export const getOrganizerCompetitions = async (params?: { search?: string; sortBy?: string; level?: string; category?: string; style?: string; page?: number; limit?: number }): Promise<{ data: Competition[], total: number, page: number, totalPages: number }> => {
     try {
-        const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+        const queryString = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : '';
         console.log("Fetching organizer competitions with queryString:", queryString)
         const response = await CompetitionAxios.get(`/my-competitions${queryString}`);
         return response.data;
@@ -64,7 +71,7 @@ export const getOrganizerCompetitions = async (params?: { search?: string; sortB
 
 export const getRegisteredCompetitions = async (params?: { search?: string; sortBy?: string; level?: string; category?: string; style?: string; page?: number; limit?: number }): Promise<{ data: Competition[], total: number, page: number, totalPages: number }> => {
     try {
-        const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : '';
+        const queryString = params ? `?${new URLSearchParams(params as Record<string, string>).toString()}` : '';
         const response = await CompetitionAxios.get(`/my-registrations${queryString}`);
         return response.data;
     } catch (error) {
@@ -84,7 +91,7 @@ export interface AllCompetitionsResponse {
     totalPages: number;
 }
 
-export const getAllCompetitions = async (params?: any): Promise<AllCompetitionsResponse> => {
+export const getAllCompetitions = async (params?: Record<string, string>): Promise<AllCompetitionsResponse> => {
     try {
         const queryString = params ? `?${new URLSearchParams(params).toString()}` : '';
         const response = await CompetitionAxios.get(`/${queryString}`);
@@ -109,11 +116,11 @@ export const createCompetition = async (data: CreateCompetitionData | FormData) 
         const response = await CompetitionAxios.post('', data, config);
         console.log("create competition response:", response.data);
         return { success: true, data: response.data };
-    } catch (error: any) {
-        return {
-            success: false,
-            message: error.response?.data?.message || 'Failed to create competition'
-        };
+    } catch (error: unknown) {
+        const message = axios.isAxiosError(error)
+            ? error.response?.data?.message || 'Failed to create competition'
+            : 'Failed to create competition';
+        return { success: false, message };
     }
 };
 
@@ -127,11 +134,11 @@ export const updateCompetition = async (id: string, data: Partial<CreateCompetit
         const response = await CompetitionAxios.patch(`/${id}`, data, config);
         console.log("update competition response:", response.data);
         return { success: true, data: response.data };
-    } catch (error: any) {
-        return {
-            success: false,
-            message: error.response?.data?.message || 'Failed to update competition'
-        };
+    } catch (error: unknown) {
+        const message = axios.isAxiosError(error)
+            ? error.response?.data?.message || 'Failed to update competition'
+            : 'Failed to update competition';
+        return { success: false, message };
     }
 };
 
@@ -139,11 +146,11 @@ export const deleteCompetition = async (id: string) => {
     try {
         const response = await CompetitionAxios.delete(`/${id}`);
         return { success: true, data: response.data };
-    } catch (error: any) {
-        return {
-            success: false,
-            message: error.response?.data?.message || 'Failed to delete competition'
-        };
+    } catch (error: unknown) {
+        const message = axios.isAxiosError(error)
+            ? error.response?.data?.message || 'Failed to delete competition'
+            : 'Failed to delete competition';
+        return { success: false, message };
     }
 };
 

@@ -1,6 +1,7 @@
 
 import axios from "axios";
 import { ClientAxios } from '../../api/user.axios'; // Authenticated instance";
+import type { EventRequestData } from '../../types/event.types';
 
 const getAllDancers = async (params: URLSearchParams, page: number = 1, pageSize: number = 6) => {
     try {
@@ -25,14 +26,14 @@ const getAllDancers = async (params: URLSearchParams, page: number = 1, pageSize
 
 export default getAllDancers
 
-export const sendRequestToDancers = async (dancerId: string, requestData: any) => {
+export const sendRequestToDancers = async (dancerId: string, requestData: EventRequestData) => {
     try {
         const response = await ClientAxios.post('/event-requests', {
+            ...requestData,
             dancerId,
-            ...requestData
         });
         return response.data;
-    } catch (error) {
+    } catch (error: unknown) {
         console.error('Failed to send request:', error);
         if (axios.isAxiosError(error)) {
             const message = error.response?.data?.message || "Failed to send request.";

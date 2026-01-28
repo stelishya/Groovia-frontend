@@ -1,5 +1,7 @@
 import { ClientAxios, CompetitionAxios, WorkshopAxios } from "../../api/user.axios";
 import { UserAxios } from "../../api/auth.axios";
+import axios from "axios";
+import type { PaymentInitiationData, PaymentConfirmationData } from "../../types/payment.types";
 
 export enum PaymentType {
     WORKSHOP_BOOKING = 'WORKSHOP_BOOKING',
@@ -9,7 +11,7 @@ export enum PaymentType {
     EVENT_REQUEST_PAYMENT = 'EVENT_REQUEST_PAYMENT'
 }
 
-export const initiatePayment = async (type: PaymentType, data: any) => {
+export const initiatePayment = async (type: PaymentType, data: PaymentInitiationData) => {
     try {
         let response;
         switch (type) {
@@ -40,15 +42,15 @@ export const initiatePayment = async (type: PaymentType, data: any) => {
                 throw new Error('Invalid payment type');
         }
         return { success: true, data: response.data };
-    } catch (error: any) {
-        return {
-            success: false,
-            message: error.response?.data?.message || 'Failed to initiate payment'
-        };
+    } catch (error: unknown) {
+        const message = axios.isAxiosError(error)
+            ? error.response?.data?.message || 'Failed to initiate payment'
+            : 'Failed to initiate payment';
+        return { success: false, message };
     }
 };
 
-export const confirmPayment = async (type: PaymentType, data: any) => {
+export const confirmPayment = async (type: PaymentType, data: PaymentConfirmationData) => {
     try {
         let response;
         switch (type) {
@@ -90,11 +92,11 @@ export const confirmPayment = async (type: PaymentType, data: any) => {
                 throw new Error('Invalid payment type');
         }
         return { success: true, data: response.data };
-    } catch (error: any) {
-        return {
-            success: false,
-            message: error.response?.data?.message || 'Failed to confirm payment'
-        };
+    } catch (error: unknown) {
+        const message = axios.isAxiosError(error)
+            ? error.response?.data?.message || 'Failed to confirm payment'
+            : 'Failed to confirm payment';
+        return { success: false, message };
     }
 };
 
@@ -112,10 +114,10 @@ export const getPaymentHistory = async (filters: PaymentFilters) => {
     try {
         const response = await UserAxios.get('/payments/history', { params: filters });
         return { success: true, data: response.data };
-    } catch (error: any) {
-        return {
-            success: false,
-            message: error.response?.data?.message || 'Failed to fetch payment history'
-        };
+    } catch (error: unknown) {
+        const message = axios.isAxiosError(error)
+            ? error.response?.data?.message || 'Failed to fetch payment history'
+            : 'Failed to fetch payment history';
+        return { success: false, message };
     }
 };

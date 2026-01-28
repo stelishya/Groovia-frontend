@@ -10,11 +10,11 @@ interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
 
 let isRefreshing = false;
 let failedQueue: Array<{
-  resolve: (value?: any) => void;
-  reject: (reason?: any) => void;
+  resolve: (value?: string | null) => void;
+  reject: (reason?: unknown) => void;
 }> = [];
 
-const processQueue = (error: any, token: string | null = null) => {
+const processQueue = (error: unknown, token: string | null = null) => {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
@@ -31,18 +31,27 @@ export const handleAxiosError = async (error: AxiosError) => {
   if (!error.response) {
     return Promise.reject(error);
   }
-  console.log("error.response",error.response)
+  console.log("error.response", error.response)
   const { status, data } = error.response;
-  const message = (data as any)?.message || 'An unexpected error occurred';
-  const isAccessTokenExpired = (data as any)?.isAccessTokenExpired;
-  const isRefreshTokenExpired = (data as any)?.isRefreshTokenExpired;
-  const isUserBlocked = (data as any)?.isUserBlocked;
+
+  interface ApiErrorData {
+    message?: string;
+    isAccessTokenExpired?: boolean;
+    isRefreshTokenExpired?: boolean;
+    isUserBlocked?: boolean;
+  }
+
+  const errorData = data as ApiErrorData;
+  const message = errorData?.message || 'An unexpected error occurred';
+  const isAccessTokenExpired = errorData?.isAccessTokenExpired;
+  const isRefreshTokenExpired = errorData?.isRefreshTokenExpired;
+  const isUserBlocked = errorData?.isUserBlocked;
 
   // Handle blocked user
   if (status === 401 && (isUserBlocked || message === 'User account is blocked')) {
     toast.error('Your account has been blocked. Please contact support.');
     // Update Redux immediately so guards react without waiting for navigation
-    try { store.dispatch(logoutUser()); } catch {}
+    try { store.dispatch(logoutUser()); } catch { }
     // Clear persisted tokens
     localStorage.removeItem('token');
     localStorage.removeItem('userDatas');
@@ -65,7 +74,11 @@ export const handleAxiosError = async (error: AxiosError) => {
           if (originalRequest.headers) {
             originalRequest.headers.Authorization = `Bearer ${token}`;
           }
-          return (error.config as any).__axiosInstance.request(originalRequest);
+          const axiosInstance = (error.config as CustomAxiosRequestConfig & { __axiosInstance?: unknown }).__axiosInstance;
+          if (axiosInstance && typeof axiosInstance === 'object' && 'request' in axiosInstance) {
+            return (axiosInstance as { request: (config: CustomAxiosRequestConfig) => Promise<unknown> }).request(originalRequest);
+          }
+          return Promise.reject(new Error('Axios instance not available'));
         })
         .catch((err) => Promise.reject(err));
     }
@@ -75,28 +88,32 @@ export const handleAxiosError = async (error: AxiosError) => {
 
     try {
       const { accessToken } = await refreshToken();
-      
+
       // Update token in localStorage
       localStorage.setItem('token', accessToken);
-      
+
       // Update the failed request with new token
       if (originalRequest.headers) {
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
       }
-      
+
       // Process queued requests
       processQueue(null, accessToken);
       isRefreshing = false;
-      
+
       // Retry the original request
-      return (error.config as any).__axiosInstance.request(originalRequest);
+      const axiosInstance = (error.config as CustomAxiosRequestConfig & { __axiosInstance?: unknown }).__axiosInstance;
+      if (axiosInstance && typeof axiosInstance === 'object' && 'request' in axiosInstance) {
+        return (axiosInstance as { request: (config: CustomAxiosRequestConfig) => Promise<unknown> }).request(originalRequest);
+      }
+      return Promise.reject(new Error('Axios instance not available'));
     } catch (refreshError) {
       processQueue(refreshError, null);
       isRefreshing = false;
-      
+
       // If refresh fails, clear session and redirect to login
       toast.error('Your session has expired. Please login again.');
-      try { store.dispatch(logoutUser()); } catch {}
+      try { store.dispatch(logoutUser()); } catch { }
       localStorage.removeItem('token');
       localStorage.removeItem('userDatas');
       localStorage.removeItem('userToken');
@@ -104,7 +121,7 @@ export const handleAxiosError = async (error: AxiosError) => {
       setTimeout(() => {
         window.location.href = '/login';
       }, 1500);
-      
+
       return Promise.reject(refreshError);
     }
   }
@@ -112,7 +129,7 @@ export const handleAxiosError = async (error: AxiosError) => {
   // Handle refresh token expiration
   if (status === 401 && isRefreshTokenExpired) {
     toast.error('Your session has expired. Please login again.');
-    try { store.dispatch(logoutUser()); } catch {}
+    try { store.dispatch(logoutUser()); } catch { }
     localStorage.removeItem('token');
     localStorage.removeItem('userDatas');
     localStorage.removeItem('userToken');
@@ -127,7 +144,7 @@ export const handleAxiosError = async (error: AxiosError) => {
     // toast.error(message);
     return Promise.reject(error);
   }
-  if(message == "Email already exists" || message == "Username already exists"){
+  if (message == "Email already exists" || message == "Username already exists") {
     return Promise.reject(error);
   }
 

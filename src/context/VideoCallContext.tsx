@@ -5,6 +5,7 @@ import React, {
     useState,
 } from 'react';
 import { io, Socket } from 'socket.io-client';
+import type { WebRTCOffer, WebRTCAnswer, WebRTCIceCandidate } from '../types/webrtc.types';
 
 interface Participant {
     userId: string;
@@ -128,19 +129,19 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({
                 initiateOffer(data.socketId, stream, data.name, data.role);
             });
 
-            socket.on('offer', async (data: { offer: any; from: string; name?: string; role?: string }) => {
+            socket.on('offer', async (data: { offer: RTCSessionDescriptionInit; from: string; name?: string; role?: string }) => {
                 console.log('Received offer from:', data.from, data.name, data.role);
                 await handleOffer(data.offer, data.from, stream, data.name, data.role);
             });
 
-            socket.on('answer', async (data: { answer: any; from: string; name?: string; role?: string }) => {
+            socket.on('answer', async (data: { answer: RTCSessionDescriptionInit; from: string; name?: string; role?: string }) => {
                 console.log('Received answer from:', data.from, data.name, data.role);
                 await handleAnswer(data.answer, data.from, data.name, data.role);
             });
 
             socket.on(
                 'ice-candidate',
-                async (data: { candidate: any; from: string }) => {
+                async (data: { candidate: RTCIceCandidateInit; from: string }) => {
                     await handleIceCandidate(data.candidate, data.from);
                 },
             );
@@ -292,7 +293,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({
     };
 
     const handleOffer = async (
-        offer: any,
+        offer: RTCSessionDescriptionInit,
         remoteUserId: string,
         stream: MediaStream,
         name?: string,
@@ -305,7 +306,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({
         socketRef.current?.emit('answer', { answer, to: remoteUserId });
     };
 
-    const handleAnswer = async (answer: any, remoteUserId: string, name?: string, role?: string) => {
+    const handleAnswer = async (answer: RTCSessionDescriptionInit, remoteUserId: string, name?: string, role?: string) => {
         const pc = userPeers.current[remoteUserId];
         if (pc) {
             await pc.setRemoteDescription(new RTCSessionDescription(answer));
@@ -319,7 +320,7 @@ export const VideoCallProvider: React.FC<{ children: React.ReactNode }> = ({
         }
     };
 
-    const handleIceCandidate = async (candidate: any, remoteUserId: string) => {
+    const handleIceCandidate = async (candidate: RTCIceCandidateInit, remoteUserId: string) => {
         const pc = userPeers.current[remoteUserId];
         if (pc) {
             await pc.addIceCandidate(new RTCIceCandidate(candidate));

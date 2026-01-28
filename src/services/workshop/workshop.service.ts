@@ -1,5 +1,7 @@
+import axios from "axios";
 import { WorkshopAxios } from "../../api/user.axios";
 import type { CreateWorkshopData } from "../../types/workshop.type";
+import type { WorkshopBookingPaymentData } from "../../types/payment.types";
 
 export const createWorkshop = async (data: CreateWorkshopData | FormData) => {
     try {
@@ -10,11 +12,11 @@ export const createWorkshop = async (data: CreateWorkshopData | FormData) => {
         };
         const response = await WorkshopAxios.post('', data, config);
         return { success: true, data: response.data };
-    } catch (error: any) {
-        return {
-            success: false,
-            message: error.response?.data?.message || 'Failed to create workshop'
-        };
+    } catch (error: unknown) {
+        const message = axios.isAxiosError(error)
+            ? error.response?.data?.message || 'Failed to create workshop'
+            : 'Failed to create workshop';
+        return { success: false, message };
     }
 };
 
@@ -22,23 +24,23 @@ export const createBookingOrder = async (workshopId: string, amount: number) => 
     try {
         const response = await WorkshopAxios.post('/bookings/order', { workshopId, amount });
         return { success: true, data: response.data };
-    } catch (error: any) {
-        return {
-            success: false,
-            message: error.response?.data?.message || 'Failed to create booking order'
-        };
+    } catch (error: unknown) {
+        const message = axios.isAxiosError(error)
+            ? error.response?.data?.message || 'Failed to create booking order'
+            : 'Failed to create booking order';
+        return { success: false, message };
     }
 };
 
-export const verifyBookingPayment = async (paymentData: any) => {
+export const verifyBookingPayment = async (paymentData: WorkshopBookingPaymentData) => {
     try {
         const response = await WorkshopAxios.post('/bookings/verify', paymentData);
         return { success: true, data: response.data };
-    } catch (error: any) {
-        return {
-            success: false,
-            message: error.response?.data?.message || 'Failed to verify payment'
-        };
+    } catch (error: unknown) {
+        const message = axios.isAxiosError(error)
+            ? error.response?.data?.message || 'Failed to verify payment'
+            : 'Failed to verify payment';
+        return { success: false, message };
     }
 };
 
@@ -47,11 +49,11 @@ export const getAllWorkshops = async (params?: URLSearchParams) => {
         const queryString = params ? `?${params.toString()}` : '';
         const response = await WorkshopAxios.get(`${queryString}`);
         return { success: true, data: response.data };
-    } catch (error: any) {
-        return {
-            success: false,
-            message: error.response?.data?.message || 'Failed to fetch workshops'
-        };
+    } catch (error: unknown) {
+        const message = axios.isAxiosError(error)
+            ? error.response?.data?.message || 'Failed to fetch workshops'
+            : 'Failed to fetch workshops';
+        return { success: false, message };
     }
 };
 
@@ -60,11 +62,11 @@ export const getInstructorWorkshops = async () => {
         const response = await WorkshopAxios.get('/instructor');
         console.log("response in get instructor workshops", response);
         return { success: true, data: response.data };
-    } catch (error: any) {
-        return {
-            success: false,
-            message: error.response?.data?.message || 'Failed to fetch instructor workshops'
-        };
+    } catch (error: unknown) {
+        const message = axios.isAxiosError(error)
+            ? error.response?.data?.message || 'Failed to fetch instructor workshops'
+            : 'Failed to fetch instructor workshops';
+        return { success: false, message };
     }
 };
 
@@ -86,11 +88,11 @@ export const getBookedWorkshops = async (params?: {
         const queryString = queryParams.toString();
         const response = await WorkshopAxios.get(`/booked?${queryString}`);
         return { success: true, data: response.data };
-    } catch (error: any) {
-        return {
-            success: false,
-            message: error.response?.data?.message || 'Failed to fetch booked workshops'
-        };
+    } catch (error: unknown) {
+        const message = axios.isAxiosError(error)
+            ? error.response?.data?.message || 'Failed to fetch booked workshops'
+            : 'Failed to fetch booked workshops';
+        return { success: false, message };
     }
 };
 
@@ -98,11 +100,11 @@ export const getWorkshopById = async (id: string) => {
     try {
         const response = await WorkshopAxios.get(`/${id}`);
         return { success: true, data: response.data };
-    } catch (error: any) {
-        return {
-            success: false,
-            message: error.response?.data?.message || 'Failed to fetch workshop details'
-        };
+    } catch (error: unknown) {
+        const message = axios.isAxiosError(error)
+            ? error.response?.data?.message || 'Failed to fetch workshop details'
+            : 'Failed to fetch workshop details';
+        return { success: false, message };
     }
 };
 
@@ -115,11 +117,11 @@ export const updateWorkshop = async (id: string, data: Partial<CreateWorkshopDat
         };
         const response = await WorkshopAxios.patch(`/${id}`, data, config);
         return { success: true, data: response.data };
-    } catch (error: any) {
-        return {
-            success: false,
-            message: error.response?.data?.message || 'Failed to update workshop'
-        };
+    } catch (error: unknown) {
+        const message = axios.isAxiosError(error)
+            ? error.response?.data?.message || 'Failed to update workshop'
+            : 'Failed to update workshop';
+        return { success: false, message };
     }
 };
 
@@ -127,11 +129,11 @@ export const deleteWorkshop = async (id: string) => {
     try {
         const response = await WorkshopAxios.delete(`/${id}`);
         return { success: true, data: response.data };
-    } catch (error: any) {
-        return {
-            success: false,
-            message: error.response?.data?.message || 'Failed to delete workshop'
-        };
+    } catch (error: unknown) {
+        const message = axios.isAxiosError(error)
+            ? error.response?.data?.message || 'Failed to delete workshop'
+            : 'Failed to delete workshop';
+        return { success: false, message };
     }
 };
 
@@ -139,11 +141,11 @@ export const initiateWorkshopBooking = async (workshopId: string) => {
     try {
         const response = await WorkshopAxios.post(`/${workshopId}/initiate-booking`);
         return { success: true, data: response.data };
-    } catch (error: any) {
-        return {
-            success: false,
-            message: error.response?.data?.message || 'Failed to initiate booking'
-        };
+    } catch (error: unknown) {
+        const message = axios.isAxiosError(error)
+            ? error.response?.data?.message || 'Failed to initiate booking'
+            : 'Failed to initiate booking';
+        return { success: false, message };
     }
 };
 
@@ -160,22 +162,22 @@ export const confirmWorkshopBooking = async (
             signature
         });
         return { success: true, data: response.data };
-    } catch (error: any) {
-        return {
-            success: false,
-            message: error.response?.data?.message || 'Failed to confirm booking'
-        };
+    } catch (error: unknown) {
+        const message = axios.isAxiosError(error)
+            ? error.response?.data?.message || 'Failed to confirm booking'
+            : 'Failed to confirm booking';
+        return { success: false, message };
     }
 };
 
-export const markWorkshopPaymentFailed = async (workshopId: string|undefined) => {
+export const markWorkshopPaymentFailed = async (workshopId: string | undefined) => {
     try {
         const response = await WorkshopAxios.post(`/${workshopId}/mark-payment-failed`);
         return { success: true, data: response.data };
-    } catch (error: any) {
-        return {
-            success: false,
-            message: error.response?.data?.message || 'Failed to mark payment as failed'
-        };
+    } catch (error: unknown) {
+        const message = axios.isAxiosError(error)
+            ? error.response?.data?.message || 'Failed to mark payment as failed'
+            : 'Failed to mark payment as failed';
+        return { success: false, message };
     }
 };

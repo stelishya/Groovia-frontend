@@ -1,4 +1,5 @@
 import toast from "react-hot-toast";
+import axios from "axios";
 import AuthAxios from "../../api/auth.axios";
 import type { SignupForm, VerificationData } from "../../types/auth.type";
 import type { AppDispatch } from "../../redux/store";
@@ -7,14 +8,11 @@ import { decodeJwt } from '../../utils/auth';
 import { DancerAxios, ClientAxios } from '../../api/user.axios';
 import { Role } from '../../utils/constants/roles';
 
-const getErrorMessage = (error: any): string => {
-  if (error.response?.data?.message) {
-    return error.response.data.message;
+const getErrorMessage = (error: unknown): string => {
+  if (axios.isAxiosError(error)) {
+    return error.response?.data?.message || error.response?.data?.error || error.message || 'An unexpected error occurred. Please try again.';
   }
-  if (error.response?.data?.error) {
-    return error.response.data.error;
-  }
-  if (error.message) {
+  if (error instanceof Error) {
     return error.message;
   }
   return 'An unexpected error occurred. Please try again.';
