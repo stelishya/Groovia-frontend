@@ -40,7 +40,7 @@ interface EventRequest {
     date: string;
     venue: string;
     budget: string;
-    status: 'pending' | 'accepted' | 'rejected' | 'completed';
+    status: 'pending' | 'accepted' | 'rejected' | 'completed' | 'confirmed' | 'cancelled';
     paymentStatus?: string;
 }
 
@@ -212,10 +212,9 @@ const BookingsPage = () => {
         try {
             const response = await updateEventBookingStatus(id, status, amount);
             // Backend returns: {success: true, data: {message, request} }
-            const updatedRequest = response.data?.request;
-            if (updatedRequest) {
+            if (response.data.request) {
                 setRequests(prevRequests =>
-                    prevRequests.map(req => req._id === id ? { ...req, status: updatedRequest.status } : req)
+                    prevRequests.map(req => req._id === id ? { ...req, status: response.data.request.status } : req)
                 );
 
                 // Show notification based on status

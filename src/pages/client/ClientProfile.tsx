@@ -121,7 +121,7 @@ const Profile = () => {
             const response = await uploadClientProfilePicture(croppedFile);
             toast.success('Profile picture uploaded successfully!');
 
-            const { user } = response;
+            const { user } = response.data;
             dispatch(loginUser({ user, token: localStorage.getItem('token') || '' }));
         } catch (error: any) {
             const errorMessage = error.message || 'Failed to upload profile image';
@@ -158,10 +158,10 @@ const Profile = () => {
             }
         } catch (error: any) {
             console.error('❌ Profile update error:', error);
-            
+
             // Extract error message from various possible response structures
             let errorMessage = 'Failed to update profile';
-            
+
             if (error.response?.data) {
                 const data = error.response.data;
                 // Handle different error response formats
@@ -171,7 +171,7 @@ const Profile = () => {
                     errorMessage = data.message;
                 }
             }
-            
+
             toast.error(errorMessage);
         }
     }
@@ -220,7 +220,7 @@ const Profile = () => {
                 {/* Main Content */}
                 {/* <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8"> */}
                 <main className="flex-1 overflow-y-auto bg-deep-purple">
-                    <UserNavbar title='Profile' subTitle='View and manage your profile'/>
+                    <UserNavbar title='Profile' subTitle='View and manage your profile' />
                     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                         {/* Profile Card */}
                         <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl overflow-hidden border border-purple-500/30">

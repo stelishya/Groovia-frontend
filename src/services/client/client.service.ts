@@ -7,7 +7,7 @@ import type { RegisteredDancer } from "../competition.service";
 export interface StandardResponse<T = unknown> {
     success: boolean;
     message?: string;
-    data?: T;
+    data: T;
 }
 
 export interface ClientEventRequestsResponse { // Specific response structure based on getClientEventRequests
@@ -17,6 +17,26 @@ export interface ClientEventRequestsResponse { // Specific response structure ba
         total: number;
     }
 }
+
+export interface UpdateBookingStatusData {
+    message: string;
+    request: EventRequest;
+}
+
+export interface RazorpayOrder {
+    id: string;
+    entity: string;
+    amount: number;
+    amount_paid: number;
+    amount_due: number;
+    currency: string;
+    receipt: string;
+    status: string;
+    attempts: number;
+    notes: any[];
+    created_at: number;
+}
+
 
 export const getClientEventRequests = async (params: URLSearchParams): Promise<ClientEventRequestsResponse> => {
     try {
@@ -46,7 +66,7 @@ export const getClientEventRequests = async (params: URLSearchParams): Promise<C
     }
 };
 
-export const updateEventBookingStatus = async (eventId: string, status: 'accepted' | 'rejected' | 'cancelled', amount?: number): Promise<StandardResponse> => {
+export const updateEventBookingStatus = async (eventId: string, status: 'accepted' | 'rejected' | 'cancelled', amount?: number): Promise<StandardResponse<UpdateBookingStatusData>> => {
     try {
         const response = await ClientAxios.patch(`/event-requests/${eventId}/status`, { status, amount });
         return response.data;
@@ -61,7 +81,7 @@ export const updateEventBookingStatus = async (eventId: string, status: 'accepte
     }
 };
 
-export const createEventBookingPayment = async (eventId: string): Promise<StandardResponse> => {
+export const createEventBookingPayment = async (eventId: string): Promise<StandardResponse<{ order: RazorpayOrder }>> => {
     try {
         const response = await ClientAxios.post(`/event-requests/${eventId}/payment`);
         return response.data;
@@ -137,7 +157,7 @@ export const updateClientProfile = async (profileData: UpdateClientProfileData):
 /**
  * Upload profile picture
  */
-export const uploadClientProfilePicture = async (file: File): Promise<StandardResponse> => {
+export const uploadClientProfilePicture = async (file: File): Promise<StandardResponse<{ user: any }>> => {
     try {
         const formData = new FormData();
         formData.append('profileImage', file);

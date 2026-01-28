@@ -206,7 +206,7 @@ const BookingsPage = () => {
         try {
             const updatedRequest = await updateEventBookingStatus(id, status);
             setRequests(prevRequests =>
-                prevRequests.map(req => req._id === id ? { ...req, status: updatedRequest.request.status } : req)
+                prevRequests.map(req => req._id === id ? { ...req, status: updatedRequest.data.request.status } : req)
             );
             toast.success('Request cancelled successfully');
         } catch (error) {

@@ -32,7 +32,7 @@ const ParticipantsListModal: React.FC<ParticipantsListModalProps> = ({ isOpen, o
     const [sortBy, setSortBy] = useState<SortOption>('date-desc');
     const navigate = useNavigate();
 
-    const participants = (competition?.registeredDancers || []) as RegisteredDancer[];
+    const participants = (competition?.registeredDancers || []) as unknown as RegisteredDancer[];
 
     const filteredAndSortedParticipants = useMemo(() => {
         // Filter

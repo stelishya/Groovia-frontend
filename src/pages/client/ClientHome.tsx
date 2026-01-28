@@ -1,5 +1,8 @@
 import { Search, X, ChevronLeft, ChevronRight } from "lucide-react"
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import toast from "react-hot-toast";
+import { GitPullRequest } from "lucide-react";
 // import { useNavigate } from "react-router-dom";
 // import { logoutUser } from "../../redux/slices/user.slice";
 import { type RootState } from "../../redux/store";
@@ -7,12 +10,9 @@ import Sidebar from "../../components/shared/Sidebar";
 import DancerCard from "../../components/ui/Card";
 import FormModal from "../../components/ui/FormModal";
 import VenueMap from "../../components/ui/VenueMap";
-import { GitPullRequest } from "lucide-react";
-import { useEffect, useState } from "react";
 import getAllDancers, { sendRequestToDancers } from "../../services/client/browseDancers.service";
 import { toggleLike } from "../../services/dancer/dancer.service";
 import { getClientEventRequests } from '../../services/client/client.service';
-import toast from "react-hot-toast";
 import UserNavbar from "../../components/shared/Navbar";
 import { DanceStyles } from "../../utils/constants/danceStyles";
 import CustomSelect from "../../components/ui/CustomSelect";
@@ -72,12 +72,14 @@ const Dashboard = ({ userData }: { userData: any }) => {
         date: '',
         venue: '',
         budget: '',
+        duration: '',
     });
     const [formErrors, setFormErrors] = useState({
         event: '',
         date: '',
         venue: '',
         budget: '',
+        duration: '',
     });
     const [requestedDancerIds, setRequestedDancerIds] = useState(new Set<string>());
     const [likedDancers, setLikedDancers] = useState(new Set<string>());
@@ -204,6 +206,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
             date: '',
             venue: '',
             budget: '',
+            duration: '',
         });
     };
 
@@ -213,12 +216,19 @@ const Dashboard = ({ userData }: { userData: any }) => {
             date: '',
             venue: '',
             budget: '',
+            duration: '',
         };
         let isValid = true;
 
         // Validate event
         if (!requestData.event.trim()) {
             errors.event = 'Event name is required';
+            isValid = false;
+        }
+
+        // Validate duration
+        if (!requestData.duration.trim()) {
+            errors.duration = 'Duration is required';
             isValid = false;
         }
 
@@ -263,7 +273,10 @@ const Dashboard = ({ userData }: { userData: any }) => {
 
             console.log(`Sending request to ${selectedDancer.username} with data:`, requestData);
             // API call
-            const response = await sendRequestToDancers(selectedDancer._id, requestData);
+            const response = await sendRequestToDancers(selectedDancer._id, {
+                ...requestData,
+                dancerId: selectedDancer._id
+            });
             console.log("response of sendRequestToDancers in ClientHome.tsx", response)
             // Add the dancer's ID to the set of requested dancers
             setRequestedDancerIds(prevIds => new Set(prevIds).add(selectedDancer._id));
@@ -567,6 +580,23 @@ const Dashboard = ({ userData }: { userData: any }) => {
                             </div>
                             {formErrors.budget && (
                                 <p className="text-red-400 text-sm mt-1">{formErrors.budget}</p>
+                            )}
+                        </div>
+                        <div>
+                            <label className="block text-white font-medium mb-2">Duration</label>
+                            <input
+                                type="text"
+                                value={requestData.duration}
+                                onChange={(e) => {
+                                    setRequestData({ ...requestData, duration: e.target.value });
+                                    if (formErrors.duration) setFormErrors({ ...formErrors, duration: '' });
+                                }}
+                                className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.duration ? 'border-2 border-red-500' : ''
+                                    }`}
+                                placeholder="e.g., 2 hours"
+                            />
+                            {formErrors.duration && (
+                                <p className="text-red-400 text-sm mt-1">{formErrors.duration}</p>
                             )}
                         </div>
                     </FormModal>

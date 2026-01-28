@@ -279,11 +279,11 @@ const Payment: React.FC<PaymentProps> = ({
     try {
       const result = await createEventBookingPayment(eventId);
 
-      if (!result.success || !result.order) {
+      if (!result.success || !result.data.order) {
         throw new Error(result.message || "Failed to create order");
       }
 
-      const { order } = result;
+      const { order } = result.data;
 
       await initiateRazorpayPayment({
         type: PaymentType.EVENT_REQUEST_PAYMENT,

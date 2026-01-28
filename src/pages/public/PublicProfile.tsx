@@ -11,7 +11,7 @@ import { sendRequestToDancers } from '../../services/client/browseDancers.servic
 import { toggleLike } from '../../services/dancer/dancer.service';
 import toast from 'react-hot-toast';
 import { getClientEventRequests } from '../../services/client/client.service';
-import type { Certificate, Achievement, ProfileUser } from '../../types/profile.types';
+import type { ProfileUser } from '../../types/profile.types';
 import type { EventRequest } from '../client/BookingsClient';
 
 const PublicProfile = () => {
