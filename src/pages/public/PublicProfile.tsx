@@ -12,7 +12,7 @@ import { toggleLike } from '../../services/dancer/dancer.service';
 import toast from 'react-hot-toast';
 import { getClientEventRequests } from '../../services/client/client.service';
 import type { ProfileUser } from '../../types/profile.types';
-import type { EventRequest } from '../client/BookingsClient';
+import type { DancerEventRequest } from '../../types/event.types';
 
 const PublicProfile = () => {
     const { id } = useParams();
@@ -69,9 +69,9 @@ const PublicProfile = () => {
         const checkRequestedStatus = async () => {
             if (!userData || !id) return;
             try {
-                const response: { success: boolean; data?: { requests: EventRequest[] } } = await getClientEventRequests(new URLSearchParams());
+                const response: { success: boolean; data?: { requests: DancerEventRequest[] } } = await getClientEventRequests(new URLSearchParams());
                 if (response.success && response.data && Array.isArray(response.data.requests)) {
-                    const isReq = response.data.requests.some((req: EventRequest) => req.dancerId?._id === id);
+                    const isReq = response.data.requests.some((req: DancerEventRequest) => req.dancerId?._id === id);
                     setHasRequested(isReq);
                 }
             } catch (error) {

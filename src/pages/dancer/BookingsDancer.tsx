@@ -5,7 +5,6 @@ import { Search, X, MapPin, Calendar, IndianRupee, User, PartyPopper, ChevronLef
 import toast from 'react-hot-toast';
 import { getEventRequests } from '../../services/dancer/dancer.service';
 import { fetchMyProfile } from '../../services/user/auth.service';
-import Sidebar from '../../components/shared/Sidebar';
 import { updateEventBookingStatus } from '../../services/client/client.service';
 import { getBookedWorkshops } from '../../services/workshop/workshop.service';
 import { UserTable } from '../../components/ui/Table';
@@ -14,11 +13,10 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
-// Fix for default marker icon
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-import UserNavbar from '../../components/shared/Navbar';
+import type { Client, EventRequest } from '../../types/event.types';
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -26,37 +24,6 @@ L.Icon.Default.mergeOptions({
     iconRetinaUrl: markerIcon2x,
     shadowUrl: markerShadow,
 });
-
-interface Client {
-    _id: string;
-    username: string;
-    profileImage?: string;
-}
-
-interface EventRequest {
-    _id: string;
-    clientId: Client | null;
-    event: string;
-    date: string;
-    venue: string;
-    budget: string;
-    status: 'pending' | 'accepted' | 'rejected' | 'completed' | 'confirmed' | 'cancelled';
-    paymentStatus?: string;
-}
-
-
-// const Header = ({ user }: { user: Client | null }) => (
-//     <header className="flex justify-between items-center mb-8">
-//         <div>
-//             <h1 className="text-3xl font-bold text-white">Bookings Management</h1>
-//             <p className="text-gray-400">Manage your client requests & workshop bookings</p>
-//         </div>
-//         <div className="flex items-center space-x-4">
-//             <Bell className="text-white" />
-//             <img src={user?.profileImage} alt="User" className="w-10 h-10 rounded-full" />
-//         </div>
-//     </header>
-// );
 
 const RequestCard = ({ request, onAcceptClick, onDeclineClick, onViewMap }: { request: EventRequest, onAcceptClick: (id: string) => void, onDeclineClick: (id: string) => void, onViewMap: (venue: string) => void }) => (
     <div className="bg-purple-700/50 rounded-lg p-4 flex justify-between items-center border border-purple-500">
@@ -211,7 +178,6 @@ const BookingsPage = () => {
     const handleUpdateStatus = async (id: string, status: 'accepted' | 'rejected' | 'cancelled', amount?: number) => {
         try {
             const response = await updateEventBookingStatus(id, status, amount);
-            // Backend returns: {success: true, data: {message, request} }
             if (response.data.request) {
                 setRequests(prevRequests =>
                     prevRequests.map(req => req._id === id ? { ...req, status: response.data.request.status } : req)
@@ -237,8 +203,8 @@ const BookingsPage = () => {
     const handleAcceptClick = (id: string) => {
         setSelectedRequestId(id);
         setActionType('accept');
-        setAcceptAmount(''); // Reset amount
-        setError(''); // Reset error
+        setAcceptAmount(''); // reset amount
+        setError(''); // reset error
         setModalOpen(true);
 
     };
@@ -272,16 +238,12 @@ const BookingsPage = () => {
                         }
                     } else {
                         maxBudget = parseFloat(budgetStr);
-                        // If single value, treat it as max (or potentially min depending on context, but usually "Budget: 5000" implies max limit)
-                        // However user requested "between min and max". If single value, maybe strict equal? 
-                        // Assuming single value is the MAX budget for now as per previous logic.
                     }
 
                     const amount = parseFloat(acceptAmount);
 
                     if (maxBudget > 0 && amount > maxBudget) {
                         setError(`Amount cannot exceed the budget of ₹${maxBudget}`);
-                        // toast.error(`Amount cannot exceed the budget of ₹${maxBudget}`);
                         return;
                     }
                     if (minBudget > 0 && amount < minBudget) {
@@ -311,7 +273,7 @@ const BookingsPage = () => {
         try {
             // Geocode the venue address
             const response = await fetch(
-                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(venue)}&limit=1`
+                `${import.meta.env.VITE_OPENSTREETMAP_URL}?format=json&q=${encodeURIComponent(venue)}&limit=1`
             );
             const data = await response.json();
             if (data && data.length > 0) {
@@ -370,9 +332,7 @@ const BookingsPage = () => {
     }, []);
 
     return (
-        <div className="flex-grow p-8 bg-deep-purple text-white overflow-y-auto">
-            {/* ... header and tabs ... */}
-            <UserNavbar title="Bookings Management" subTitle="Manage your client requests & workshop bookings" />
+        <div className="flex-grow p-8 bg-[#0a0516] text-white overflow-y-auto">
             <div className="flex border-b border-purple-700 mb-6">
                 <button
                     className={`py-2 px-4 font-semibold ${activeTab === 'workshops' ? 'text-white border-b-2 border-purple-500' : 'text-gray-400'}`}
@@ -457,9 +417,6 @@ const BookingsPage = () => {
                             data={bookedWorkshops}
                             variant="dancer-workshop"
                             onView={(workshop) => {
-                                // Using default workshop card navigation logic
-                                // Need to ensure state is passed if required by WorkshopDetails page
-                                // The original code passed state: { isRegistered: true, paymentStatus: workshop.userParticipant.paymentStatus }
                                 navigate(`/workshop/${workshop._id}`, {
                                     state: {
                                         isRegistered: true,
@@ -626,16 +583,6 @@ const BookingsPage = () => {
                             )}
                         </div>
                     </div>
-                    // <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-                    //     <div className="bg-purple-800 rounded-lg p-6 w-full max-w-md mx-4">
-                    //         <h2 className="text-xl font-bold text-white mb-4">Confirm Acceptance</h2>
-                    //         <p className="text-gray-300 mb-6">Are you sure you want to accept this booking request?</p>
-                    //         <div className="flex justify-end space-x-4">
-                    //             <button onClick={() => setModalOpen(false)} className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors">Cancel</button>
-                    //             <button onClick={confirmAccept} className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors">Confirm</button>
-                    //         </div>
-                    //     </div>
-                    // </div>
                 )
             }
         </div >
@@ -645,7 +592,6 @@ const BookingsPage = () => {
 const BookingsDancer = () => {
     return (
         <div className="flex h-screen bg-gray-900">
-            <Sidebar activeMenu='Bookings' />
             <BookingsPage />
         </div>
     );

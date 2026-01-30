@@ -36,7 +36,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({ value, onChange, options, p
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center justify-between w-full rounded-md border border-purple-300 bg-purple-700 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-gray-900"
+                className="flex items-center justify-between w-full rounded-md border border-purple-500 bg-purple-700 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-gray-900"
             >
                 <span className="truncate pr-2">{value || placeholder}</span>
                 <ChevronDown className="-mr-1 ml-2 h-4 w-4" aria-hidden="true" />

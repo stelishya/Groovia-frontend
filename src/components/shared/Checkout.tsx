@@ -3,20 +3,18 @@ import { useDispatch, useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { Star, TrendingUp, Search, MessageCircle, BarChart3, Calendar, MapPin, Clock } from 'lucide-react';
-
 import { loginUser } from '../../redux/slices/user.slice';
 import type { RootState } from '../../redux/store';
 import type { UpgradeStatus } from '../../services/user/upgradeRole.service';
 import type { Workshop } from '../../types/workshop.type';
 import type { Competition } from '../../services/competition.service';
-import type { EventRequest } from '../../pages/client/BookingsClient';
-
 import { fetchMyProfile } from '../../services/user/auth.service';
 import { markWorkshopPaymentFailed } from '../../services/workshop/workshop.service';
 import { markCompetitionPaymentFailed } from '../../services/competition.service';
 import { initiatePayment, confirmPayment } from '../../services/payment/payment.service';
 import { upgradeService, ROLE_UPGRADE_PRICE } from '../../services/user/upgradeRole.service';
 import { markEventRequestPaymentFailed } from '../../services/client/client.service';
+import type { DancerEventRequest } from '../../types/event.types';
 
 interface PaymentProps {
     userEmail?: string;
@@ -25,7 +23,7 @@ interface PaymentProps {
     upgradeRequest?: UpgradeStatus; // For role upgrade payments
     workshop?: Workshop; // For workshop booking payments
     competition?: Competition; // For competition registration payments
-    eventRequest?: EventRequest; // For event request payments
+    eventRequest?: DancerEventRequest; // For event request payments
 }
 
 export enum PaymentType {

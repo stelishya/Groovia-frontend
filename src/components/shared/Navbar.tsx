@@ -1,37 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Bell, X, User, Settings, LogOut } from 'lucide-react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { type RootState } from '../../redux/store';
 import { NotificationAxios } from '../../api/user.axios';
 import toast from 'react-hot-toast';
+import type { Notification, UserNavbarProps } from '../../types/notification.type';
 
-interface Notification {
-    _id: string;
-    userId: string;
-    type: 'upgrade_approved' | 'upgrade_rejected' | 'workshop' | 'general';
-    title: string;
-    message: string;
-    isRead: boolean;
-    adminNote: string;
-    createdAt: string;
-    updatedAt: string;
-}
-
-interface UserNavbarProps {
-    onSearch?: (query: string) => void;
-    title?: string;
-    subTitle?: string;
-}
-
-const UserNavbar: React.FC<UserNavbarProps> = ({ title, subTitle }) => {
+const UserNavbar: React.FC<UserNavbarProps> = ({ title: manualTitle, subTitle: manualSubTitle }) => {
     const navigate = useNavigate();
+    const location = useLocation();
     const { userData } = useSelector((state: RootState) => state.user);
     const [showNotifications, setShowNotifications] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [notificationTab, setNotificationTab] = useState<'all' | 'unread' | 'read'>('all');
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [processedNotifications, setProcessedNotifications] = useState<Set<string>>(new Set());
+
+    const pageConfig = useMemo(() => {
+        const path = location.pathname;
+        if (path === '/home') return { title: "", subTitle: '' };
+        if (path === '/profile') return { title: 'My Profile', subTitle: 'Manage your professional dance identity' };
+        if (path === '/bookings') return { title: 'My Requests', subTitle: 'Manage your dance event requests' };
+        if (path === '/payments') return { title: 'Payment History', subTitle: 'Track your recent transactions' };
+        if (path === '/workshops') return { title: 'Workshops', subTitle: 'Explore and manage your dance sessions' };
+        if (path === '/competitions') return { title: 'Competitions', subTitle: 'Register and track your performance events' };
+        if (path === '/checkout') return { title: 'Checkout', subTitle: 'Finalize your registration' };
+        if (path.startsWith('/workshop/')) return { title: 'Workshop Details', subTitle: 'Specialized dance training' };
+        if (path.startsWith('/competition/')) return { title: 'Competition Details', subTitle: 'Showcase your talent' };
+        if (path.startsWith('/dancer-profile/')) return { title: 'Dancer Profile', subTitle: 'Exploring professional profiles' };
+        return { title: manualTitle || 'Groovia', subTitle: manualSubTitle || 'Keep Moving' };
+    }, [location.pathname, userData?.username, manualTitle, manualSubTitle]);
+
+    const { title, subTitle } = pageConfig;
 
     // Fetch notifications when component mounts and poll every 30 seconds
     useEffect(() => {
@@ -65,8 +66,7 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ title, subTitle }) => {
     const handleNewNotification = (notification: Notification) => {
         // Handle upgrade approved - update user role in Redux
         if (notification.type === 'upgrade_approved' && userData) {
-            // Only add instructor role if it doesn't already exist
-            // const currentRoles = userData.role || [];
+            console.log("Upgrade approved", notification)
         }
         // Handle upgrade rejected
         else if (notification.type === 'upgrade_rejected') {
@@ -102,36 +102,6 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ title, subTitle }) => {
             console.error('Failed to mark all notifications as read:', error);
         }
     };
-    // Mock notifications - Replace with actual API call later
-    // const [notifications] = useState<Notification[]>([
-    //     {
-    //         id: '1',
-    //         type: 'upgrade_approved',
-    //         title: 'Upgrade Request Approved!',
-    //         message: 'Your instructor upgrade has been approved. Welcome to the instructor community!',
-    //         isRead: false,
-    //         createdAt: new Date().toISOString(),
-    //     },
-    //     {
-    //         id: '2',
-    //         type: 'workshop',
-    //         title: 'New Workshop Registration',
-    //         message: 'Someone registered for your Contemporary Dance workshop.',
-    //         isRead: false,
-    //         createdAt: new Date(Date.now() - 3600000).toISOString(),
-    //     },
-    //     {
-    //         id: '3',
-    //         type: 'general',
-    //         title: 'Profile Update',
-    //         message: 'Your profile has been successfully updated.',
-    //         isRead: true,
-    //         createdAt: new Date(Date.now() - 86400000).toISOString(),
-    //     },
-    // ]);
-
-
-
     const filteredNotifications = notifications.filter((notif) => {
         if (notificationTab === 'unread') return !notif.isRead;
         if (notificationTab === 'read') return notif.isRead;
@@ -168,37 +138,13 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ title, subTitle }) => {
 
     return (
         <>
-            <header className="flex justify-between items-center p-4 relative">
+            <header className="flex justify-between items-center bg-[#0a0516] px-12 py-6 relative">
                 <div>
-                    <h1 className="text-4xl font-bold text-purple-400 mb-2">{title}</h1>
-                    <p className="text-gray-400">{subTitle}</p>
+                    <h1 className="text-3xl font-bold bg-gradient-to-r from-white via-purple-200 to-purple-400 bg-clip-text text-transparent pb-2">{title}</h1>
+                    <p className="text-purple-300/60 font-medium">{subTitle}</p>
                 </div>
-                {/* Search Bar */}
-                {/* <div className="relative w-80 mr-6">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-300" />
-                    <input
-                        type="text"
-    placeholder = "Search Workshops, Competitions..."
-    value = { searchQuery }
-    onChange = {(e) => setSearchQuery(e.target.value)}
-onKeyDown = {(e) => e.key === 'Enter' && handleSearchSubmit(e)}
-className = "w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-purple-500"
-    />
-                </div > */}
 
                 <div className="flex items-center">
-                    {/* <div className="relative w-80 mr-6">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-300" />
-                    <input
-                        type="text"
-                        placeholder="Search Workshops, Competitions..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit(e)}
-                        className="w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    />
-                </div> */}
-
                     {/* Notification Bell */}
                     <div className="relative mr-6 pt-2">
                         <button
@@ -269,7 +215,7 @@ className = "w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg p
                                 <button
                                     onClick={() => {
                                         // Handle logout
-                                        navigate('/login');
+                                            navigate('/login');
                                     }}
                                     className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
                                 >

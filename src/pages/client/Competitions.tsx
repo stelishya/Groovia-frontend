@@ -1,14 +1,13 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { Plus, Search, 
-  // ScanLine,
-   X, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Plus, Search,
+  X
+} from "lucide-react";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import type { RootState } from "../../redux/store";
 import { useNavigate } from "react-router-dom";
 
-import UserNavbar from "../../components/shared/Navbar";
-import Sidebar from "../../components/shared/Sidebar";
 import type { Competition } from "../../services/competition.service";
 import type { CreateCompetitionData } from "../../types/competition.type";
 import CreateCompetitionModal from "../../components/ui/CreateCompetitionModal";
@@ -16,18 +15,21 @@ import GenericDetailsModal from "../../components/ui/EntityDetailsModal";
 import ParticipantsListModal from "../../components/ui/ParticipantsListModal";
 import { UserTable } from "../../components/ui/Table";
 import ConfirmationModal from "../../components/ui/ConfirmationModal";
+import CompetitionCard from "../../components/ui/CompetitionCard";
+import { UserPagination } from "../../components/ui/Pagination";
 import {
   getOrganizerCompetitions,
   getRegisteredCompetitions,
   createCompetition,
   updateCompetition,
   deleteCompetition,
-  getCompetitionById
+  getCompetitionById,
+  getAllCompetitions
 } from "../../services/competition.service";
 
 const CompetitionsPage = () => {
   const [competitions, setCompetitions] = useState<Competition[]>([]);
-  const [, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [, setError] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingCompetition, setEditingCompetition] = useState<Competition | null>(null);
@@ -35,6 +37,8 @@ const CompetitionsPage = () => {
   const [viewingParticipantsCompetition, setViewingParticipantsCompetition] = useState<Competition | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [deletingCompetition, setDeletingCompetition] = useState<Competition | null>(null);
+  const [activeTab, setActiveTab] = useState<'myCompetitions' | 'explore'>('explore');
+  const [exploreCompetitions, setExploreCompetitions] = useState<Competition[]>([]);
 
   // Filter State
   const [searchTerm, setSearchTerm] = useState('');
@@ -44,7 +48,6 @@ const CompetitionsPage = () => {
   const [style, setStyle] = useState('');
   const [page, setPage] = useState(1);
   const [limit] = useState(10);
-  const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
 
   const navigate = useNavigate();
@@ -66,26 +69,29 @@ const CompetitionsPage = () => {
   const fetchCompetitions = useCallback(async () => {
     try {
       setLoading(true);
-      // let data: Competition[] = [];
       const params = { search: debouncedSearch, sortBy, level, style, page, limit };
 
-      let response;
-      if (isOrganizer) {
-        response = await getOrganizerCompetitions(params);
+      if (activeTab === 'explore') {
+        const response = await getAllCompetitions(params as any);
+        setExploreCompetitions(response.data || []);
+        setTotal(response.total || 0);
       } else {
-        response = await getRegisteredCompetitions(params);
+        let response;
+        if (isOrganizer) {
+          response = await getOrganizerCompetitions(params);
+        } else {
+          response = await getRegisteredCompetitions(params);
+        }
+        setCompetitions(response.data || []);
+        setTotal(response.total || 0);
       }
-
-      setCompetitions(response.data || []);
-      setTotal(response.total || 0);
-      setTotalPages(response.totalPages || 1);
     } catch (err) {
       console.error('Failed to fetch competitions:', err);
       setError('Failed to load competitions. Please try again later.');
     } finally {
       setLoading(false);
     }
-  }, [isOrganizer, debouncedSearch, sortBy, level, style, page, limit]);
+  }, [isOrganizer, debouncedSearch, sortBy, level, style, page, limit, activeTab]);
 
   useEffect(() => {
     fetchCompetitions();
@@ -104,7 +110,6 @@ const CompetitionsPage = () => {
   const handleCreateOrUpdateCompetition = useCallback(async (data: CreateCompetitionData) => {
     try {
       if (editingCompetition) {
-        console.log('Editing competition:', data);
         const response = await updateCompetition(editingCompetition._id, data);
         if (response.success) {
           toast.success('Competition updated successfully!');
@@ -114,7 +119,6 @@ const CompetitionsPage = () => {
           toast.error(response.message || 'Failed to update competition');
         }
       } else {
-        console.log('Creating competition:', data);
         const response = await createCompetition(data);
         if (response.success) {
           toast.success('Competition created successfully!');
@@ -159,65 +163,37 @@ const CompetitionsPage = () => {
     setShowCreateModal(true);
   }, []);
 
-  // if (loading) {
-  //   return (
-  //     <div className="flex h-screen bg-gray-900">
-  //       <div className="flex-grow p-8 bg-deep-purple text-white overflow-y-auto flex items-center justify-center">
-  //         <div className="text-center">
-  //           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-  //           <p className="text-white">Loading competitions...</p>
-  //         </div>
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
-  // if (error) {
-  //   return (
-  //     <div className="flex h-screen bg-gray-900">
-  //       <div className="flex-grow p-8 bg-deep-purple text-white overflow-y-auto flex items-center justify-center">
-  //         <div className="text-center">
-  //           <p className="text-red-400 mb-4">{error}</p>
-  //           <button
-  //             onClick={() => window.location.reload()}
-  //             className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-  //           >
-  //             Try Again
-  //           </button>
-  //         </div>
-  //       </div>
-  //     </div>
-  //   );
-  // }
-
   return (
-    <div className="flex-grow p-8 bg-deep-purple text-white overflow-y-auto">
-      <UserNavbar title="Dance Competitions" subTitle="Discover and participate in exciting dance competitions" />
-
+    <div className="flex-grow p-8 bg-[#0a0516] text-white overflow-y-auto">
       {isOrganizer && (
-        <div className="flex justify-end gap-2">
-          {/* <button className="flex items-center gap-2 px-6 py-3 bg-transparent border border-purple-500 text-white rounded-lg hover:bg-purple-500/10 transition-colors">
-            <ScanLine size={20} className="text-purple-400" />
-            <span>QR Scanner</span>
-          </button> */}
+        <div className="flex justify-start gap-2 mb-6">
           <button
             onClick={handleCreateCompetition}
             className="flex items-center gap-2 px-6 py-3 bg-transparent border border-purple-500 text-white rounded-lg hover:bg-purple-500/10 transition-colors"
-          // className="px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white font-medium rounded-lg shadow-lg flex items-center gap-2"
           >
             <Plus className="h-5 w-5" />
             Create Competition
           </button>
         </div>
       )}
+
       {/* Tabs */}
       <div className="flex border-b border-purple-700 mb-6">
-        <button className="py-2 px-4 text-white border-b-2 border-purple-500 font-semibold">
+        <button
+          className={`py-2 px-4 font-semibold ${activeTab === 'explore' ? 'text-white border-b-2 border-purple-500' : 'text-gray-400'}`}
+          onClick={() => { setActiveTab('explore'); setPage(1); }}
+        >
+          Explore Competitions
+        </button>
+        <button
+          className={`py-2 px-4 font-semibold ${activeTab === 'myCompetitions' ? 'text-white border-b-2 border-purple-500' : 'text-gray-400'}`}
+          onClick={() => { setActiveTab('myCompetitions'); setPage(1); }}
+        >
           {isOrganizer ? 'My Competitions' : 'Registered Competitions'} ({competitions.length})
         </button>
       </div>
 
-      {/* Search and Create Button */}
+      {/* Search and Filters */}
       <div className="flex justify-between items-center mb-6">
         <div className="relative w-1/3">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-300" />
@@ -231,7 +207,6 @@ const CompetitionsPage = () => {
           {searchTerm && <X className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-300 cursor-pointer" onClick={() => setSearchTerm('')} />}
         </div>
 
-        {/* Filters */}
         <div className="flex gap-4">
           <select
             value={sortBy}
@@ -272,71 +247,77 @@ const CompetitionsPage = () => {
         </div>
       </div>
 
-      {/* Competitions Table */}
-      {competitions.length > 0 ? (
-        <UserTable
-          data={competitions}
-          variant={isOrganizer ? 'organizer-competition' : 'dancer-competition'}
-          currentUserId={userData?._id}
-          onView={(competition) => setViewingCompetition(competition)}
-          onEdit={(competition) => handleEditClick(competition)}
-          onDelete={(competition) => {
-            setDeletingCompetition(competition);
-            setIsDeleteModalOpen(true);
-          }}
-          onViewParticipants={(id) => handleViewParticipants(id)}
-          onRetryPayment={(competition) => navigate(`/competition/${competition._id}/checkout`)}
-        />
-      ) : (
-        <div className="text-center py-12">
-          <p className="text-gray-400 text-lg">
-            Competitions Not Found
-            {/* {isOrganizer
-              ? "You haven't created any competitions yet."
-              : "You haven't registered for any competitions yet."} */}
-          </p>
-          {/* {isOrganizer && (
-            <button
-              onClick={handleCreateCompetition}
-              className="mt-4 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-            >
-              Create Your First Competition
-            </button>
-          )} */}
+      {/* Competitions View */}
+      {loading ? (
+        <div className="flex justify-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
         </div>
+      ) : activeTab === 'explore' ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {exploreCompetitions.length > 0 ? (
+            exploreCompetitions.map((competition) => (
+              <CompetitionCard
+                key={competition._id}
+                competition={competition}
+                isOrganizer={false}
+                onViewDetails={(comp) => navigate(`/competition/${comp._id}`)}
+                // onRegister={(comp) => navigate(`/competition/${comp._id}`)}
+                getStatusColor={(status) => {
+                  switch (status?.toLowerCase()) {
+                    case "active": return "bg-green-500";
+                    case "closed": return "bg-red-500";
+                    case "completed": return "bg-blue-500";
+                    case "upcoming": return "bg-yellow-500";
+                    default: return "bg-gray-500";
+                  }
+                }}
+              />
+            ))
+          ) : (
+            <div className="text-center py-12 col-span-full">
+              <p className="text-gray-400 text-lg">No competitions found for exploration 🎭</p>
+            </div>
+          )}
+        </div>
+      ) : (
+        competitions.length > 0 ? (
+          <UserTable
+            data={competitions}
+            variant={isOrganizer ? 'organizer-competition' : 'dancer-competition'}
+            currentUserId={userData?._id}
+            onView={(competition) => setViewingCompetition(competition)}
+            onEdit={(competition) => handleEditClick(competition)}
+            onDelete={(competition) => {
+              setDeletingCompetition(competition);
+              setIsDeleteModalOpen(true);
+            }}
+            onViewParticipants={(id) => handleViewParticipants(id)}
+            onRetryPayment={(competition) => navigate(`/competition/${competition._id}/checkout`)}
+          />
+        ) : (
+          <div className="text-center py-12">
+            <p className="text-gray-400 text-lg">Competitions Not Found</p>
+          </div>
+        )
       )}
 
       {/* Pagination Controls */}
-      {total >= 1 && (
-        <div className="flex justify-between text-center gap-4">
-          <div className="flex justify-center items-center mt-6 gap-4">
-            <p className="text-white font-medium">Showing {competitions.length} of {total} competitions</p>
-          </div>
-          <div className="flex justify-center items-center mt-6 gap-4">
-            <button
-              onClick={() => setPage(p => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="p-2 rounded-lg bg-purple-700 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-600 transition-colors"
-            >
-              <ChevronLeft size={20} />
-            </button>
-
-            <span className="text-white font-medium">
-              Page {page} of {totalPages}
+      {total > 0 && (
+        <UserPagination
+          current={page}
+          total={total}
+          pageSize={limit}
+          onChange={(p) => setPage(p)}
+          showTotal={(total, range) => (
+            <span className="text-sm text-gray-300">
+              Showing {range[0]} to {range[1]} of {total} competitions
             </span>
-
-            <button
-              onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-              className="p-2 rounded-lg bg-purple-700 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-600 transition-colors"
-            >
-              <ChevronRight size={20} />
-            </button>
-          </div>
-        </div>
+          )}
+          className="mt-8 bg-transparent border-t border-purple-700/50"
+        />
       )}
 
-      {/* Create Competition Modal */}
+      {/* Modals */}
       <CreateCompetitionModal
         isOpen={showCreateModal}
         onClose={handleCloseModal}
@@ -346,18 +327,20 @@ const CompetitionsPage = () => {
         } as CreateCompetitionData : undefined}
         isEditing={!!editingCompetition}
       />
+
       <GenericDetailsModal
         isOpen={!!viewingCompetition}
         onClose={() => setViewingCompetition(null)}
         data={viewingCompetition}
         entityType="competition"
       />
+
       <ParticipantsListModal
         isOpen={!!viewingParticipantsCompetition}
         onClose={() => setViewingParticipantsCompetition(null)}
         competition={viewingParticipantsCompetition}
       />
-      {/* Delete Confirmation Modal */}
+
       {isDeleteModalOpen && (
         <ConfirmationModal
           show={isDeleteModalOpen}
@@ -379,8 +362,7 @@ const CompetitionsPage = () => {
 
 const CompetitionsClient: React.FC = () => {
   return (
-    <div className="flex h-screen bg-gray-900">
-      <Sidebar activeMenu="Competitions" />
+    <div className="flex h-screen bg-[#0a0516]">
       <CompetitionsPage />
     </div>
   );

@@ -97,7 +97,7 @@ const Navbar: React.FC<NavbarProps> = ({
               onClick={() => setShowUserMenu(!showUserMenu)}
               className="flex items-center space-x-2 p-1 md:p-2 rounded-lg "
             >
-              <div className="hidden md:block text-sm font-medium text-white-900">
+              <div className="hidden md:block text-sm text-white font-medium text-white-900">
                 Hello, {userName}
               </div>
               <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center overflow-hidden">

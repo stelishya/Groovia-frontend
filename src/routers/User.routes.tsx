@@ -21,9 +21,8 @@ import PublicProfile from "../pages/public/PublicProfile";
 // import { PrivateRoute } from "../protected/PrivateRoute";
 // import HomePage from "../pages/Home";
 
-const UserRoutes = () => {
+const UserPublicRoutes = () => {
     return (
-        // <Routes>
         <>
             <Route path="/login" element={
                 <PublicRoute userType="dancer">
@@ -49,27 +48,30 @@ const UserRoutes = () => {
                 <PublicRoute userType="dancer">
                     <ForgotPasswordForm />
                 </PublicRoute>
-            }
-            />
+            } />
             <Route path="/reset-password/:token" element={
                 <PublicRoute userType="dancer">
                     <ResetPasswordForm />
                 </PublicRoute>
-            }
-            />
+            } />
+            <Route path='/logout' element={<Login />} />
+        </>
+    )
+}
+
+const UserPrivateRoutes = () => {
+    return (
+        <>
             <Route path="/home" element={
                 <PrivateRoute userType="user" >
                     <HomePage />
                 </PrivateRoute>
-            }
-            />
+            } />
             <Route path="/profile" element={
                 <PrivateRoute userType="user" >
                     <ProfilePage />
                 </PrivateRoute>
-            }
-            />
-            {/* <Route path="/dancers/:id" element={ */}
+            } />
             <Route path="/dancer-profile/:id" element={
                 <PrivateRoute userType="user">
                     <PublicProfile />
@@ -79,34 +81,20 @@ const UserRoutes = () => {
                 <PrivateRoute userType="user" >
                     <BookingsPage />
                 </PrivateRoute>
-            }
-            />
-            {/* <Route path="/home" element={
-                <PublicRoute userType="dancer">
-                    <Home />
-                </PublicRoute>
-            }
-            /> */}
-            {/* Checkout Routes */}
+            } />
             <Route path="/checkout" element={
-                <PrivateRoute
-                    userType="user"
-                // allowedRoles={[Role.DANCER, Role.CLIENT]}
-                >
+                <PrivateRoute userType="user">
                     <CheckoutPage />
                 </PrivateRoute>
             } />
-
             <Route path="/payments" element={
                 <PrivateRoute userType="user" >
                     <PaymentHistory />
                 </PrivateRoute>
             } />
-
-            <Route path='/logout' element={<Login />} />
-            {/* <Route path="*" element={<ErrorPage />} /> */}
-            </>
-        // </Routes>
+        </>
     )
 }
-export default UserRoutes;
+
+export { UserPublicRoutes, UserPrivateRoutes };
+export default UserPrivateRoutes; // Keeping a default export for backward compatibility if needed, but App.tsx will be updated.

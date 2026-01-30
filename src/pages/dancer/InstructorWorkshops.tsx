@@ -2,20 +2,16 @@ import { startWorkshopSession, joinWorkshopSession } from '../../services/videoC
 import { useVideoCall } from '../../context/VideoCallContext';
 import CreateWorkshopModal from '../../components/ui/CreateWorkshopModal';
 import GenericDetailsModal from '../../components/ui/EntityDetailsModal';
-import { Search, Plus, 
-    // ScanLine, Filter,
-     X } from 'lucide-react';
+import { Search, Plus, X } from 'lucide-react';
 import { UserPagination } from '../../components/ui/Pagination';
 import { getInstructorWorkshops, createWorkshop, updateWorkshop, deleteWorkshop, getBookedWorkshops, getAllWorkshops } from '../../services/workshop/workshop.service';
 import type { Workshop, CreateWorkshopData } from '../../types/workshop.type';
 import toast from 'react-hot-toast';
 import ConfirmationModal from '../../components/ui/ConfirmationModal';
-import UserNavbar from '../../components/shared/Navbar';
 import { UserTable } from '../../components/ui/Table';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import WorkshopCard from '../../components/ui/WorkshopCard';
 import { useEffect, useState } from 'react';
-import Sidebar from '../../components/shared/Sidebar';
 import InstructorWorkshopCard from '../../components/ui/InstructorWorkshopCard';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../redux/store';
@@ -333,8 +329,8 @@ const InstructorWorkshops = () => {
     );
 
     return (
-        <div className="flex h-screen bg-[#0f0f13] text-white overflow-hidden">
-            <Sidebar activeMenu='Workshops' />
+        <div className="flex h-screen bg-[#0a0516] text-white overflow-hidden">
+            {/* <Sidebar activeMenu='Workshops' /> */}
 
             <div className="flex-1 flex p-8 flex-col overflow-hidden relative">
                 {/* Header */}
@@ -353,7 +349,7 @@ const InstructorWorkshops = () => {
                         />
                     </div>
                 </header> */}
-                <UserNavbar title='Workshops Management' subTitle='Manage your dance workshops and track attendance' />
+                {/* <UserNavbar title='Workshops Management' subTitle='Manage your dance workshops and track attendance' /> */}
                 <div className="flex border-b border-purple-700 mb-4">
                     <button
                         className={`py-2 px-4 font-semibold ${activeTab === 'exploreWorkshops' ? 'text-white border-b-2 border-purple-500' : 'text-gray-400'}`}
@@ -431,7 +427,7 @@ const InstructorWorkshops = () => {
                                         <input
                                             type="text"
                                             placeholder="Search Workshops.."
-                                            className="bg-[#7c3aed] text-white placeholder-purple-200 pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 w-64"
+                                            className="bg-purple-700 text-white placeholder-purple-200 pl-10 pr-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 w-64"
                                             value={instructorSearch}
                                             onChange={(e) => setInstructorSearch(e.target.value)}
                                         />
@@ -501,7 +497,7 @@ const InstructorWorkshops = () => {
 
                     ) : activeTab === 'bookedWorkshops' ? (
                         <>
-                            <div className="flex justify-between items-center mb-6">
+                            <div className="flex justify-between items-center mb-6 mr-2">
                                 <div className="relative w-1/3">
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-300" />
                                     <input type="text" placeholder="Search by workshop..." value={bookedSearch} onChange={(e) => setBookedSearch(e.target.value)} className="w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg py-2 pl-10 focus:outline-none" />
@@ -510,7 +506,7 @@ const InstructorWorkshops = () => {
                                 <select
                                     value={workshopSortBy}
                                     onChange={(e) => setWorkshopSortBy(e.target.value)}
-                                    className="bg-[#a855f7] text-white px-4 py-2 rounded-lg focus:outline-none"
+                                    className="bg-purple-700 text-white text-sm font-medium px-4 py-2 rounded-lg focus:outline-none"
                                 >
                                     <option value="startDate">Sort by Date</option>
                                     <option value="fee">Sort by Price</option>
@@ -582,7 +578,7 @@ const InstructorWorkshops = () => {
                                         setModeFilter(e.target.value);
                                         setCurrentPage(1);
                                     }}
-                                    className="bg-[#a855f7] text-white px-4 py-2 rounded-lg focus:outline-none"
+                                    className="bg-purple-700 text-white text-sm font-medium px-4 py-2 rounded-lg focus:outline-none"
                                 >
                                     <option value="">All Modes</option>
                                     <option value="Online">Online</option>
@@ -593,7 +589,7 @@ const InstructorWorkshops = () => {
                                 <select
                                     value={sortBy}
                                     onChange={(e) => setSortBy(e.target.value)}
-                                    className="bg-[#a855f7] text-white px-4 py-2 rounded-lg focus:outline-none"
+                                    className="bg-purple-700 text-white text-sm font-medium px-4 py-2 rounded-lg focus:outline-none"
                                 >
                                     <option value="startDate">Sort by Date</option>
                                     <option value="fee">Sort by Price</option>

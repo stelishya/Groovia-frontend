@@ -14,7 +14,7 @@ interface Payment {
     _id: string;
     username: string;
     email: string;
-    role: string[];
+    role: string;
   };
   paymentType: string;
   relatedEntityName?: string;
@@ -33,25 +33,25 @@ interface Payment {
 const columns: TableColumn<Payment & { serialNumber: number }>[] = [
   { key: "serialNumber", title: "S.No", dataIndex: "serialNumber", render: v => v || "-" },
   { key: "referenceId", title: "Payment ID", dataIndex: "referenceId", sortable: true, render: v => v || "-" },
+  { key: "createdAt", title: "Date & Time", dataIndex: "createdAt", sortable: true, render: v => v ? new Date(v).toLocaleString('en-GB') : "-" },
+  { key: "paymentType", title: "Payment Type", dataIndex: "paymentType", sortable: true, render: v => v || "-" },
+  { key: "amount", title: "Total Amount Paid", dataIndex: "amount", sortable: true, render: v => v ? `₹${v}` : "-" },
   { key: "orderId", title: "Order ID", dataIndex: "orderId", sortable: true, render: v => v || "-" },
-  { key: "createdAt", title: "Date & Time", dataIndex: "createdAt", sortable: true, render: v => v ? new Date(v).toLocaleString() : "-" },
   { key: "user", title: "User Name", dataIndex: "user", render: (v) => v && typeof v === 'object' && v.username ? v.username : "-" },
-  { key: "userRole", title: "User Role", dataIndex: "user", render: (v) => v && typeof v === 'object' && v.role ? v.role.join(", ") : "-" },
+  { key: "userRole", title: "User Role", dataIndex: "user", render: (v) => v && typeof v === 'object' && v.role ? v.role : "-" },
   { key: "userEmail", title: "User Email", dataIndex: "user", render: (v) => v && typeof v === 'object' && v.email ? v.email : "-" },
   { key: "userId", title: "User ID", dataIndex: "user", render: (v) => v && typeof v === 'object' && v._id ? v._id : "-" },
-  { key: "paymentType", title: "Payment Type", dataIndex: "paymentType", sortable: true, render: v => v || "-" },
-  { key: "relatedEntityName", title: "Related Entity", dataIndex: "relatedEntityName", render: v => v || "-" },
-  { key: "amount", title: "Total Amount Paid", dataIndex: "amount", sortable: true, render: v => v ? `₹${v}` : "-" },
+  // { key: "relatedEntityName", title: "Related Entity", dataIndex: "relatedEntityName", render: v => v || "-" },
   { key: "platformFee", title: "Platform Fee (20%)", dataIndex: "amount", render: v => v ? `₹${(v * 0.2).toFixed(2)}` : "-" },
   { key: "organizerShare", title: "Organizer/Instructor Share", dataIndex: "amount", render: v => v ? `₹${(v * 0.8).toFixed(2)}` : "-" },
   { key: "status", title: "Status", dataIndex: "status", sortable: true, render: v => v || "-" },
-  { key: "failureReason", title: "Failure Reason", dataIndex: "failureReason", render: v => v || "-" },
-  { key: "refundStatus", title: "Refund Status", dataIndex: "refundStatus", render: v => v || "-" },
-  { key: "refundAmount", title: "Refund Amount", dataIndex: "refundAmount", render: v => v ? `₹${v}` : "-" },
-  { key: "payoutStatus", title: "Payout Status", dataIndex: "payoutStatus", render: v => v || "-" },
-  { key: "payoutDate", title: "Payout Date", dataIndex: "payoutDate", render: v => v ? new Date(v).toLocaleDateString() : "-" },
-  { key: "beneficiary", title: "Beneficiary", dataIndex: "beneficiary", render: v => v || "-" },
-  { key: "settlementReferenceId", title: "Settlement Ref ID", dataIndex: "settlementReferenceId", render: v => v || "-" },
+  // { key: "failureReason", title: "Failure Reason", dataIndex: "failureReason", render: v => v || "-" },
+  // { key: "refundStatus", title: "Refund Status", dataIndex: "refundStatus", render: v => v || "-" },
+  // { key: "refundAmount", title: "Refund Amount", dataIndex: "refundAmount", render: v => v ? `₹${v}` : "-" },
+  // { key: "payoutStatus", title: "Payout Status", dataIndex: "payoutStatus", render: v => v || "-" },
+  // { key: "payoutDate", title: "Payout Date", dataIndex: "payoutDate", render: v => v ? new Date(v).toLocaleDateString() : "-" },
+  // { key: "beneficiary", title: "Beneficiary", dataIndex: "beneficiary", render: v => v || "-" },
+  // { key: "settlementReferenceId", title: "Settlement Ref ID", dataIndex: "settlementReferenceId", render: v => v || "-" },
 ];
 
 export default function AdminPaymentsPage() {

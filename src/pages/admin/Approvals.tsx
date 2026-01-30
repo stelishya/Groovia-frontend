@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Crown, Check, X, Calendar, Mail, User as UserIcon, MapPin, Award, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
-import AdminSidebar from '../../components/admin/Sidebar';
+import Sidebar from '../../components/admin/Sidebar';
 import { UserAxios } from '../../api/user.axios';
 
 interface UpgradeRequest {
@@ -124,7 +124,7 @@ const Approvals = () => {
 
     return (
         <div className="flex h-screen bg-[#0B1120]">
-            <AdminSidebar />
+            <Sidebar />
             <div className="flex-1 ml-64 overflow-y-auto">
                 <div className="min-h-screen p-6">
                     <div className="max-w-7xl mx-auto">
@@ -341,7 +341,8 @@ const Approvals = () => {
                 </div>
             </div>
 
-            {/* Confirmation Modal */}
+            {/* Confirmation Moda l */}
+
             {selectedRequest && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-2xl p-6 max-w-md w-full">
@@ -392,6 +393,7 @@ const Approvals = () => {
                         </div>
                     </div>
                 </div>
+
             )}
         </div>
     );

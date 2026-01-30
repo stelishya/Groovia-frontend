@@ -19,12 +19,12 @@ const ProfilePage: React.FC = () => {
 
     useEffect(() => {
         const token = localStorage.getItem('token');
-        
+
         // Reset attemptedHydrate when user exists (successful login/update)
         if (user && attemptedHydrate) {
             setAttemptedHydrate(false);
         }
-        
+
         // Only fetch if: no user, has token, haven't tried yet, and not currently hydrating
         if (!user && token && !attemptedHydrate && !hydrating) {
             setHydrating(true);

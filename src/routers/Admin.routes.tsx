@@ -13,10 +13,9 @@ import Payments from "../pages/admin/Payments";
 // import UserDetails from "@/pages/admin/UserDetails";
 
 
-const AdminRoutes = () => {
+const AdminPublicRoutes = () => {
   return (
-    // <Routes>
-<>
+    <>
       <Route
         path="/admin/login"
         element={
@@ -25,7 +24,13 @@ const AdminRoutes = () => {
           </PublicRoute>
         }
       />
+    </>
+  )
+}
 
+const AdminPrivateRoutes = () => {
+  return (
+    <>
       <Route
         path="/admin/"
         element={
@@ -44,7 +49,6 @@ const AdminRoutes = () => {
       />
       <Route path="/admin/logout" element={<AdminLogin />} />
 
-      {/* Example: */}
       <Route
         path="/admin/users"
         element={
@@ -61,13 +65,9 @@ const AdminRoutes = () => {
           </PrivateRoute>
         }
       />
-
-
-
-      {/* <Route path="*" element={<ErrorPage />} /> */}
-    {/* </Routes> */}
     </>
   );
 };
 
-export default AdminRoutes;
+export { AdminPublicRoutes, AdminPrivateRoutes };
+export default AdminPrivateRoutes;

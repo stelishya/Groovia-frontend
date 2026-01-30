@@ -6,20 +6,20 @@ import type { RootState } from '../../redux/store';
 import { getEventById } from '../../services/client/client.service';
 // import type { EventRequest } from '../../types/BookingsClient.type';
 import Checkout from '../../components/shared/Checkout';
-import type { EventRequest } from './BookingsClient';
+import type { DancerEventRequest } from '../../types/event.types';
 
 const EventCheckoutPage = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const location = useLocation();
     const user = useSelector((state: RootState) => state.user.userData);
-    const [eventRequest, setEventRequest] = useState<EventRequest | null>(null);
+    const [eventRequest, setEventRequest] = useState<DancerEventRequest | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchEventRequest = async () => {
             // Check if data was passed via navigation state
-            const stateEvent = location.state?.eventBooking as EventRequest | undefined;
+            const stateEvent = location.state?.eventBooking as DancerEventRequest | undefined;
             if (stateEvent) {
                 setEventRequest(stateEvent);
                 setLoading(false);

@@ -7,13 +7,13 @@ import ClientHome from '../client/ClientHome'; // Renders the client dashboard
 
 const HomePage: React.FC = () => {
     console.log("HOME PAGE")
-    const {userData:user,isLoading} = useSelector((state: RootState) => state.user);
+    const { userData: user, isLoading } = useSelector((state: RootState) => state.user);
 
-    if(isLoading){
+    if (isLoading) {
         return <div>Loading...</div>
     }
-    console.log("user in home page in Home.tsx : ",user)
-    
+    console.log("user in home page in Home.tsx : ", user)
+
     // Check for token before redirecting to prevent issues during state updates
     if (!user) {
         const token = localStorage.getItem('token');

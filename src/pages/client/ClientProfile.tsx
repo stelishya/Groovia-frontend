@@ -5,8 +5,6 @@ import { loginUser } from '../../redux/slices/user.slice';
 import { User, Edit2, Camera } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import Sidebar from '../../components/shared/Sidebar';
-import UserNavbar from '../../components/shared/Navbar';
 import FormModal from '../../components/ui/FormModal';
 import { ClientAxios } from '../../api/user.axios';
 import { validateUsername, validateEmail, validatePhone, validateBio } from '../../utils/validation';
@@ -216,11 +214,11 @@ const Profile = () => {
                 </div>
                 </div> */}
             <div className="flex h-screen bg-gray-900">
-                <Sidebar activeMenu='Profile' />
+                {/* <Sidebar activeMenu='Profile' /> */}
                 {/* Main Content */}
                 {/* <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8"> */}
-                <main className="flex-1 overflow-y-auto bg-deep-purple">
-                    <UserNavbar title='Profile' subTitle='View and manage your profile' />
+                <main className="flex-1 overflow-y-auto bg-[#0a0516]">
+                    {/* <UserNavbar title='Profile' subTitle='View and manage your profile' /> */}
                     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                         {/* Profile Card */}
                         <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl overflow-hidden border border-purple-500/30">

@@ -5,8 +5,6 @@ import { getPaymentHistory } from '../../services/payment/payment.service';
 import type { PaymentFilters } from '../../services/payment/payment.service';
 import { Search, Filter, CreditCard, ArrowUpDown, Loader2, X } from 'lucide-react';
 import toast from 'react-hot-toast';
-import Sidebar from '../../components/shared/Sidebar';
-import UserNavbar from '../../components/shared/Navbar';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../redux/store';
 
@@ -60,21 +58,21 @@ const PaymentHistory: React.FC = () => {
 
     return (
         <div className="flex min-h-screen bg-[#0a0516]">
-            <Sidebar activeMenu="Payments" />
+            {/* <Sidebar activeMenu="Payments" /> */}
 
             <div className="flex-1 flex flex-col min-w-0">
-                <UserNavbar />
 
                 <main className="flex-1 p-6 lg:p-8 overflow-y-auto custom-scrollbar">
+                {/* <UserNavbar title='Payment History' subTitle='Track all your transactions and bookings'/> */}
                     <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
                         {/* Header Section */}
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div>
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 ml-4">
+                            {/* <div>
                                 <h1 className="text-3xl font-bold bg-gradient-to-r from-white via-purple-200 to-purple-400 bg-clip-text text-transparent">
                                     Payment History
                                 </h1>
                                 <p className="text-purple-300/60 mt-2 font-medium">Track all your transactions and bookings</p>
-                            </div>
+                            </div> */}
 
                             <div className="flex items-center gap-2 px-4 py-2 bg-purple-900/20 border border-purple-500/20 rounded-xl">
                                 <span className="text-purple-300/80 text-sm">Total Transactions:</span>

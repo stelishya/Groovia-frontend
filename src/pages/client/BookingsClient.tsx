@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Search, X, MapPin, Calendar, ChevronRight, ChevronLeft, IndianRupee } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getClientEventRequests, updateEventBookingStatus } from '../../services/client/client.service';
-import Sidebar from '../../components/shared/Sidebar';
 import ConfirmationModal from '../../components/ui/ConfirmationModal';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -12,7 +11,7 @@ import L from 'leaflet';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-import UserNavbar from '../../components/shared/Navbar';
+import type { DancerEventRequest } from '../../types/event.types';
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -21,54 +20,20 @@ L.Icon.Default.mergeOptions({
     shadowUrl: markerShadow,
 });
 
-interface Dancer {
-    _id: string;
-    username: string;
-    profileImage?: string;
-    danceStyles?: string[];
-}
-
-export interface EventRequest {
-    _id: string;
-    dancerId: Dancer | null;
-    event: string;
-    date: string;
-    venue: string;
-    budget: string;
-    status: 'pending' | 'accepted' | 'rejected' | 'completed' | 'confirmed' | 'cancelled';
-    acceptedAmount?: number;
-    paymentStatus?: 'pending' | 'failed' | 'paid';
-}
-
-
-// const Header = () => (
-//     <header className="flex justify-between items-center mb-8">
-//         <div>
-//             <h1 className="text-3xl font-bold text-white">Bookings Management</h1>
-//             <p className="text-gray-400">Manage your event requests</p>
-//         </div>
-//         <div className="flex items-center space-x-4">
-//             <Bell className="text-white" />
-//             <img src="https://i.pravatar.cc/40?img=33" alt="User" className="w-10 h-10 rounded-full" />
-//         </div>
-//     </header>
-// );
-
 const RequestCard = ({
     request,
     onCancelClick,
     onViewMap,
     onPaymentClick
 }: {
-    request: EventRequest,
+    request: DancerEventRequest,
     onCancelClick: (id: string) => void,
     onViewMap: (venue: string) => void,
-    onPaymentClick: (request: EventRequest) => void
+    onPaymentClick: (request: DancerEventRequest) => void
 }) => (
     <div className="bg-gradient-to-br from-deep-purple to-purple-500 rounded-lg p-6">
         <div className="flex justify-between items-start">
             {/* Left side - Dancer Info */}
-            {/* <div className="flex-1 pr-1"> */}
             <div className="flex items-start mr-4">
                 <div className="flex-shrink-0">
                     <img
@@ -91,7 +56,6 @@ const RequestCard = ({
                     </div>
                 </div>
             </div>
-            {/* </div> */}
 
             {/* Vertical Divider */}
             <div className="h-24 w-px bg-white/30"></div>
@@ -103,7 +67,6 @@ const RequestCard = ({
                         <h4 className="text-sm font-semibold text-white/80 mb-1">Event Details</h4>
                         <p className="text-white font-medium">{request.event}</p>
                     </div>
-                    {/* <span className={`text-xs px-3 py-1 rounded-full ${request.status === 'pending' ? 'bg-yellow-500 text-black' : 'bg-green-500 text-white'}`}> */}
                     <span className={`text-xs px-2 py-1 rounded-full mb-2 ${request.status === 'pending' ? 'bg-yellow-500 text-black' :
                         request.status === 'rejected' ? 'bg-red-500 text-white' :
                             'bg-green-500 text-white'
@@ -119,8 +82,6 @@ const RequestCard = ({
                             year: 'numeric',
                             month: 'short',
                             day: 'numeric',
-                            // hour: '2-digit',
-                            // minute: '2-digit'
                         })}</span>
                     </div>
                     <div className="flex items-center text-white/90">
@@ -152,7 +113,6 @@ const RequestCard = ({
         <div className="flex justify-end mt-4 space-x-3">
             {request.status === 'pending' && (
                 <>
-                    {/* <button className="bg-green-500 text-white px-3 py-1 rounded-md text-sm">Accept</button> */}
                     <button onClick={() => onCancelClick(request._id)} className="bg-orange-500/70 text-white font-bold px-3 py-2 rounded-md text-sm">Cancel Request</button>
                 </>
             )}
@@ -180,11 +140,10 @@ const RequestCard = ({
             )}
         </div>
     </div>
-    // </div>
 );
 
 const BookingsPage = () => {
-    const [requests, setRequests] = useState<EventRequest[]>([]);
+    const [requests, setRequests] = useState<DancerEventRequest[]>([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize] = useState(5);
@@ -236,7 +195,7 @@ const BookingsPage = () => {
         try {
             // Geocode the venue address
             const response = await fetch(
-                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(venue)}&limit=1`
+                `${import.meta.env.VITE_OPENSTREETMAP_URL}?format=json&q=${encodeURIComponent(venue)}&limit=1`
             );
             const data = await response.json();
             if (data && data.length > 0) {
@@ -253,9 +212,7 @@ const BookingsPage = () => {
         }
     };
 
-    // Razorpay Logic
-    // Razorpay Logic - MOVED TO CHECKOUT PAGE
-    const handlePayment = (request: EventRequest) => {
+    const handlePayment = (request: DancerEventRequest) => {
         if (!request.acceptedAmount) {
             toast.error("No accepted amount to pay.");
             return;
@@ -303,12 +260,10 @@ const BookingsPage = () => {
     }, [currentPage, pageSize, search, status, sortBy]);
 
     return (
-        <div className="flex-grow p-8 bg-deep-purple text-white overflow-y-auto">
+        <div className="flex-grow p-8 bg-[#0a0516] text-white overflow-y-auto">
             {/* <Header /> */}
-            <UserNavbar title="Bookings Management" subTitle="Manage your bookings" />
             <div className="flex border-b border-purple-700 mb-6">
                 <button className="py-2 px-4 text-white border-b-2 border-purple-500 font-semibold">Event Requests History ({requests.length})</button>
-                {/* <button className="py-2 px-4 text-gray-400">Booked Workshops (0)</button> */}
             </div>
             <div className="flex justify-between items-center mb-6">
                 <div className="relative w-1/3">
@@ -426,16 +381,6 @@ const BookingsPage = () => {
                         )}
                     </div>
                 </div>
-                // <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-                //     <div className="bg-purple-800 rounded-lg p-6 w-full max-w-md mx-4">
-                //         <h2 className="text-xl font-bold text-white mb-4">Confirm Cancellation</h2>
-                //         <p className="text-gray-300 mb-6">Are you sure you want to cancel this booking request?</p>
-                //         <div className="flex justify-end space-x-4">
-                //             <button onClick={() => setModalOpen(false)} className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors">Keep Request</button>
-                //             <button onClick={confirmCancel} className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors">Confirm</button>
-                //         </div>
-                //     </div>
-                // </div>
             )}
         </div>
     );
@@ -446,7 +391,6 @@ const BookingsPage = () => {
 const BookingsClient: React.FC = () => {
     return (
         <div className="flex h-screen bg-gray-900">
-            <Sidebar activeMenu='Bookings' />
             <BookingsPage />
         </div>
     );

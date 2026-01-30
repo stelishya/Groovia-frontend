@@ -12,7 +12,7 @@ import { useNavigate } from 'react-router-dom';
 
 
 import { createEventBookingPayment, verifyEventBookingPayment } from '../../services/client/client.service';
-import type { EventRequest } from '../../pages/client/BookingsClient';
+import type { DancerEventRequest } from '../../types/event.types';
 
 // const { userData } = useSelector((state: RootState) => state.user);
 
@@ -22,7 +22,7 @@ interface PaymentProps {
   onCancel?: () => void;
   upgradeRequest?: UpgradeStatus; // For role upgrade payments
   workshop?: Workshop; // For workshop booking payments
-  eventRequest?: EventRequest;
+  eventRequest?: DancerEventRequest;
 }
 
 export enum PaymentType {

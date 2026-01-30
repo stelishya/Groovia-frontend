@@ -1,20 +1,14 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { Search, X, ChevronLeft, ChevronRight } from "lucide-react";
-import Sidebar from "../../components/shared/Sidebar";
-import UserNavbar from "../../components/shared/Navbar";
+import { ArrowRight } from "lucide-react";
 import WorkshopCard from "../../components/ui/WorkshopCard";
 import CompetitionCard from "../../components/ui/CompetitionCard";
 import { getAllWorkshops } from "../../services/workshop/workshop.service";
 import { getAllCompetitions } from "../../services/competition.service";
 import type { Workshop } from "../../types/workshop.type";
 import type { Competition } from "../../services/competition.service";
-import type { RootState } from "../../redux/store";
-import { DanceStyles } from "../../utils/constants/danceStyles";
-import CustomSelect from "../../components/ui/CustomSelect";
 
-const CompetitionsSection = () => {
+export const CompetitionsSection = () => {
     const [competitions, setCompetitions] = useState<Competition[]>([]);
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
@@ -23,11 +17,14 @@ const CompetitionsSection = () => {
         const fetchCompetitions = async () => {
             setLoading(true);
             try {
-                const data = await getAllCompetitions();
-                console.log("all competitions: ", data);
-                // API returns an object { data: Competition[], total, page, totalPages }
-                const list = Array.isArray(data) ? data : data?.data || [];
-                setCompetitions(list);
+                // Fetch top 3 most booked (popularity) competitions
+                const response = await getAllCompetitions({
+                    sortBy: 'popularity',
+                    status: 'active',
+                    limit: '3'
+                } as any);
+                const list = response?.data || [];
+                setCompetitions(list.slice(0, 3));
             } catch (error) {
                 console.error("Failed to fetch competitions:", error);
             } finally {
@@ -38,7 +35,7 @@ const CompetitionsSection = () => {
     }, []);
 
     const getStatusColor = (status: string) => {
-        switch (status) {
+        switch (status?.toLowerCase()) {
             case "active": return "bg-green-500 text-white";
             case "closed": return "bg-red-500 text-white";
             case "completed": return "bg-blue-500 text-white";
@@ -47,10 +44,10 @@ const CompetitionsSection = () => {
     };
 
     return (
-        <div className="min-h-screen mt-12 p-6 rounded-xl">
-            <div className="flex justify-between items-center mb-8">
+        <div className="mt-12 p-6 rounded-xl">
+            <div className="mb-8">
                 <h1 className="text-3xl font-semibold text-purple-500">
-                    Upcoming Competitions
+                    Top Competitions
                 </h1>
             </div>
 
@@ -59,19 +56,30 @@ const CompetitionsSection = () => {
                     <p className="text-white text-xl">Loading competitions...</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {competitions.length > 0 ? (
-                        competitions.map((competition) => (
-                            <CompetitionCard
-                                key={competition._id}
-                                competition={competition}
-                                isOrganizer={false}
-                                onViewDetails={(comp) => navigate(`/competition/${comp._id}`)}
-                                getStatusColor={getStatusColor}
-                            />
-                        ))
+                        <>
+                            {competitions.map((competition) => (
+                                <CompetitionCard
+                                    key={competition._id}
+                                    competition={competition}
+                                    isOrganizer={false}
+                                    onViewDetails={(comp) => navigate(`/competition/${comp._id}`)}
+                                    getStatusColor={getStatusColor}
+                                />
+                            ))}
+                            <div
+                                onClick={() => navigate('/competitions')}
+                                className="flex flex-col items-center justify-center p-6 bg-white/5 border border-purple-500/20 rounded-xl cursor-pointer hover:bg-white/10 transition-all group min-h-[300px]"
+                            >
+                                <div className="p-4 rounded-full bg-purple-500/20 group-hover:bg-purple-500/30 transition-colors mb-4">
+                                    <ArrowRight size={32} className="text-purple-400 group-hover:text-purple-300 transition-colors" />
+                                </div>
+                                <span className="text-xl font-medium text-purple-300 group-hover:text-white transition-colors">Explore More</span>
+                            </div>
+                        </>
                     ) : (
-                        <p className="text-center col-span-full text-gray-500 text-2xl">
+                        <p className="text-center col-span-full text-gray-500 text-2xl py-12">
                             No upcoming competitions found 🏆
                         </p>
                     )}
@@ -81,45 +89,25 @@ const CompetitionsSection = () => {
     );
 };
 
-const Dashboard = ({ userData }: { userData: any }) => {
+const Dashboard = () => {
     const navigate = useNavigate();
     const [workshops, setWorkshops] = useState<Workshop[]>([]);
     const [loading, setLoading] = useState(false);
 
-    // Filter & Search States
-    const [searchQuery, setSearchQuery] = useState('');
-    const [styleFilter, setStyleFilter] = useState('');
-    const [modeFilter, setModeFilter] = useState(''); // Online/Offline
-    const [sortBy, setSortBy] = useState('startDate'); // startDate, fee, title
-
-    // Pagination States
-    const [currentPage, setCurrentPage] = useState(1);
-    const [totalWorkshops, setTotalWorkshops] = useState(0);
-    const pageSize = 8; // 8 workshops per page (2 rows of 4)
-    console.log("userdata in dancerhome", userData)
     const fetchWorkshops = async () => {
         setLoading(true);
         try {
             const params = new URLSearchParams();
-
-            // Add search query
-            if (searchQuery) params.append('search', searchQuery);
-
-            // Add filters
-            if (styleFilter) params.append('style', styleFilter);
-            if (modeFilter) params.append('mode', modeFilter);
-
-            // Add sorting
-            if (sortBy) params.append('sortBy', sortBy);
-
-            // Add pagination
-            params.append('page', currentPage.toString());
-            params.append('limit', pageSize.toString());
+            params.append('sortBy', 'popularity');
+            params.append('status', 'upcoming');
+            params.append('page', '1');
+            params.append('limit', '3');
+            params.append('skipTotal', 'true');
 
             const response = await getAllWorkshops(params);
             if (response.success && response.data) {
-                setWorkshops(Array.isArray(response.data) ? response.data : response.data.workshops || []);
-                setTotalWorkshops(response.data.total || response.data.length || 0);
+                const list = Array.isArray(response.data) ? response.data : response.data.workshops || [];
+                setWorkshops(list.slice(0, 3));
             }
         } catch (error) {
             console.error("Failed to fetch workshops:", error);
@@ -130,92 +118,28 @@ const Dashboard = ({ userData }: { userData: any }) => {
     };
 
     useEffect(() => {
-        const handler = setTimeout(() => {
-            fetchWorkshops();
-        }, 500); // Debounce search
-
-        return () => clearTimeout(handler);
-    }, [searchQuery, styleFilter, modeFilter, sortBy, currentPage]);
+        fetchWorkshops();
+    }, []);
 
     return (
-        <main className="flex-grow p-8 bg-deep-purple text-white overflow-y-auto">
-            <UserNavbar />
-
-            <div className="mt-8">
+        <div className="p-4 text-white bg-[#0a0516]">
+            <div className="pl-12 pt-8">
                 <h1 className="text-5xl font-light leading-tight">LEARN, PERFORM, COMPETE,<br />TEACH – ALL IN ONE PLATFORM</h1>
-                <p className="text-gray-400 mt-4 max-w-lg">Your ultimate destination for dance education, competitive showcases, and community engagement.</p>
-                <button className="mt-8 px-10 py-4 font-bold text-white rounded-full bg-gradient-to-r from-pink-500 to-orange-400 hover:opacity-90">Explore Opportunities</button>
+                <p className="text-purple-400/80 font-medium mt-4 max-w-lg">Your ultimate destination for dance education, competitive showcases, and community engagement.</p>
+                <button
+                    onClick={() => navigate('/workshops')}
+                    className="mt-8 px-10 py-4 font-bold text-white rounded-full bg-gradient-to-r from-pink-500 to-orange-400 hover:opacity-90 transition-opacity"
+                >
+                    Explore Opportunities
+                </button>
             </div>
 
             {/* Workshops Feed Section */}
-            <div className="min-h-screen mt-12 p-6 rounded-xl">
-                <div className="flex justify-between items-center mb-8">
+            <div className="mt-16 p-6 rounded-xl">
+                <div className="mb-8">
                     <h1 className="text-3xl font-semibold text-purple-500">
-                        Upcoming Workshops
+                        Popular Workshops
                     </h1>
-                </div>
-
-                {/* Search and Filters */}
-                <div className="flex flex-wrap gap-4 mb-8">
-                    {/* Search Bar */}
-                    <div className="relative flex-1 w-[500px] min-w-[250px]">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-300" size={20} />
-                        <input
-                            type="text"
-                            placeholder="Search workshops..."
-                            value={searchQuery}
-                            onChange={(e) => {
-                                setSearchQuery(e.target.value);
-                                setCurrentPage(1); // Reset to first page on search
-                            }}
-                            className="w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        />
-                        {searchQuery && (
-                            <X
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-purple-300 cursor-pointer hover:text-white"
-                                size={20}
-                                onClick={() => setSearchQuery('')}
-                            />
-                        )}
-                    </div>
-
-
-                    {/* Dance Style Filter */}
-                    <CustomSelect
-                        options={Object.values(DanceStyles)}
-                        value={styleFilter}
-                        onChange={(val) => {
-                            setStyleFilter(val);
-                            setCurrentPage(1);
-                        }}
-                        placeholder="All Styles"
-                        className="min-w-[160px]"
-                    />
-
-                    {/* Mode Filter */}
-                    <select
-                        value={modeFilter}
-                        onChange={(e) => {
-                            setModeFilter(e.target.value);
-                            setCurrentPage(1);
-                        }}
-                        className="bg-[#a855f7] text-white px-4 py-2 rounded-lg focus:outline-none"
-                    >
-                        <option value="">All Modes</option>
-                        <option value="Online">Online</option>
-                        <option value="Offline">Offline</option>
-                    </select>
-
-                    {/* Sort By */}
-                    <select
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value)}
-                        className="bg-[#a855f7] text-white px-4 py-2 rounded-lg focus:outline-none"
-                    >
-                        <option value="startDate">Sort by Date</option>
-                        <option value="fee">Sort by Price</option>
-                        <option value="title">Sort by Title</option>
-                    </select>
                 </div>
 
                 {loading ? (
@@ -223,77 +147,53 @@ const Dashboard = ({ userData }: { userData: any }) => {
                         <p className="text-white text-xl">Loading workshops...</p>
                     </div>
                 ) : (
-                    <>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                            {workshops.length > 0 ? (
-                                workshops.map((workshop) => (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {workshops.length > 0 ? (
+                            <>
+                                {workshops.map((workshop) => (
                                     <WorkshopCard
                                         key={workshop._id}
                                         image={workshop.posterImage}
                                         title={workshop.title}
                                         category={workshop.style}
                                         price={workshop.fee}
-                                        instructorName={workshop.instructor.username}
+                                        instructorName={workshop.instructor?.username || 'Unknown'}
                                         studioName={workshop.location || 'Online'}
                                         date={workshop.startDate}
-                                        deadline={workshop.deadline}
                                         onBook={() => navigate(`/workshop/${workshop._id}`)}
                                     />
-                                ))
-                            ) : (
-                                <p className="text-center col-span-full text-gray-500 text-2xl">
-                                    No upcoming workshops found 🎭
-                                </p>
-                            )}
-                        </div>
-                        {/* Pagination */}
-                        {workshops.length > 0 && (
-                            <div className="flex justify-between items-center mt-8 pt-6 border-t border-purple-700">
-                                <div className="text-gray-300">
-                                    Showing {workshops.length} of {totalWorkshops} workshops
+                                ))}
+                                <div
+                                    onClick={() => navigate('/workshops')}
+                                    className="flex flex-col items-center justify-center p-6 bg-white/5 border border-purple-500/20 rounded-xl cursor-pointer hover:bg-white/10 transition-all group min-h-[300px]"
+                                >
+                                    <div className="p-4 rounded-full bg-purple-500/20 group-hover:bg-purple-500/30 transition-colors mb-4">
+                                        <ArrowRight size={32} className="text-purple-400 group-hover:text-purple-300 transition-colors" />
+                                    </div>
+                                    <span className="text-xl font-medium text-purple-300 group-hover:text-white transition-colors">Explore More</span>
                                 </div>
-                                <div className="flex items-center gap-4">
-                                    <button
-                                        onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
-                                        disabled={currentPage === 1}
-                                        className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-700 transition-colors flex items-center gap-2"
-                                    >
-                                        <ChevronLeft size={20} />
-                                        Previous
-                                    </button>
-                                    <span className="text-white">
-                                        Page {currentPage} of {Math.ceil(totalWorkshops / pageSize)}
-                                    </span>
-                                    <button
-                                        onClick={() => setCurrentPage(p => p + 1)}
-                                        disabled={currentPage >= Math.ceil(totalWorkshops / pageSize)}
-                                        className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-700 transition-colors flex items-center gap-2"
-                                    >
-                                        Next
-                                        <ChevronRight size={20} />
-                                    </button>
-                                </div>
-                            </div>
+                            </>
+                        ) : (
+                            <p className="text-center col-span-full text-gray-500 text-2xl py-12">
+                                No upcoming workshops found 🎭
+                            </p>
                         )}
-                    </>
+                    </div>
                 )}
             </div>
 
             {/* Competitions Feed Section */}
             <CompetitionsSection />
-                <div className="mt-8 text-center text-gray-500 text-sm">
-                    © {new Date().getFullYear()} Groovia. All rights reserved.
-                </div>
-        </main >
+
+            <div className="mt-20 py-8 text-center text-gray-500 text-sm border-t border-purple-900/30">
+                © {new Date().getFullYear()} Groovia. All rights reserved.
+            </div>
+        </div>
     )
 };
 
 export default function Home() {
-    const { userData } = useSelector((state: RootState) => state.user)
     return (
-        <div className="flex h-screen bg-gray-900">
-            <Sidebar activeMenu="Home" />
-            <Dashboard userData={userData} />
-        </div>
+        <Dashboard />
     );
 }
