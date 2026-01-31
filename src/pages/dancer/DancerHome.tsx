@@ -20,7 +20,7 @@ export const CompetitionsSection = () => {
                 // Fetch top 3 most booked (popularity) competitions
                 const response = await getAllCompetitions({
                     sortBy: 'popularity',
-                    status: 'active',
+                    status: 'upcoming',
                     limit: '3'
                 } as any);
                 const list = response?.data || [];

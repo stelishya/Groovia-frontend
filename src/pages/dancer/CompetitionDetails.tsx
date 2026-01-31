@@ -372,12 +372,14 @@ export default function CompetitionDetails() {
                                         </button>
                                     )
                                 ) : (
-                                    <button
-                                        onClick={() => navigate(`/competition/${competition._id}/checkout`)}
-                                        className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 hover:opacity-90 text-white font-semibold py-4 text-lg rounded-lg transition-all duration-300 hover:scale-105"
-                                    >
-                                        Register Now
-                                    </button>
+                                    userData?.role?.includes('dancer') && (
+                                        <button
+                                            onClick={() => navigate(`/competition/${competition._id}/checkout`)}
+                                            className="w-full bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 hover:opacity-90 text-white font-semibold py-4 text-lg rounded-lg transition-all duration-300 hover:scale-105"
+                                        >
+                                            Register Now
+                                        </button>
+                                    )
                                 )}
                             </div>
 

@@ -104,7 +104,7 @@ export default function AuthLogin({
         try {
           // Send credential + role to backend
           console.log('📤 Sending to backend:', { role });
-          const url = `${import.meta.env.VITE_SERVER_URL}/auth/common/google`;
+          const url = `${import.meta.env.VITE_SERVER_URL}/api/auth/common/google`;
           const { data } = await axios.post(url, { credential, role });
           console.log('📥 Backend response:', data);
           if (!data.success) {

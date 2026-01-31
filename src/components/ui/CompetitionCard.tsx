@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, MapPin, User, ArrowUpRight, Users } from 'lucide-react';
+import { Calendar, MapPin, User, ArrowUpRight } from 'lucide-react';
 import { type Competition } from '../../services/competition.service';
 
 interface CompetitionCardProps {
@@ -96,19 +96,21 @@ const CompetitionCard: React.FC<CompetitionCardProps> = ({
                             <span className="truncate">{competition.location}</span>
                         </div>
                     )}
-                    <div className="flex items-center text-white/90 text-sm">
+                    {/* <div className="flex items-center text-white/90 text-sm">
                         <Users size={16} className="mr-2 flex-shrink-0" />
                         <span>{competition.registeredDancers.length} / {competition.maxParticipants} participants</span>
-                    </div>
+                    </div> */}
                 </div>
 
                 {/* Action Buttons */}
                 <div className="mt-auto flex gap-2">
-                    {competition.registeredDancers.length >= competition.maxParticipants ? (
-                        <button className="bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold w-full cursor-not-allowed shadow-md">
-                            Fully Booked
-                        </button>
-                    ) : paymentStatus === 'failed' && onRetryPayment ? (
+                    {
+                    // competition.registeredDancers.length >= competition.maxParticipants ? (
+                    //     <button className="bg-gray-500 text-white px-4 py-2 rounded-lg font-semibold w-full cursor-not-allowed shadow-md">
+                    //         Fully Booked
+                    //     </button>
+                    // ) : 
+                    paymentStatus === 'failed' && onRetryPayment ? (
                         <>
                             <button
                                 onClick={() => onViewDetails(competition)}
@@ -129,7 +131,7 @@ const CompetitionCard: React.FC<CompetitionCardProps> = ({
                                 onClick={() => onViewDetails(competition)}
                                 className="bg-purple-600/80 hover:bg-purple-600 text-white px-3 py-2 rounded-lg text-sm font-semibold flex-1 transition-colors duration-200"
                             >
-                                 View Details
+                                View Details
                             </button>
                             {!isOrganizer && onRegister && (
                                 <button
