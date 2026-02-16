@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { type RootState } from '../../redux/store';
 import { loginUser } from '../../redux/slices/user.slice';
-import { User, Edit2, Camera } from 'lucide-react';
+import { User, Edit2, Camera, Settings, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import Sidebar from '../../components/shared/Sidebar';
@@ -14,6 +14,7 @@ import UpgradeRoleModal, { UpgradeRoleSection } from '../../components/shared/Up
 import { upgradeService, type UpgradeStatus } from '../../services/user/upgradeRole.service';
 import ProfileImageModal from '../../components/ui/ProfileImageModal';
 import { uploadClientProfilePicture } from '../../services/client/client.service';
+import { changePassword } from '../../services/user/auth.service';
 
 const Profile = () => {
     const navigate = useNavigate();
@@ -23,6 +24,16 @@ const Profile = () => {
     // const [isRefreshing, setIsRefreshing] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [showImageModal, setShowImageModal] = useState(false);
+
+    const [passwordData, setPasswordData] = useState({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+    });
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
+    const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [profileData, setProfileData] = useState({
         username: userData?.username || '',
         email: userData?.email || '',
@@ -104,6 +115,35 @@ const Profile = () => {
     //     }
     // };
 
+    const handleChangePassword = async () => {
+        if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
+            toast.error('Please fill in all password fields');
+            return;
+        }
+
+        if (passwordData.newPassword !== passwordData.confirmPassword) {
+            toast.error('New passwords do not match');
+            return;
+        }
+
+        if (passwordData.newPassword.length < 6) {
+            toast.error('Password must be at least 6 characters long');
+            return;
+        }
+
+        try {
+            await changePassword({
+                currentPassword: passwordData.currentPassword,
+                newPassword: passwordData.newPassword
+            });
+            setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+            setShowPasswordModal(false);
+            // toast.success('Password changed successfully');
+        } catch (error) {
+            // Error handled in service
+        }
+    };
+
     const handleImageClick = () => {
         setShowImageModal(true);
     };
@@ -158,10 +198,10 @@ const Profile = () => {
             }
         } catch (error: any) {
             console.error('❌ Profile update error:', error);
-            
+
             // Extract error message from various possible response structures
             let errorMessage = 'Failed to update profile';
-            
+
             if (error.response?.data) {
                 const data = error.response.data;
                 // Handle different error response formats
@@ -171,7 +211,7 @@ const Profile = () => {
                     errorMessage = data.message;
                 }
             }
-            
+
             toast.error(errorMessage);
         }
     }
@@ -220,7 +260,7 @@ const Profile = () => {
                 {/* Main Content */}
                 {/* <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8"> */}
                 <main className="flex-1 overflow-y-auto bg-deep-purple">
-                    <UserNavbar title='Profile' subTitle='View and manage your profile'/>
+                    <UserNavbar title='Profile' subTitle='View and manage your profile' />
                     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                         {/* Profile Card */}
                         <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl overflow-hidden border border-purple-500/30">
@@ -282,6 +322,13 @@ const Profile = () => {
                                 >
                                     <Edit2 size={18} className="mr-2" />
                                     Edit Profile
+                                </button>
+                                <button
+                                    onClick={() => setShowPasswordModal(true)}
+                                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center transition-colors ml-4"
+                                >
+                                    <Settings size={18} className="mr-2" />
+                                    Change Password
                                 </button>
                             </div>
 
@@ -414,6 +461,76 @@ const Profile = () => {
                     )}
                 </div>
             </FormModal>
+
+            {/* Change Password Modal */}
+            <FormModal
+                isOpen={showPasswordModal}
+                onClose={() => setShowPasswordModal(false)}
+                title="Change Password"
+                icon={<Settings className="text-purple-300" size={32} />}
+                onSubmit={handleChangePassword}
+                submitText="Update Password"
+                submitButtonClass="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+            >
+                <div>
+                    <label className="block text-white font-medium mb-2">Current Password</label>
+                    <div className="relative">
+                        <input
+                            type={showCurrentPassword ? "text" : "password"}
+                            value={passwordData.currentPassword}
+                            onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                            className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            placeholder="Enter current password"
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-white transition-colors"
+                        >
+                            {showCurrentPassword ? <Eye className="w-5 h-5 text-white" /> : <EyeOff className="w-5 h-5 text-white" />}
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <label className="block text-white font-medium mb-2">New Password</label>
+                    <div className="relative">
+                        <input
+                            type={showNewPassword ? "text" : "password"}
+                            value={passwordData.newPassword}
+                            onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                            className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            placeholder="Enter new password (min 6 chars)"
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowNewPassword(!showNewPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-white transition-colors"
+                        >
+                            {showNewPassword ? <Eye className="w-5 h-5 text-white" /> : <EyeOff className="w-5 h-5 text-white" />}
+                        </button>
+                    </div>
+                </div>
+                <div>
+                    <label className="block text-white font-medium mb-2">Confirm New Password</label>
+                    <div className="relative">
+                        <input
+                            type={showConfirmPassword ? "text" : "password"}
+                            value={passwordData.confirmPassword}
+                            onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                            className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            placeholder="Confirm new password"
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-white transition-colors"
+                        >
+                            {showConfirmPassword ? <Eye className="w-5 h-5 text-white" /> : <EyeOff className="w-5 h-5 text-white" />}
+                        </button>
+                    </div>
+                </div>
+            </FormModal>
+
             <ProfileImageModal
                 isOpen={showImageModal}
                 imageUrl={userData?.profileImage}

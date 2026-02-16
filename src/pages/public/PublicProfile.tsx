@@ -462,7 +462,7 @@ const PublicProfile = () => {
                         </div> */}
 
                         {/* Contact & Social */}
-                        <div className="text-center py-12 space-y-8">
+                        {/* <div className="text-center py-12 space-y-8">
                             <h2 className="text-3xl font-bold text-white">Contact & Social Media</h2>
 
                             <div className="inline-block bg-[#c084fc] rounded-2xl p-8 max-w-2xl w-full relative overflow-hidden">
@@ -485,7 +485,6 @@ const PublicProfile = () => {
                                                 <LinkIcon className="text-white" size={24} />
                                             </a>
                                         ))}
-                                        {/* Fallback icons if no links */}
                                         {(!profileUser.portfolioLinks || profileUser.portfolioLinks.length === 0) && (
                                             <div className="flex gap-4">
                                                 <div className="bg-white/20 p-2 rounded-lg"><Instagram className="text-white" /></div>
@@ -495,7 +494,7 @@ const PublicProfile = () => {
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </div> */}
 
                         {/* Footer */}
                         <footer className="bg-[#6d28d9] rounded-t-3xl mt-12 p-8 text-white">

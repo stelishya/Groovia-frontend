@@ -141,10 +141,10 @@ const Dashboard = ({ userData }: { userData: any }) => {
         <main className="flex-grow p-8 bg-deep-purple text-white overflow-y-auto">
             <UserNavbar />
 
-            <div className="mt-8">
+            <div className="mt-8 ml-8">
                 <h1 className="text-5xl font-light leading-tight">LEARN, PERFORM, COMPETE,<br />TEACH – ALL IN ONE PLATFORM</h1>
                 <p className="text-gray-400 mt-4 max-w-lg">Your ultimate destination for dance education, competitive showcases, and community engagement.</p>
-                <button className="mt-8 px-10 py-4 font-bold text-white rounded-full bg-gradient-to-r from-pink-500 to-orange-400 hover:opacity-90">Explore Opportunities</button>
+                {/* <button className="mt-8 px-10 py-4 font-bold text-white rounded-full bg-gradient-to-r from-pink-500 to-orange-400 hover:opacity-90">Explore Opportunities</button> */}
             </div>
 
             {/* Workshops Feed Section */}
