@@ -521,7 +521,7 @@ const PublicProfile = () => {
                                 <div className="text-2xl font-bold tracking-wider">Groovia</div>
                             </div>
                             <div className="text-center text-xs text-purple-200 mt-8">
-                                ©2025 Groovia. All rights reserved.
+                                ©{new Date().getFullYear()} Groovia. All rights reserved.
                             </div>
                         </footer>
 
