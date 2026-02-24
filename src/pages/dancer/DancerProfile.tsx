@@ -28,8 +28,6 @@ const Profile = () => {
     const [showImageModal, setShowImageModal] = useState(false);
     const [upgradeRequests, setUpgradeRequests] = useState<UpgradeStatus[]>([]);
     const [loadingUpgradeStatus, setLoadingUpgradeStatus] = useState(true);
-    // const [isRefreshing, setIsRefreshing] = useState(false);
-    // const [isEditingProfile, setIsEditingProfile] = useState(false);
     const [profileData, setProfileData] = useState({
         username: userData?.username || '',
         email: userData?.email || '',
@@ -233,6 +231,52 @@ const Profile = () => {
 
     const handleProfileUpdate = async () => {
         try {
+            // Validation: Username
+            if (profileData.username) {
+                if (profileData.username.length < 2 || profileData.username.length > 24) {
+                    toast.error('Username must be between 2 and 24 characters');
+                    return;
+                }
+                if (!/^[a-zA-Z]+$/.test(profileData.username)) {
+                    toast.error('Username must contain only letters');
+                    return;
+                }
+            }
+
+            const validateEmail = (email: string) => {
+                const emailRegex = /^[^\s@]+@[^\s_+.!#$%^&*()]+\.[a-zA-Z]+$/
+                return emailRegex.test(email)
+            }
+            if (!profileData.email) {
+                toast.error("Email is required")
+                return 
+            } else if (profileData.email.length < 5) {
+                toast.error("Email must be at least 5 characters")
+                return
+            } else if (profileData.email.length > 100) {
+                toast.error("Email must be less than 100 characters")
+                return 
+            } else if (!validateEmail(profileData.email)) {
+                toast.error("Please enter a valid email address")
+                return
+            }
+
+            // Validation: Phone
+            if (profileData.phone && !/^[0-9]{10}$/.test(profileData.phone)) {
+                toast.error('Phone number must be exactly 10 digits');
+                return;
+            }
+
+            // Validation: Portfolio Links
+            if (profileData.portfolioLinks?.length > 0) {
+                const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+                const invalidLinks = profileData.portfolioLinks.filter(link => !urlRegex.test(link));
+                if (invalidLinks.length > 0) {
+                    toast.error('Please provide valid URLs for social media links');
+                    return;
+                }
+            }
+
             // Validation: Experience years
             const expValidation = validateExperienceYears(profileData.experienceYears, 50);
             if (!expValidation.isValid) {
@@ -676,7 +720,7 @@ const Profile = () => {
                         value={profileData.phone}
                         onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
                         className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        placeholder="+91 98765-43210"
+                        placeholder="9876543210"
                     />
                 </div>
                 {/* Bio */}

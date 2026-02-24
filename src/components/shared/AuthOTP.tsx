@@ -12,14 +12,7 @@ import AuthAxios from "../../api/auth.axios";
 
 const AuthOTP: React.FC = () => {
   const [otp, setOtp] = useState<string[]>(new Array(6).fill(""));
-  const [timeLeft, setTimeLeft] = useState(() => {
-    const storedExpiry = localStorage.getItem('otpExpiryTime');
-    if (storedExpiry) {
-      const remaining = Math.floor((Number(storedExpiry) - Date.now()) / 1000);
-      return remaining > 0 ? remaining : 30;
-    }
-    return 30;
-  });
+  const [timeLeft, setTimeLeft] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
 
@@ -30,26 +23,31 @@ const AuthOTP: React.FC = () => {
   const pendingDataString = localStorage.getItem('pendingSignupData');
   const email = pendingDataString ? JSON.parse(pendingDataString).email : null;
 
-  // Persist timer
+  // On mount: if no stored expiry exists yet, set one now (30s from now)
   useEffect(() => {
-    if (timeLeft > 0) {
-      const expiryTime = Date.now() + timeLeft * 1000;
-      localStorage.setItem('otpExpiryTime', expiryTime.toString());
-    } else {
-      localStorage.removeItem('otpExpiryTime');
+    const stored = localStorage.getItem('otpExpiryTime');
+    if (!stored) {
+      localStorage.setItem('otpExpiryTime', (Date.now() + 30_000).toString());
     }
-  }, [timeLeft]);
+  }, []);
 
-  // countdown timer
+  // Tick every second by reading the fixed expiry timestamp from localStorage.
+  // This way the timer is always accurate even after a page refresh.
   useEffect(() => {
-    if (timeLeft <= 0) return;
+    const tick = () => {
+      const expiry = Number(localStorage.getItem('otpExpiryTime') ?? '0');
+      const remaining = Math.max(0, Math.floor((expiry - Date.now()) / 1000));
+      setTimeLeft(remaining);
+      if (remaining <= 0) {
+        localStorage.removeItem('otpExpiryTime');
+        clearInterval(interval);
+      }
+    };
 
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => prev - 1);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [timeLeft]);
+    tick(); // run immediately so the display is correct before the first tick
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, []); // runs once — driven purely by the stored timestamp
 
   const handleChange = (index: number, value: string) => {
     if (value && !/^\d$/.test(value)) return;    // Only allow numbers
@@ -103,7 +101,8 @@ const AuthOTP: React.FC = () => {
 
       toast.success("A new OTP has been sent!");
       setOtp(new Array(6).fill(""));
-      setTimeLeft(30);
+      // Write a fresh 30-second expiry anchor; the tick interval will pick it up automatically.
+      localStorage.setItem('otpExpiryTime', (Date.now() + 30_000).toString());
       inputRefs.current[0]?.focus();
     } catch (error) {
       toast.error("Failed to resend OTP. Please try again.")

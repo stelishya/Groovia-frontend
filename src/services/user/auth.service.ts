@@ -38,14 +38,20 @@ export const signup = async (data: SignupForm | VerificationData) => {
     position: 'top-right',
   });
   try {
+    // Backend SignupDto expects role as an array — wrap it if it's a string
+    const payload = {
+      ...data,
+      role: Array.isArray(data.role) ? data.role : [data.role],
+    };
+
     // Both steps call the same backend endpoint
-    const response = await AuthAxios.post('/signup', data, {
+    const response = await AuthAxios.post('/signup', payload, {
       headers: {
         'Content-Type': 'application/json',
       },
     });
 
-    // Handle side-effects based on which step we're on
+    // Handle side-effects
     if (!isVerification) {
       // If this was the first step, save the data to localStorage
       localStorage.setItem('pendingSignupData', JSON.stringify(data));
@@ -68,92 +74,6 @@ export const signup = async (data: SignupForm | VerificationData) => {
   }
 }
 
-// export const registerUser = async (data: SignupForm) => {
-//   const loadingToast = toast.loading('OTP sending...', {
-//     position: 'top-right',
-//   });
-
-// try {
-//   console.log("Frontend - data in registerUser from auth service:",data)
-//   const response = await AuthAxios.post('/signup', data, {
-//     headers: {
-//       "Content-Type": "application/json"
-//     }
-//   });
-
-//   localStorage.setItem('pendingSignupData', JSON.stringify(data));
-
-//   toast.dismiss(loadingToast);
-//   toast.success('OTP sent successfully! Please check your email. ', {
-//     position: 'top-right',
-//     duration: 5000,
-//     style: {
-//       background: '#DCFCE7',
-//       color: '#16A34A',
-//       border: '1px solid #BBF7D0',
-//     },
-//   });
-
-//     return response.data;
-//   } catch (error) {
-//     toast.dismiss(loadingToast);
-//     const errorMessage = getErrorMessage(error);
-
-//     toast.error(errorMessage, {
-//       position: 'top-right',
-//       duration: 5000,
-//       style: {
-//         background: '#FEE2E2',
-//         color: '#DC2626',
-//         border: '1px solid #FECACA',
-//       },
-//     });
-
-//     console.error('Error in sending OTP:', error);
-//     throw error;
-//   }
-// };
-
-// export const verifyAndCompleteSignup = async(data:VerificationData)=>{
-//   const loadingToast = toast.loading('verifying otp and creating account..', {
-//     position: 'top-right',
-//   });
-//   console.log('data in verifyAndCompleteSignup in auth.service.ts',data)
-//   try {
-//     const response = await AuthAxios.post('/verify-signup',data,{
-//       headers:{
-//         "Content-Type": "application/json"
-//       }
-//     })
-//     toast.dismiss(loadingToast);
-//     toast.success('account created successfully!', {
-//       position: 'top-right',
-//       duration: 5000,
-//       style: {
-//         background: '#DCFCE7',
-//         color: '#16A34A',
-//         border: '1px solid #BBF7D0',
-//       },
-//     });
-//     return response.data;
-//   } catch (error) {
-//     toast.dismiss(loadingToast);
-//     const errorMessage = getErrorMessage(error);
-
-//     toast.error(errorMessage, {
-//       position: 'top-right',
-//       duration: 5000,
-//       style: {
-//         background: '#FEE2E2',
-//         color: '#DC2626',
-//         border: '1px solid #FECACA',
-//       },
-//     });
-//     console.error('User Registration failed:', error);
-//     throw error;
-//   }
-// }
-
 export const userLogin = async (data: { email: string; password: string; role?: string }, dispatch: AppDispatch) => {
   try {
     const response = await AuthAxios.post('/login', data);
@@ -164,9 +84,6 @@ export const userLogin = async (data: { email: string; password: string; role?: 
     if (accessToken) {
       localStorage.setItem('token', accessToken);
     }
-    // if (response.data.user) {
-    //   localStorage.setItem('user', JSON.stringify(response.data.user));
-    // }
 
     dispatch(loginUser({ user, token: accessToken }))
 
@@ -225,15 +142,6 @@ export const userSendResetLink = async (email: string) => {
     });
 
     toast.dismiss(loadingToast);
-    // toast.success('Reset link sent to your email! ', {
-    //   position: 'top-right',
-    //   duration: 5000,
-    //   style: {
-    //     background: '#DCFCE7',
-    //     color: '#16A34A',
-    //     border: '1px solid #BBF7D0',
-    //   },
-    // });
 
     return response.data;
   } catch (error) {
@@ -304,10 +212,7 @@ export const userResetPassword = async (data: {
     console.error('Reset password error:', error);
     throw error;
   }
-  // console.error('Reset password error:', error);
-  // throw error;
 }
-// };
 
 export const changePassword = async (data: { currentPassword: string; newPassword: string }) => {
   const loadingToast = toast.loading('Changing password...', {
@@ -318,15 +223,6 @@ export const changePassword = async (data: { currentPassword: string; newPasswor
     const response = await AuthAxios.post('/change-password', data);
 
     toast.dismiss(loadingToast);
-    // toast.success('Password changed successfully!', {
-    //   position: 'top-right',
-    //   duration: 5000,
-    //   style: {
-    //     background: '#DCFCE7',
-    //     color: '#16A34A',
-    //     border: '1px solid #BBF7D0',
-    //   },
-    // });
     toast.success('Password changed successfully!')
 
     return response.data;
@@ -376,7 +272,6 @@ export async function fetchMyProfile() {
     return { role, profile: res.data };
   }
   if (role === Role.ADMIN) {
-    // Add admin profile endpoint if you have one
     throw new Error('Admin profile endpoint not implemented');
   }
 
