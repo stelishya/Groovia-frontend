@@ -297,9 +297,12 @@ export default function AuthLogin({
           {(role === 'user' &&
             <p className="text-center text-sm text-purple-200 mt-6">
               New to Groovia?{' '}
+              <span className="text-purple-400 font-semibold">
               <Link to={signupRoute}>
-                Sign up now.
+                Sign up 
               </Link>
+              </span>
+               &nbsp;now.
             </p>
           )}
         </div>

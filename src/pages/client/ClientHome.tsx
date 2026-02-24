@@ -41,6 +41,7 @@ interface Dancer {
     // portfolioLinks?: string[];
     danceStyles?: string[];
     likes?: string[];
+    likesCount?: number;
     createdAt: string;
     updatedAt: string;
 }
@@ -246,6 +247,25 @@ const Dashboard = ({ userData }: { userData: any }) => {
         if (!requestData.budget.trim()) {
             errors.budget = 'Budget is required';
             isValid = false;
+        } else if (requestData.budget.includes('-')) {
+            const [minStr, maxStr] = requestData.budget.split('-');
+            const min = parseFloat(minStr);
+            const max = parseFloat(maxStr);
+            if (!isNaN(min) && !isNaN(max)) {
+                if (min < 0 || max < 0) {
+                    errors.budget = 'Budget cannot be negative';
+                    isValid = false;
+                } else if (max <= min) {
+                    errors.budget = 'Maximum budget must be greater than minimum budget';
+                    isValid = false;
+                }
+            }
+        } else {
+            const budget = parseFloat(requestData.budget);
+            if (!isNaN(budget) && budget < 0) {
+                errors.budget = 'Budget cannot be negative';
+                isValid = false;
+            }
         }
 
         setFormErrors(errors);
@@ -284,22 +304,18 @@ const Dashboard = ({ userData }: { userData: any }) => {
     const handleLike = async (dancerId: string) => {
         try {
             const response = await toggleLike(dancerId);
-            const updatedDancer = response.data?.dancer || response.dancer;
-            if (!updatedDancer) {
-                console.log("no dancer data in response")
-                toast.error('Failed to update like status');
-                return;
-            }
+            const { likesCount, isLiked } = response.data;
+
             setDancers(prevDancers =>
-                prevDancers.map(d => (d._id === dancerId ? updatedDancer : d))
+                prevDancers.map(d => (d._id === dancerId ? { ...d, likesCount, likes: new Array(likesCount).fill(null) } : d))
             );
 
             setLikedDancers(prevLiked => {
                 const newLiked = new Set(prevLiked);
-                if (newLiked.has(dancerId)) {
-                    newLiked.delete(dancerId);
-                } else {
+                if (isLiked) {
                     newLiked.add(dancerId);
+                } else {
+                    newLiked.delete(dancerId);
                 }
                 return newLiked;
             });

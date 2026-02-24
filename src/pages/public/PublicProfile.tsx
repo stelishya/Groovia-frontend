@@ -92,13 +92,10 @@ const PublicProfile = () => {
         }
         try {
             const response = await toggleLike(profileUser._id);
-            const updatedDancer = response.data?.dancer || response.dancer;
+            const { likesCount, isLiked } = response.data;
 
-            if (updatedDancer) {
-                setIsLiked(updatedDancer.likes.includes(userData._id));
-                setLikeCount(updatedDancer.likes.length);
-                setProfileUser((prev: any) => ({ ...prev, likes: updatedDancer.likes }));
-            }
+            setIsLiked(isLiked);
+            setLikeCount(likesCount);
         } catch (error) {
             console.error("Failed to toggle like", error);
             toast.error('Failed to update like status');
@@ -136,9 +133,14 @@ const PublicProfile = () => {
             const [minStr, maxStr] = requestData.budget.split('-');
             const min = parseFloat(minStr);
             const max = parseFloat(maxStr);
-            if (!isNaN(min) && !isNaN(max) && max <= min) {
-                errors.budget = 'Maximum budget must be greater than minimum budget';
-                isValid = false;
+            if (!isNaN(min) && !isNaN(max)) {
+                if (min < 0 || max < 0) {
+                    errors.budget = 'Budget cannot be negative';
+                    isValid = false;
+                } else if (max <= min) {
+                    errors.budget = 'Maximum budget must be greater than minimum budget';
+                    isValid = false;
+                }
             }
         }
 
@@ -274,12 +276,12 @@ const PublicProfile = () => {
                                                 <span>{profileUser.experienceYears || 0} Years Experience</span>
                                             </div>
                                         )}
-                                        {profileUser.email && (
+                                        {/* {profileUser.email && (
                                             <div className="flex items-center gap-2 text-purple-200">
                                                 <Mail size={16} />
                                                 <span className="truncate">{profileUser.email}</span>
                                             </div>
-                                        )}
+                                        )} */}
                                         {profileUser.phoneNumber && (
                                             <div className="flex items-center gap-2 text-purple-200">
                                                 <Phone size={16} />

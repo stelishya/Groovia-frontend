@@ -676,7 +676,7 @@ const Profile = () => {
                         value={profileData.phone}
                         onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
                         className="w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        placeholder="+1234567890"
+                        placeholder="+91 98765-43210"
                     />
                 </div>
                 {/* Bio */}

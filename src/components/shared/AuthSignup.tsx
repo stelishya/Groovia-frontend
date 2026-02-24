@@ -44,7 +44,7 @@ export default function AuthSignup({
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    const emailRegex = /^[^\s@]+@[^\s_+.!#$%^&*()@]+\.[^\s!@#_$%^&*()]+$/
     return emailRegex.test(email)
   }
 
@@ -73,9 +73,11 @@ export default function AuthSignup({
     if (!nameValue) {
       newErrors[nameField] = "Username is required"
     } else if (nameValue.length < 2) {
-      newErrors[nameField] = "Username must be at least 2 characters"
-    } else if (nameValue.length > 100) {
-      newErrors[nameField] = "Username must be less than 100 characters"
+        newErrors[nameField] = "Username must be at least 2 characters"
+    } else if (nameValue.length > 24) {
+        newErrors[nameField] = "Username must be less than 24 characters"
+    } else if(!nameValue.match(/^[a-zA-Z]+$/)) {
+      newErrors[nameField] = "Username must contain only letters"
     }
 
     // Email
@@ -98,6 +100,10 @@ export default function AuthSignup({
     //   newErrors.phone = "Phone number must be exactly 10 digits"
     // }
 
+    //Password regex
+    const regex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!#%^_*?&])[A-Za-z\d@$!#%^_*?&]{6,}$/;
+    const isValid = regex.test(form.password);
+
     // Password
     if (!form.password) {
       newErrors.password = "Password is required"
@@ -105,6 +111,8 @@ export default function AuthSignup({
       newErrors.password = "Password must be at least 6 characters"
     } else if (form.password.length > 100) {
       newErrors.password = "Password must be less than 100 characters"
+    } else if (!isValid) {
+      newErrors.password = "Password must contain at least one letter, one number, and one special character"
     }
 
     // Confirm Password
@@ -143,10 +151,9 @@ export default function AuthSignup({
 
   return (
     <div
-      className="relative w-full min-h-[100px] max-w-8xl flex items-center justify-center overflow-hidden bg-gradient-to-br from-purple-900 via-purple-800 to-pink-600"
+      className="relative w-full min-h-screen max-w-8xl flex items-center justify-center overflow-hidden bg-gradient-to-br from-purple-900 via-purple-800 to-pink-600"
       data-oid="2gjyxsh">
 
-      {/* Background image placeholder - you can add your own image */}
       <div
         className="absolute inset-0 bg-[url('/signup-bg.jpg')] bg-cover bg-center opacity-40"
         data-oid="ac05ge9" />
@@ -201,23 +208,23 @@ export default function AuthSignup({
             className="relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-purple-600/30 to-pink-500/30 backdrop-blur-md border border-white/10"
             data-oid="qrmlkw:">
 
-            {/* You can replace this with an actual image */}
             <img
               // src="/src/assets/SignupImage.png"
               src={signupImage}
               alt="Groovia signup"
               className="absolute inset-0 w-full h-full object-cover"
             />
-            {/* <div
-              className="absolute inset-0 flex items-center justify-center"
+            <div
+              className="absolute inset-0 flex items-end justify-center"
               data-oid="dc:vehc">
 
-              <div className="text-white/50 text-center" data-oid="4j6y_bx">
-                <p className="text-sm" data-oid="jusa_f4">
-                  Image placeholder
-                </p>
+              <div className=" text-center" data-oid="4j6y_bx">
+                <h2 className="text-pink-500/50 bg-gradient-to-r from-pink-300 to pink-500 via-blue-300 bg-clip-text text-transparent text-2xl text-outline font-bold p-6 drop-shadow-[0_0_1px_#000]" data-oid="jusa_f4">
+                  "A boutique studio for creators and beginners alike. Build technique, perform with
+                  confidence, and find your groove."
+                </h2>
               </div>
-            </div> */}
+            </div>
           </div>
         </div>
 

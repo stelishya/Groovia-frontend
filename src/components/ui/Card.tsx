@@ -11,6 +11,7 @@ interface Dancer {
   profileImage?: string;
   danceStyles?: string[];
   likes?: any[];
+  likesCount?: number;
   bio?: string;
   preferredLocation?: string;
   experienceYears?: number;
@@ -30,7 +31,7 @@ const DancerCard = ({ dancer, isRequested, onLike, isLiked }: DancerCardProps) =
   console.log("DancerCard in Card.tsx : ", dancer)
   const navigate = useNavigate();
   const primaryStyle = dancer.danceStyles?.[0] || 'Dancer';
-  const likesCount = dancer.likes?.length || 0;
+  const likesCount = dancer.likesCount ?? (dancer.likes?.length || 0);
 
   return (
     // <div className="bg-gradient-to-br from-blue-500 to-pink-500 p-1 rounded-3xl transform hover:-translate-y-2 transition-all duration-300 shadow-xl hover:shadow-2xl h-full">

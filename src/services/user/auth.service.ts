@@ -8,15 +8,23 @@ import { DancerAxios, ClientAxios } from '../../api/user.axios';
 import { Role } from '../../utils/constants/roles';
 
 const getErrorMessage = (error: any): string => {
-  if (error.response?.data?.message) {
-    return error.response.data.message;
+  const data = error.response?.data;
+
+  if (data) {
+    // Check various common error structures
+    if (typeof data.message === 'string') return data.message;
+    if (data.error && typeof data.error.message === 'string') return data.error.message;
+    if (typeof data.error === 'string') return data.error;
+    if (data.message && typeof data.message === 'object') {
+      // Handle case where message is an object (common in NestJS ValidationPipe)
+      return Object.values(data.message).flat().join(', ');
+    }
   }
-  if (error.response?.data?.error) {
-    return error.response.data.error;
-  }
+
   if (error.message) {
     return error.message;
   }
+
   return 'An unexpected error occurred. Please try again.';
 };
 

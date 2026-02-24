@@ -9,12 +9,6 @@ const Signup: React.FC = () => {
 
     const handleSubmit = async (formData: SignupForm) => {
         try {
-            // const userData = {
-            //     username: formData.username,
-            //     email: formData.email,
-                // phone: formData.phone,
-                // password: formData.password
-            // };
             console.log("signup service function in dancer signup.tsx!")
             await signup(formData);
 
@@ -32,11 +26,6 @@ const Signup: React.FC = () => {
 
     return (
         <AuthSignup
-            //   mode="user"
-            //       title="Join Groovia Today!"
-            //       subtitle="A boutique studio for creators and beginners alike. Build technique, perform with
-            // confidence, and find your groove."
-            //       backgroundImage={signupImage}
             loginRoute="/login"
             onSubmit={handleSubmit}
         />
