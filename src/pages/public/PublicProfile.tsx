@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../redux/store';
-import { User, MapPin, Star, Instagram, Youtube, Mail, Phone, Link as LinkIcon, FileImage, Eye, Facebook, Linkedin, Twitter, CircleSmall, Heart, GitPullRequest } from 'lucide-react';
+import { User, MapPin, Star, Instagram, Youtube, Phone, Link as LinkIcon, FileImage, Eye, Facebook, Linkedin, Twitter, CircleSmall, Heart, GitPullRequest } from 'lucide-react';
 import UserNavbar from '../../components/shared/Navbar';
 import { getDancerProfile } from '../../services/client/client.service';
 import FormModal from '../../components/ui/FormModal';
