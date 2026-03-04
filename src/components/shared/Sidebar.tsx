@@ -1,35 +1,21 @@
-import { House, Trophy, CreditCard, User, LogOut, Settings, GitPullRequest, PersonStanding } from "lucide-react"
-import { useDispatch, useSelector } from "react-redux";
+import { House, Trophy, CreditCard, User, LogOut, GitPullRequest, PersonStanding } from "lucide-react"
+import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { logoutUser as logoutUserAction } from "../../redux/slices/user.slice";
-import { logoutUser as logoutUserService } from "../../services/user/auth.service";
 import { useState } from "react";
 import ConfirmationModal from "../ui/ConfirmationModal";
 import { type RootState } from "../../redux/store";
+import { useLogout } from "../../hooks/useLogout";
 
 interface SidebarProps {
     activeMenu?: string;
 }
 const Sidebar: React.FC<SidebarProps> = ({ activeMenu = 'Home' }) => {
-    const dispatch = useDispatch();
     const navigate = useNavigate();
     const [showLogoutModal, setShowLogoutModal] = useState(false);
+    const { handleLogout } = useLogout();
     const { userData } = useSelector((state: RootState) => state.user);
     const userRoles = userData?.role || [];
 
-    const handleLogout = async () => {
-        console.log("handleLogout in dancer home")
-        try {
-            console.log("handleLogout")
-            await logoutUserService()
-        } catch (error) {
-            console.error("Logout failed on the server", error)
-        } finally {
-            dispatch(logoutUserAction())
-            navigate('/login')
-            setShowLogoutModal(false)
-        }
-    }
     const navItems = [
         { icon: <House />, name: 'Home', action: () => navigate('/home') },
         // { icon: <MessageSquare />, name: 'Messages' },
@@ -45,7 +31,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeMenu = 'Home' }) => {
     const bottomItems = [
         { icon: <User />, name: 'Profile', action: () => navigate('/profile') },
         { icon: <LogOut />, name: 'Log Out', action: () => setShowLogoutModal(true) },
-        { icon: <Settings />, name: 'Settings' },
+        // { icon: <Settings />, name: 'Settings' },
     ];
 
     return (

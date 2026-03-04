@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, X, User, Settings, LogOut } from 'lucide-react';
+import { Bell, X, User, LogOut } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { type RootState } from '../../redux/store';
 import { NotificationAxios } from '../../api/user.axios';
 import toast from 'react-hot-toast';
+import { useLogout } from '../../hooks/useLogout';
+import ConfirmationModal from '../ui/ConfirmationModal';
 
 interface Notification {
     _id: string;
@@ -29,6 +31,8 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ title, subTitle }) => {
     const { userData } = useSelector((state: RootState) => state.user);
     const [showNotifications, setShowNotifications] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
+    const [showLogoutModal, setShowLogoutModal] = useState(false);
+    const { handleLogout } = useLogout();
     const [notificationTab, setNotificationTab] = useState<'all' | 'unread' | 'read'>('all');
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [processedNotifications, setProcessedNotifications] = useState<Set<string>>(new Set());
@@ -102,35 +106,6 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ title, subTitle }) => {
             console.error('Failed to mark all notifications as read:', error);
         }
     };
-    // Mock notifications - Replace with actual API call later
-    // const [notifications] = useState<Notification[]>([
-    //     {
-    //         id: '1',
-    //         type: 'upgrade_approved',
-    //         title: 'Upgrade Request Approved!',
-    //         message: 'Your instructor upgrade has been approved. Welcome to the instructor community!',
-    //         isRead: false,
-    //         createdAt: new Date().toISOString(),
-    //     },
-    //     {
-    //         id: '2',
-    //         type: 'workshop',
-    //         title: 'New Workshop Registration',
-    //         message: 'Someone registered for your Contemporary Dance workshop.',
-    //         isRead: false,
-    //         createdAt: new Date(Date.now() - 3600000).toISOString(),
-    //     },
-    //     {
-    //         id: '3',
-    //         type: 'general',
-    //         title: 'Profile Update',
-    //         message: 'Your profile has been successfully updated.',
-    //         isRead: true,
-    //         createdAt: new Date(Date.now() - 86400000).toISOString(),
-    //     },
-    // ]);
-
-
 
     const filteredNotifications = notifications.filter((notif) => {
         if (notificationTab === 'unread') return !notif.isRead;
@@ -173,32 +148,8 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ title, subTitle }) => {
                     <h1 className="text-4xl font-bold text-purple-400 mb-2">{title}</h1>
                     <p className="text-gray-400">{subTitle}</p>
                 </div>
-                {/* Search Bar */}
-                {/* <div className="relative w-80 mr-6">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-300" />
-                    <input
-                        type="text"
-    placeholder = "Search Workshops, Competitions..."
-    value = { searchQuery }
-    onChange = {(e) => setSearchQuery(e.target.value)}
-onKeyDown = {(e) => e.key === 'Enter' && handleSearchSubmit(e)}
-className = "w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-purple-500"
-    />
-                </div > */}
 
                 <div className="flex items-center">
-                    {/* <div className="relative w-80 mr-6">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-300" />
-                    <input
-                        type="text"
-                        placeholder="Search Workshops, Competitions..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit(e)}
-                        className="w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    />
-                </div> */}
-
                     {/* Notification Bell */}
                     <div className="relative mr-6 pt-2">
                         <button
@@ -216,11 +167,11 @@ className = "w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg p
 
                     {/* User Profile */}
                     <div className="relative flex items-center space-x-2">
-                        <h2 className="text-white">{userData?.username}</h2>
                         <button
-                            // onClick={() => setShowUserMenu(!showUserMenu)}
+                            onClick={() => setShowUserMenu(!showUserMenu)}
                             className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
                         >
+                        <h2 className="text-white">{userData?.username}</h2>
                             {userData?.profileImage ? (
                                 <img
                                     src={userData?.profileImage}
@@ -240,7 +191,7 @@ className = "w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg p
 
                         {/* User Dropdown Menu */}
                         {showUserMenu && (
-                            <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl py-2 border border-gray-200 z-50">
+                            <div className="absolute right-0 mt-20 w-56 bg-white rounded-lg shadow-xl py-2 border border-gray-200 z-50">
                                 <div className="px-4 py-3 border-b border-gray-200">
                                     <p className="text-sm font-semibold text-gray-800">{userData?.username || 'User'}</p>
                                     <p className="text-xs text-gray-500">{userData?.email || 'user@example.com'}</p>
@@ -255,7 +206,7 @@ className = "w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg p
                                     <User className="w-4 h-4 mr-2" />
                                     Profile
                                 </button>
-                                <button
+                                {/* <button
                                     onClick={() => {
                                         navigate('/user/settings');
                                         setShowUserMenu(false);
@@ -264,12 +215,12 @@ className = "w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg p
                                 >
                                     <Settings className="w-4 h-4 mr-2" />
                                     Settings
-                                </button>
+                                </button> */}
                                 <hr className="my-1" />
                                 <button
                                     onClick={() => {
-                                        // Handle logout
-                                        navigate('/login');
+                                        setShowLogoutModal(true);
+                                        setShowUserMenu(false);
                                     }}
                                     className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
                                 >
@@ -393,6 +344,17 @@ className = "w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg p
                 />
 
             )}
+            {/* Logout Confirmation Modal */}
+            <ConfirmationModal
+                show={showLogoutModal}
+                onClose={() => setShowLogoutModal(false)}
+                onConfirm={handleLogout}
+                title="Confirm Logout"
+                message="Are you sure you want to log out? You will need to sign in again to access your account."
+                confirmText="Log Out"
+                cancelText="Cancel"
+                variant="danger"
+            />
         </>
     );
 };
