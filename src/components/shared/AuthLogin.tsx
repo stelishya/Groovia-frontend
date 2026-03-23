@@ -226,7 +226,8 @@ export default function AuthLogin({
             </svg>
           </button>
 
-          <h2 className="text-4xl font-bold text-white mb-8 mt-10">{title}</h2>
+          <h2 className="text-4xl font-bold text-white mb-2 mt-10">{title}</h2>
+          <p className="text-sm font-sm text-white mb-4">Login to explore Groovia!</p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>

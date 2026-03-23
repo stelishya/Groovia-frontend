@@ -5,8 +5,6 @@ import { loginUser } from '../../redux/slices/user.slice';
 import { User, Edit2, Camera, Settings, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import Sidebar from '../../components/shared/Sidebar';
-import UserNavbar from '../../components/shared/Navbar';
 import FormModal from '../../components/ui/FormModal';
 import { ClientAxios } from '../../api/user.axios';
 import { validateUsername, validateEmail, validatePhone, validateBio } from '../../utils/validation';
@@ -242,136 +240,116 @@ const Profile = () => {
     console.log(userData);
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-pink-600">
-            {/* Header */}
-            {/* <div className="bg-purple-900/50 backdrop-blur-lg border-b border-purple-700">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                <button
-                onClick={() => navigate(-1)}
-                className="flex items-center text-white hover:text-purple-200 transition-colors"
-                >
-                <ArrowLeft className="mr-2" size={20} />
-                Back
-                </button>
-                </div>
-                </div> */}
-            <div className="flex h-screen bg-gray-900">
-                <Sidebar activeMenu='Profile' />
-                {/* Main Content */}
-                {/* <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8"> */}
-                <main className="flex-1 overflow-y-auto bg-deep-purple">
-                    <UserNavbar title='Profile' subTitle='View and manage your profile' />
-                    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                        {/* Profile Card */}
-                        <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl overflow-hidden border border-purple-500/30">
-                            {/* Cover Image */}
-                            <div className="h-32 bg-gradient-to-r from-pink-500 to-purple-600"></div>
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {/* Profile Card */}
+                <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl overflow-hidden border border-purple-500/30">
+                    {/* Cover Image */}
+                    <div className="h-32 bg-gradient-to-r from-pink-500 to-purple-600"></div>
 
-                            {/* Profile Info */}
-                            <div className="px-6 pb-6">
-                                <div className="flex flex-col sm:flex-row items-center sm:items-end -mt-16 sm:-mt-12">
-                                    {/* Avatar */}
-                                    <div className="relative group">
-                                        <div
-                                            className="w-32 h-32 rounded-full border-4 border-white bg-purple-200 flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
-                                            onClick={handleImageClick}
-                                        >
-                                            {userData?.profileImage ? (
-                                                <img src={userData.profileImage} alt="Profile" className="w-full h-full object-cover" />
-                                            ) : (
-                                                <User size={64} className="text-purple-600" />
-                                            )}
-                                        </div>
-                                        <button
-                                            onClick={handleImageChange}
-                                            className="absolute bottom-0 right-0 bg-purple-600 hover:bg-purple-700 text-white rounded-full p-2 cursor-pointer transition-colors shadow-lg"
-                                        >
-                                            <Camera size={20} />
-                                        </button>
-                                    </div>
-
-                                    {/* User Info */}
-                                    <div className="mt-4 sm:mt-0 sm:ml-6 flex-1 text-center sm:text-left">
-                                        <h1 className="text-3xl font-bold text-white">{userData?.username || 'User'}</h1>
-                                        <p className="text-purple-200">{userData?.email}</p>
-                                        <div className="flex flex-wrap gap-2 mt-2 justify-center sm:justify-start">
-                                            {currentRoles.map((role: string) => (
-                                                <span
-                                                    key={role}
-                                                    className="px-3 py-1 bg-purple-500/50 text-white rounded-full text-sm font-medium capitalize"
-                                                >
-                                                    {role}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </div>
-
+                    {/* Profile Info */}
+                    <div className="px-6 pb-6">
+                        <div className="flex flex-col sm:flex-row items-center sm:items-end -mt-16 sm:-mt-12">
+                            {/* Avatar */}
+                            <div className="relative group">
+                                <div
+                                    className="w-32 h-32 rounded-full border-4 border-white bg-purple-200 flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                                    onClick={handleImageClick}
+                                >
+                                    {userData?.profileImage ? (
+                                        <img src={userData.profileImage} alt="Profile" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <User size={64} className="text-purple-600" />
+                                    )}
                                 </div>
-                            </div>
-                        </div>
-
-
-                        {/* User Details */}
-                        <div className="mt-6 bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-purple-500/30">
-                            {/* Header with Title and Edit Button */}
-                            <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-2xl font-bold text-white">Account Details</h2>
                                 <button
-                                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center transition-colors"
-                                    onClick={handleOpenEditModal}
+                                    onClick={handleImageChange}
+                                    className="absolute bottom-0 right-0 bg-purple-600 hover:bg-purple-700 text-white rounded-full p-2 cursor-pointer transition-colors shadow-lg"
                                 >
-                                    <Edit2 size={18} className="mr-2" />
-                                    Edit Profile
-                                </button>
-                                <button
-                                    onClick={() => setShowPasswordModal(true)}
-                                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center transition-colors ml-4"
-                                >
-                                    <Settings size={18} className="mr-2" />
-                                    Change Password
+                                    <Camera size={20} />
                                 </button>
                             </div>
 
-                            {/* Two Column Layout */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Left Column */}
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="text-purple-200 text-sm">Username</label>
-                                        <p className="text-white text-lg">{userData?.username}</p>
-                                    </div>
-                                    <div>
-                                        <label className="text-purple-200 text-sm">Email</label>
-                                        <p className="text-white text-lg">{userData?.email}</p>
-                                    </div>
-                                </div>
-
-                                {/* Right Column */}
-                                <div className="space-y-4">
-                                    <div>
-                                        <label className="text-purple-200 text-sm">Bio</label>
-                                        <p className="text-white text-lg">{userData?.bio || 'No bio added yet'}</p>
-                                    </div>
-                                    <div>
-                                        <label className="text-purple-200 text-sm">Phone</label>
-                                        <p className="text-white text-lg">{userData?.phone || 'Not provided'}</p>
-                                    </div>
+                            {/* User Info */}
+                            <div className="mt-4 sm:mt-0 sm:ml-6 flex-1 text-center sm:text-left">
+                                <h1 className="text-3xl font-bold text-white">{userData?.username || 'User'}</h1>
+                                <p className="text-purple-200">{userData?.email}</p>
+                                <div className="flex flex-wrap gap-2 mt-2 justify-center sm:justify-start">
+                                    {currentRoles.map((role: string) => (
+                                        <span
+                                            key={role}
+                                            className="px-3 py-1 bg-purple-500/50 text-white rounded-full text-sm font-medium capitalize"
+                                        >
+                                            {role}
+                                        </span>
+                                    ))}
                                 </div>
                             </div>
+
                         </div>
-                        {!loadingUpgradeStatus && (
-                            <UpgradeRoleSection
-                                upgradeRequests={upgradeRequests}
-                                onRequestUpgrade={() => setShowUpgradeModal(true)}
-                                onPaymentClick={handlePaymentClick}
-                                onRefreshStatus={fetchUpgradeStatus}
-                                roleType="organizer"
-                                userType="client"
-                                hasRole={hasOrganizerRole}
-                            />
-                        )}
                     </div>
-                </main>
+                </div>
+
+
+                {/* User Details */}
+                <div className="mt-6 bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-purple-500/30">
+                    {/* Header with Title and Edit Button */}
+                    <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-2xl font-bold text-white">Account Details</h2>
+                        <button
+                            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center transition-colors"
+                            onClick={handleOpenEditModal}
+                        >
+                            <Edit2 size={18} className="mr-2" />
+                            Edit Profile
+                        </button>
+                        <button
+                            onClick={() => setShowPasswordModal(true)}
+                            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center transition-colors ml-4"
+                        >
+                            <Settings size={18} className="mr-2" />
+                            Change Password
+                        </button>
+                    </div>
+
+                    {/* Two Column Layout */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Left Column */}
+                        <div className="space-y-4">
+                            <div>
+                                <label className="text-purple-200 text-sm">Username</label>
+                                <p className="text-white text-lg">{userData?.username}</p>
+                            </div>
+                            <div>
+                                <label className="text-purple-200 text-sm">Email</label>
+                                <p className="text-white text-lg">{userData?.email}</p>
+                            </div>
+                        </div>
+
+                        {/* Right Column */}
+                        <div className="space-y-4">
+                            <div>
+                                <label className="text-purple-200 text-sm">Bio</label>
+                                <p className="text-white text-lg">{userData?.bio || 'No bio added yet'}</p>
+                            </div>
+                            <div>
+                                <label className="text-purple-200 text-sm">Phone</label>
+                                <p className="text-white text-lg">{userData?.phone || 'Not provided'}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {!loadingUpgradeStatus && (
+                    <UpgradeRoleSection
+                        upgradeRequests={upgradeRequests}
+                        onRequestUpgrade={() => setShowUpgradeModal(true)}
+                        onPaymentClick={handlePaymentClick}
+                        onRefreshStatus={fetchUpgradeStatus}
+                        roleType="organizer"
+                        userType="client"
+                        hasRole={hasOrganizerRole}
+                    />
+                )}
             </div>
             <FormModal
                 isOpen={showEditModal}
@@ -546,7 +524,7 @@ const Profile = () => {
             />
 
 
-        </div>
+        </div >
     );
 };
 

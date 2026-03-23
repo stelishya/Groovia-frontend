@@ -1,10 +1,11 @@
 import React from 'react';
-import { MessageSquare, Video, Edit, Trash2 } from 'lucide-react';
+import { Video, Edit, Trash2 } from 'lucide-react';
 import { WorkshopMode } from '../../types/workshop.type';
+import { formatTime12h } from '../../utils/time';
 
 interface InstructorWorkshopCardProps {
     title: string;
-    status: string; // Changed to string for flexibility or use lowercase union 'upcoming' | 'active' | 'completed'
+    status: string; // Changed to string for flexibility
     fee: number;
     date: string;
     time: string;
@@ -64,7 +65,7 @@ const InstructorWorkshopCard: React.FC<InstructorWorkshopCardProps> = ({
                         {status}
                     </span>
                     <div className="flex gap-2 text-gray-300">
-                        <MessageSquare size={16} className="cursor-pointer hover:text-white" />
+                        {/* <MessageSquare size={16} className="cursor-pointer hover:text-white" /> */}
                         {mode === WorkshopMode.ONLINE && <Video size={16} className="cursor-pointer hover:text-white" />}
                     </div>
                 </div>
@@ -73,7 +74,7 @@ const InstructorWorkshopCard: React.FC<InstructorWorkshopCardProps> = ({
             {/* Details */}
             <div className="space-y-3 mb-6">
                 <div className="text-sm text-gray-200">
-                    <p>{new Date(date).toLocaleDateString('en-IN')} • {time}</p>
+                    <p>{new Date(date).toLocaleDateString('en-IN')} • {formatTime12h(time)}</p>
                 </div>
 
                 <div className="flex items-center justify-between text-sm">
@@ -133,20 +134,24 @@ const InstructorWorkshopCard: React.FC<InstructorWorkshopCardProps> = ({
                     </button>
                 )}
 
-                <button
-                    onClick={onEdit}
-                    className="p-2 bg-blue-600/80 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 border border-blue-500/30"
-                    title="Edit Workshop"
-                >
-                    <Edit size={18} />
-                </button>
-                <button
-                    onClick={onDelete}
-                    className="p-2 bg-red-600/80 hover:bg-red-700 text-white rounded-lg transition-colors duration-200 border border-red-500/30"
-                    title="Delete Workshop"
-                >
-                    <Trash2 size={18} />
-                </button>
+                {/* {status?.toLowerCase() !== 'completed' && ( */}
+                    <>
+                        <button
+                            onClick={onEdit}
+                            className="p-2 bg-blue-600/80 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 border border-blue-500/30"
+                            title="Edit Workshop"
+                        >
+                            <Edit size={18} />
+                        </button>
+                        <button
+                            onClick={onDelete}
+                            className="p-2 bg-red-600/80 hover:bg-red-700 text-white rounded-lg transition-colors duration-200 border border-red-500/30"
+                            title="Delete Workshop"
+                        >
+                            <Trash2 size={18} />
+                        </button>
+                    </>
+                {/* )} */}
             </div>
         </div>
     );

@@ -128,7 +128,7 @@ export default function WorkshopDetails() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0f0f13] text-white">
+    <div className="text-white">
       {/* Hero Section */}
       <div className="relative h-[60vh] overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-purple-900 via-purple-700 to-pink-600 opacity-90" />

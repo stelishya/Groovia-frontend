@@ -5,7 +5,6 @@ import { Search, X, MapPin, Calendar, IndianRupee, User, PartyPopper, ChevronLef
 import toast from 'react-hot-toast';
 import { getEventRequests } from '../../services/dancer/dancer.service';
 import { fetchMyProfile } from '../../services/user/auth.service';
-import Sidebar from '../../components/shared/Sidebar';
 import { updateEventBookingStatus } from '../../services/client/client.service';
 import { getBookedWorkshops } from '../../services/workshop/workshop.service';
 import { UserTable } from '../../components/ui/Table';
@@ -18,7 +17,6 @@ import L from 'leaflet';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-import UserNavbar from '../../components/shared/Navbar';
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -373,7 +371,6 @@ const BookingsPage = () => {
     return (
         <div className="flex-grow p-8 bg-deep-purple text-white overflow-y-auto">
             {/* ... header and tabs ... */}
-            <UserNavbar title="Bookings Management" subTitle="Manage your client requests & workshop bookings" />
             <div className="flex border-b border-purple-700 mb-6">
                 <button
                     className={`py-2 px-4 font-semibold ${activeTab === 'workshops' ? 'text-white border-b-2 border-purple-500' : 'text-gray-400'}`}
@@ -458,9 +455,6 @@ const BookingsPage = () => {
                             data={bookedWorkshops}
                             variant="dancer-workshop"
                             onView={(workshop) => {
-                                // Using default workshop card navigation logic
-                                // Need to ensure state is passed if required by WorkshopDetails page
-                                // The original code passed state: { isRegistered: true, paymentStatus: workshop.userParticipant.paymentStatus }
                                 navigate(`/workshop/${workshop._id}`, {
                                     state: {
                                         isRegistered: true,
@@ -627,16 +621,6 @@ const BookingsPage = () => {
                             )}
                         </div>
                     </div>
-                    // <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-                    //     <div className="bg-purple-800 rounded-lg p-6 w-full max-w-md mx-4">
-                    //         <h2 className="text-xl font-bold text-white mb-4">Confirm Acceptance</h2>
-                    //         <p className="text-gray-300 mb-6">Are you sure you want to accept this booking request?</p>
-                    //         <div className="flex justify-end space-x-4">
-                    //             <button onClick={() => setModalOpen(false)} className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors">Cancel</button>
-                    //             <button onClick={confirmAccept} className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors">Confirm</button>
-                    //         </div>
-                    //     </div>
-                    // </div>
                 )
             }
         </div >
@@ -645,10 +629,7 @@ const BookingsPage = () => {
 
 const BookingsDancer = () => {
     return (
-        <div className="flex h-screen bg-gray-900">
-            <Sidebar activeMenu='Bookings' />
-            <BookingsPage />
-        </div>
+        <BookingsPage />
     );
 };
 

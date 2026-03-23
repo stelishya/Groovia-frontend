@@ -136,7 +136,7 @@ export default function CompetitionDetails() {
     const organizer = typeof competition.organizer_id === 'object' ? competition.organizer_id : { _id: competition.organizer_id, username: 'Unknown Organizer', profileImage: '' };
 
     return (
-        <div className="min-h-screen bg-[#0f0f13] text-white">
+        <div className="text-white">
             {/* Hero Section */}
             <div className="relative h-[60vh] overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-900 via-purple-700 to-pink-600 opacity-90" />

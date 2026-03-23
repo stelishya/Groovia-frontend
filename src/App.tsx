@@ -6,13 +6,7 @@ import { Toaster } from 'react-hot-toast'
 import AdminRoutes from './routers/Admin.routes'
 import DancerRoutes from './routers/Dancer.routes'
 import ClientRoutes from './routers/Client.routes'
-import { VideoCallProvider, useVideoCall } from './context/VideoCallContext'
-import VideoRoom from './components/video/VideoRoom'
-
-const VideoRoomWrapper: React.FC = () => {
-  const { isConnected } = useVideoCall();
-  return isConnected ? <VideoRoom /> : null;
-};
+import { VideoCallProvider } from './context/VideoCallContext'
 
 function App() {
   return (
@@ -47,13 +41,12 @@ function App() {
         />
         <VideoCallProvider>
           <Routes>
-            {UserRoutes()} 
-            {AdminRoutes()} 
-            {DancerRoutes()} 
-            {ClientRoutes()} 
+            {UserRoutes()}
+            {AdminRoutes()}
+            {DancerRoutes()}
+            {ClientRoutes()}
             <Route path="*" element={<ErrorPage />} />
           </Routes>
-          <VideoRoomWrapper />
         </VideoCallProvider>
       </>
     </Router>

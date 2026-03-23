@@ -1,9 +1,6 @@
 import { Search, X, ChevronLeft, ChevronRight } from "lucide-react"
 import { useSelector } from "react-redux";
-// import { useNavigate } from "react-router-dom";
-// import { logoutUser } from "../../redux/slices/user.slice";
 import { type RootState } from "../../redux/store";
-import Sidebar from "../../components/shared/Sidebar";
 import DancerCard from "../../components/ui/Card";
 import FormModal from "../../components/ui/FormModal";
 import VenueMap from "../../components/ui/VenueMap";
@@ -13,57 +10,37 @@ import getAllDancers, { sendRequestToDancers } from "../../services/client/brows
 import { toggleLike } from "../../services/dancer/dancer.service";
 import { getClientEventRequests } from '../../services/client/client.service';
 import toast from "react-hot-toast";
-import UserNavbar from "../../components/shared/Navbar";
 import { DanceStyles } from "../../utils/constants/danceStyles";
 import CustomSelect from "../../components/ui/CustomSelect";
 
-
-
-// const Header = () => (
-//     <header className="flex justify-end items-center p-4">
-//         {/* <div className="relative w-80 mr-6">
-//             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-300" />
-//             <input type="text" placeholder="Search Workshops, Competitions..." className="w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg py-2 pl-10 focus:outline-none" />
-//         </div> */}
-//         <Bell className="text-white text-2xl mr-6 cursor-pointer" />
-//         <img src="https://img.icons8.com/?size=128&id=tZuAOUGm9AuS&format=png" alt="User" className="w-10 h-10 rounded-full cursor-pointer" />
-//     </header>
-// );
 interface Dancer {
     _id: string;
     username: string;
-    //   email: string;
-    //   phone?: string;
-    //   role:string;
     profileImage?: string;
     bio?: string;
-    // experienceYears?: number;
-    // portfolioLinks?: string[];
     danceStyles?: string[];
     likes?: string[];
     likesCount?: number;
     createdAt: string;
     updatedAt: string;
 }
+
 interface EventRequest {
     _id: string;
-    dancerId: { // dancerId is an object after population
+    dancerId: {
         _id: string;
         username: string;
         profileImage?: string;
     } | null;
 }
-const Dashboard = ({ userData }: { userData: any }) => {
-    console.log("Client Dashboard loaded")
 
+const Dashboard = ({ userData }: { userData: any }) => {
     const [currentPage, setCurrentPage] = useState(1)
-    // const [pageSize, setPageSize] = useState(1)
     const pageSize = 6;
     const [totalDancers, setTotalDancers] = useState(0);
     const [search, setSearch] = useState('');
     const [sortBy, setSortBy] = useState('likes');
     const [style, setStyle] = useState('');
-    // const [city, setCity] = useState('');
     const [, setLoading] = useState(true)
     const [dancers, setDancers] = useState<Dancer[]>([])
     const [selectedDancer, setSelectedDancer] = useState<Dancer | null>(null)
@@ -87,20 +64,13 @@ const Dashboard = ({ userData }: { userData: any }) => {
     useEffect(() => {
         const handler = setTimeout(() => {
             fetchDancers();
-        }, 500); // Debounce search input
-
-        return () => {
-            clearTimeout(handler);
-        };
+        }, 500);
+        return () => clearTimeout(handler);
     }, [search, style, currentPage, sortBy]);
 
     const fetchSentRequests = async () => {
         try {
-            // const data:{requests:EventRequest[]} = await getClientEventRequests(new URLSearchParams);
-            // if (data.requests) {
-            //     const ids = new Set(data.requests.map(req => req.dancerId._id));
             const response: { success: boolean; data?: { requests: EventRequest[] } } = await getClientEventRequests(new URLSearchParams);
-            console.log("response in fetchSentRequests in ClientHome.tsx", response)
             if (response.success && response.data && Array.isArray(response.data.requests)) {
                 const ids = new Set(
                     response.data.requests
@@ -121,48 +91,17 @@ const Dashboard = ({ userData }: { userData: any }) => {
     const fetchDancers = async (): Promise<void> => {
         setLoading(true);
         try {
-            // const response = await getAllDancers();
-            // console.log("response in fetchUsers in UserDetails.tsx", response)
-            // if (response.users && Array.isArray(response.users)) {
-            //     const mappedDancers: Dancer[] = response.users.map((user: any) => ({
-            //         _id: user._id.toString(),
-            //         username: user.username,
-            //         // email: user.email,
-            //         // phone: user.phone || '',
-            //         role: Array.isArray(user.role) ? user.role[0] : user.role,
-            //         profileImage: user.profileImage || '',
-            //         bio: user.bio,
-            //         experienceYears: user.experienceYears,
-            //         portfolioLinks: user.portfolioLinks,
-            //         danceStyles: user.danceStyles,
-            //         likes: user.likes,
-            //         createdAt: user.createdAt,
-            //         updatedAt: user.updatedAt,
-            //     }));
-            //     console.log("mappedUsers", mappedDancers)
-            //     setDancers(mappedDancers);
-            // } else {
-            //     console.error('Failed to fetch dancers - Invalid response structure:', response.message);
-            // }
-
             const params = new URLSearchParams();
             if (search) params.append('search', search);
             if (style) params.append('danceStyle', style);
-            // if (city) params.append('location', city);
             if (sortBy) params.append('sortBy', sortBy);
             params.append('page', currentPage.toString());
-            // params.append('limit', pageSize.toString());
-            console.log("params", params)
 
-            //  const response = await ClientAxios.get(`/dancers?${params.toString()}`);
             const response = await getAllDancers(params);
-            console.log("response in fetchDancers in ClientHome.tsx", response)
             if (response.success && response.data) {
                 setDancers(response.data.dancers || []);
                 setTotalDancers(response.data.total || 0);
-                console.log("totalDancers", response.data.total)
 
-                // Update liked dancers set
                 const liked = new Set<string>();
                 response.data.dancers.forEach((dancer: Dancer) => {
                     if (dancer.likes?.includes(userData?._id)) {
@@ -172,58 +111,26 @@ const Dashboard = ({ userData }: { userData: any }) => {
                 setLikedDancers(liked);
             }
         } catch (error) {
-            console.log("error in fetchDancers in ClientHome.tsx", error)
+            console.error("error in fetchDancers:", error)
             setDancers([]);
         }
-        // }
     }
-
-
-    // const handleOpenRequestModal = (dancer: Dancer) => {
-    //     setSelectedDancer(dancer);
-    //     setIsRequestModalOpen(true);
-    //     // Reset form data and errors when opening modal
-    //     setRequestData({
-    //         event: '',
-    //         date: '',
-    //         venue: '',
-    //         budget: '',
-    //     });
-    //     setFormErrors({
-    //         event: '',
-    //         date: '',
-    //         venue: '',
-    //         budget: '',
-    //     });
-    // };
 
     const handleCloseRequestModal = () => {
         setIsRequestModalOpen(false);
         setSelectedDancer(null);
-        setFormErrors({
-            event: '',
-            date: '',
-            venue: '',
-            budget: '',
-        });
+        setFormErrors({ event: '', date: '', venue: '', budget: '' });
     };
 
     const validateForm = () => {
-        const errors = {
-            event: '',
-            date: '',
-            venue: '',
-            budget: '',
-        };
+        const errors = { event: '', date: '', venue: '', budget: '' };
         let isValid = true;
 
-        // Validate event
         if (!requestData.event.trim()) {
             errors.event = 'Event name is required';
             isValid = false;
         }
 
-        // Validate date
         if (!requestData.date) {
             errors.date = 'Event date is required';
             isValid = false;
@@ -237,35 +144,14 @@ const Dashboard = ({ userData }: { userData: any }) => {
             }
         }
 
-        // Validate venue
         if (!requestData.venue.trim()) {
             errors.venue = 'Venue is required';
             isValid = false;
         }
 
-        // Validate budget
         if (!requestData.budget.trim()) {
             errors.budget = 'Budget is required';
             isValid = false;
-        } else if (requestData.budget.includes('-')) {
-            const [minStr, maxStr] = requestData.budget.split('-');
-            const min = parseFloat(minStr);
-            const max = parseFloat(maxStr);
-            if (!isNaN(min) && !isNaN(max)) {
-                if (min < 0 || max < 0) {
-                    errors.budget = 'Budget cannot be negative';
-                    isValid = false;
-                } else if (max <= min) {
-                    errors.budget = 'Maximum budget must be greater than minimum budget';
-                    isValid = false;
-                }
-            }
-        } else {
-            const budget = parseFloat(requestData.budget);
-            if (!isNaN(budget) && budget < 0) {
-                errors.budget = 'Budget cannot be negative';
-                isValid = false;
-            }
         }
 
         setFormErrors(errors);
@@ -274,27 +160,17 @@ const Dashboard = ({ userData }: { userData: any }) => {
 
     const handleConfirmSend = async () => {
         try {
-            if (!selectedDancer) return;
+            if (!selectedDancer || !validateForm()) return;
 
-            // Validate form before sending
-            if (!validateForm()) {
-                return;
-            }
-
-            console.log(`Sending request to ${selectedDancer.username} with data:`, requestData);
-            // API call
             const response = await sendRequestToDancers(selectedDancer._id, requestData);
-            console.log("response of sendRequestToDancers in ClientHome.tsx", response)
-            // Add the dancer's ID to the set of requested dancers
             setRequestedDancerIds(prevIds => new Set(prevIds).add(selectedDancer._id));
             handleCloseRequestModal();
-            fetchSentRequests(); // Refetch requests to ensure UI is up-to-date
+            fetchSentRequests();
             if (response.success) {
                 toast.success(`Event request sent to ${selectedDancer.username}! 🎉`);
             } else {
                 toast.error(response.data?.message || 'Failed to send request');
             }
-
         } catch (error) {
             console.error("Send request failed", error);
             toast.error('Failed to send event request');
@@ -312,11 +188,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
 
             setLikedDancers(prevLiked => {
                 const newLiked = new Set(prevLiked);
-                if (isLiked) {
-                    newLiked.add(dancerId);
-                } else {
-                    newLiked.delete(dancerId);
-                }
+                if (isLiked) newLiked.add(dancerId); else newLiked.delete(dancerId);
                 return newLiked;
             });
         } catch (error) {
@@ -325,51 +197,16 @@ const Dashboard = ({ userData }: { userData: any }) => {
         }
     };
 
-    // const handleFilter = () => {
-    //     const params = new URLSearchParams();
-    //     if (filters.search) params.append('search', filters.search);
-    //     if (filters.style) params.append('style', filters.style);
-    //     if (filters.city) params.append('location', filters.city);
-    // };
     return (
-        <main className="flex-grow p-8 bg-deep-purple text-white overflow-y-auto">
-            <UserNavbar />
-            <div className="mt-8">
-                <h1 className="text-5xl font-light leading-tight">BOOK, TRACK, ENJOY – <br /> ALL IN ONE PLATFORM</h1>
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="mb-12">
+                <h1 className="text-5xl font-light leading-tight uppercase">Book, Track, Enjoy – <br /> All In One Platform</h1>
                 <p className="text-gray-400 mt-4 max-w-lg">Your ultimate destination for dance education, competitive showcases, and community engagement.</p>
-                {/* <button className="mt-8 px-10 py-4 font-bold text-white rounded-full bg-gradient-to-r from-pink-500 to-orange-400 hover:opacity-90">Explore Oppurtunities</button> */}
             </div>
 
-            {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="mt-12 p-6 
-        bg-gradient-to-r from-purple-500 to-black-200
-        rounded-xl flex items-center justify-between">
-
-                </div>
-            </div> */}
-
-            {/*  bg-purple-500/70  */}
-            {/* <div className="mt-12 p-6 
-        bg-gradient-to-r from-purple-500 to-black-200
-        rounded-xl flex items-center justify-between">
-            <div className="flex items-center">
-                <img src="https://i.pravatar.cc/80?img=32" alt="Elena Petrova" className="w-16 h-16 rounded-4xl border-2 border-purple-400" />
-                <div className="ml-4">
-                    <div className="flex items-center">
-                        <h3 className="text-xl font-bold">{userData?.username?.charAt(0).toUpperCase() + userData?.username?.slice(1)}</h3>
-                        <span className="ml-3 text-xs bg-blue-500 rounded-full px-2 py-0.5">{userData?.role?.map((role:string)=>role.charAt(0).toUpperCase() + role.slice(1)).join(', ')}</span>
-                    </div>
-                    <p className="text-sm text-gray-300">Contemporary & Hip-Hop Dance</p>
-                </div>
-            </div>
-            
-        </div> */}
             <div className="min-h-screen mt-12  p-6">
-                <h1 className="text-3xl font-semibold  mb-8 text-purple-500/70">
-                    💃🏻 Browse Dancers
-                </h1>
+                <h1 className="text-3xl font-semibold  mb-8 text-purple-500/70">💃🏻 Browse Dancers</h1>
 
-                {/* Filters */}
                 <div className="flex flex-wrap justify-between gap-4 mb-8">
                     <div className="relative w-1/3">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-300" />
@@ -400,23 +237,8 @@ const Dashboard = ({ userData }: { userData: any }) => {
                             <option value="name">Sort by Name</option>
                         </select>
                     </div>
-                    {/* <input
-                        type="text"
-                        placeholder="City"
-                        className="border border-purple-300 bg-purple-700 rounded-lg px-4 py-2 w-48 focus:ring-2 focus:ring-blue-400"
-                        value={city}
-                        onChange={(e) => setCity(e.target.value)}
-                    /> */}
-
-                    {/* <button
-                        onClick={handleFilter}
-                        className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700 transition"
-                    >
-                        Filter
-                    </button> */}
                 </div>
 
-                {/* Dancer Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
                     {dancers.length > 0 ? (
                         dancers.map((dancer) => (
@@ -429,13 +251,10 @@ const Dashboard = ({ userData }: { userData: any }) => {
                             />
                         ))
                     ) : (
-                        <p className="text-center col-span-full text-gray-500 fontSize-2xl">
-                            No dancers found 😢
-                        </p>
+                        <p className="text-center col-span-full text-gray-500 fontSize-2xl">No dancers found 😢</p>
                     )}
                 </div>
 
-                {/* Pagination */}
                 <div className='flex justify-between items-center mt-8 space-x-4'>
                     {dancers.length > 0 && (
                         <>
@@ -464,141 +283,81 @@ const Dashboard = ({ userData }: { userData: any }) => {
                 </div>
             </div>
 
-
-
-            {
-                selectedDancer && (
-                    <FormModal
-                        isOpen={isRequestModalOpen}
-                        onClose={handleCloseRequestModal}
-                        title={`Send Request to ${selectedDancer.username}`}
-                        icon={<GitPullRequest className="text-purple-300" size={32} />}
-                        onSubmit={handleConfirmSend}
-                        submitText="Send Request"
-                        submitButtonClass="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                    >
-                        <div>
-                            <label className="block text-white font-medium mb-2">Event</label>
-                            <input
-                                type="text"
-                                value={requestData.event}
-                                onChange={(e) => {
-                                    setRequestData({ ...requestData, event: e.target.value });
-                                    if (formErrors.event) setFormErrors({ ...formErrors, event: '' });
-                                }}
-                                className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.event ? 'border-2 border-red-500' : ''
-                                    }`}
-                                placeholder="Event Name"
-                            />
-                            {formErrors.event && (
-                                <p className="text-red-400 text-sm mt-1">{formErrors.event}</p>
-                            )}
-                        </div>
-                        <div>
-                            <label className="block text-white font-medium mb-2">Date</label>
-                            <input
-                                type="date"
-                                value={requestData.date}
-                                min={new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]}
-                                onChange={(e) => {
-                                    setRequestData({ ...requestData, date: e.target.value });
-                                    if (formErrors.date) setFormErrors({ ...formErrors, date: '' });
-                                }}
-                                className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.date ? 'border-2 border-red-500' : ''
-                                    }`}
-                            />
-                            {formErrors.date && (
-                                <p className="text-red-400 text-sm mt-1">{formErrors.date}</p>
-                            )}
-                        </div>
-                        <div>
-                            <label className="block text-white font-medium mb-2">Venue</label>
-                            <input
-                                type="text"
-                                value={requestData.venue}
-                                onChange={(e) => {
-                                    setRequestData({ ...requestData, venue: e.target.value });
-                                    if (formErrors.venue) setFormErrors({ ...formErrors, venue: '' });
-                                }}
-                                className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.venue ? 'border-2 border-red-500' : ''
-                                    }`}
-                                placeholder="Enter venue address"
-                                readOnly={showVenueMap}
-                            />
-                            {formErrors.venue && (
-                                <p className="text-red-400 text-sm mt-1">{formErrors.venue}</p>
-                            )}
-                            <button
-                                type="button"
-                                onClick={() => setShowVenueMap(!showVenueMap)}
-                                className="mt-2 text-purple-300 hover:text-purple-100 text-sm underline"
-                            >
-                                {showVenueMap ? 'Hide Map' : 'Select from Map'}
-                            </button>
-                            {showVenueMap && (
-                                <div className="mt-3">
-                                    <VenueMap
-                                        onVenueSelect={(venue) => {
-                                            setRequestData({ ...requestData, venue: venue.address });
-                                            if (formErrors.venue) setFormErrors({ ...formErrors, venue: '' });
-                                        }}
-                                        initialCenter={[20.5937, 78.9629]}
-                                    />
-                                </div>
-                            )}
-                        </div>
-                        <div>
-                            <label className="block text-white font-medium mb-2">Budget Range (₹)</label>
-                            <div className="flex space-x-4">
-                                <div className="flex-1">
-                                    <input
-                                        type="number"
-                                        value={requestData.budget.includes('-') ? requestData.budget.split('-')[0] : requestData.budget}
-                                        onChange={(e) => {
-                                            const min = e.target.value;
-                                            const max = requestData.budget.includes('-') ? requestData.budget.split('-')[1] : '';
-                                            setRequestData({ ...requestData, budget: `${min}-${max}` });
-                                            if (formErrors.budget) setFormErrors({ ...formErrors, budget: '' });
-                                        }}
-                                        className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.budget ? 'border-2 border-red-500' : ''
-                                            }`}
-                                        placeholder="Min"
-                                    />
-                                </div>
-                                <div className="flex-1">
-                                    <input
-                                        type="number"
-                                        value={requestData.budget.includes('-') ? requestData.budget.split('-')[1] : ''}
-                                        onChange={(e) => {
-                                            const min = requestData.budget.includes('-') ? requestData.budget.split('-')[0] : requestData.budget;
-                                            const max = e.target.value;
-                                            setRequestData({ ...requestData, budget: `${min}-${max}` });
-                                            if (formErrors.budget) setFormErrors({ ...formErrors, budget: '' });
-                                        }}
-                                        className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.budget ? 'border-2 border-red-500' : ''
-                                            }`}
-                                        placeholder="Max"
-                                    />
-                                </div>
+            {selectedDancer && (
+                <FormModal
+                    isOpen={isRequestModalOpen}
+                    onClose={handleCloseRequestModal}
+                    title={`Send Request to ${selectedDancer.username}`}
+                    icon={<GitPullRequest className="text-purple-300" size={32} />}
+                    onSubmit={handleConfirmSend}
+                    submitText="Send Request"
+                    submitButtonClass="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                >
+                    <div>
+                        <label className="block text-white font-medium mb-2">Event</label>
+                        <input
+                            type="text"
+                            value={requestData.event}
+                            onChange={(e) => setRequestData({ ...requestData, event: e.target.value })}
+                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.event ? 'border-2 border-red-500' : ''}`}
+                            placeholder="Event Name"
+                        />
+                        {formErrors.event && <p className="text-red-400 text-sm mt-1">{formErrors.event}</p>}
+                    </div>
+                    <div>
+                        <label className="block text-white font-medium mb-2">Date</label>
+                        <input
+                            type="date"
+                            value={requestData.date}
+                            min={new Date(new Date().setDate(new Date().getDate() + 1)).toISOString().split('T')[0]}
+                            onChange={(e) => setRequestData({ ...requestData, date: e.target.value })}
+                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.date ? 'border-2 border-red-500' : ''}`}
+                        />
+                        {formErrors.date && <p className="text-red-400 text-sm mt-1">{formErrors.date}</p>}
+                    </div>
+                    <div>
+                        <label className="block text-white font-medium mb-2">Venue</label>
+                        <input
+                            type="text"
+                            value={requestData.venue}
+                            onChange={(e) => setRequestData({ ...requestData, venue: e.target.value })}
+                            className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.venue ? 'border-2 border-red-500' : ''}`}
+                            placeholder="Enter venue address"
+                            readOnly={showVenueMap}
+                        />
+                        {formErrors.venue && <p className="text-red-400 text-sm mt-1">{formErrors.venue}</p>}
+                        <button type="button" onClick={() => setShowVenueMap(!showVenueMap)} className="mt-2 text-purple-300 hover:text-purple-100 text-sm underline">
+                            {showVenueMap ? 'Hide Map' : 'Select from Map'}
+                        </button>
+                        {showVenueMap && (
+                            <div className="mt-3">
+                                <VenueMap
+                                    onVenueSelect={(venue) => setRequestData({ ...requestData, venue: venue.address })}
+                                    initialCenter={[20.5937, 78.9629]}
+                                />
                             </div>
-                            {formErrors.budget && (
-                                <p className="text-red-400 text-sm mt-1">{formErrors.budget}</p>
-                            )}
+                        )}
+                    </div>
+                    <div>
+                        <label className="block text-white font-medium mb-2">Budget Range (₹)</label>
+                        <div className="flex space-x-4">
+                            <input
+                                type="number"
+                                value={requestData.budget}
+                                onChange={(e) => setRequestData({ ...requestData, budget: e.target.value })}
+                                className={`w-full px-4 py-2 bg-purple-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${formErrors.budget ? 'border-2 border-red-500' : ''}`}
+                                placeholder="Enter budget"
+                            />
                         </div>
-                    </FormModal>
-                )
-            }
-
-        </main >
-    )
+                        {formErrors.budget && <p className="text-red-400 text-sm mt-1">{formErrors.budget}</p>}
+                    </div>
+                </FormModal>
+            )}
+        </div>
+    );
 };
 
 export default function Home() {
     const { userData } = useSelector((state: RootState) => state.user);
-    return (
-        <div className="flex h-screen bg-gray-900">
-            <Sidebar />
-            <Dashboard userData={userData} />
-        </div>
-    );
+    return <Dashboard userData={userData} />;
 }

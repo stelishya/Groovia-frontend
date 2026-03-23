@@ -1,6 +1,9 @@
 import { Link } from 'react-router-dom';
 import { Instagram, Youtube } from 'lucide-react';
 import LandingImage from '../assets/LandingImage.jpg'
+import WorkshopsImage from '../assets/Workshops.jpeg'
+import CompetitionsImage from '../assets/Competitions.jpeg'
+import HireDancersImage from '../assets/HireDancers.jpeg'
 
 const LandingPage = () => {
   return (
@@ -10,9 +13,9 @@ const LandingPage = () => {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-12">
-              <Link to="/" className="text-3xl font-bold text-white">
+              <h1 className="text-3xl font-bold text-white">
                 Groovia
-              </Link>
+              </h1>
               <nav className="hidden md:flex space-x-8">
                 <Link to="/login" className="text-gray-300 hover:text-white transition">
                   Workshops
@@ -24,9 +27,9 @@ const LandingPage = () => {
                   Dancers
                 </Link>
                 {/* <Link to="/contact"  */}
-                <h2 className="text-gray-300 hover:text-white transition">
+                {/* <h2 className="text-gray-300 hover:text-white transition">
                   Contact
-                </h2>
+                </h2> */}
                 {/* </Link> */}
               </nav>
             </div>
@@ -124,8 +127,9 @@ const LandingPage = () => {
             <div className="bg-gradient-to-b from-gray-800 to-gray-900 rounded-lg overflow-hidden border border-purple-600">
               <div className="h-64 bg-gradient-to-br from-blue-900 to-purple-900 flex items-center justify-center">
                 <div className="text-center">
-                  <div className="text-6xl mb-4">👥</div>
-                  <p className="text-gray-300">Workshop Image</p>
+                  <img src={WorkshopsImage} alt="Workshop Image"/>
+                  {/* <div className="text-6xl mb-4">👥</div>
+                  <p className="text-gray-300">Workshop Image</p> */}
                 </div>
               </div>
               <div className="p-6 text-left">
@@ -146,8 +150,9 @@ const LandingPage = () => {
             <div className="bg-gradient-to-b from-gray-800 to-gray-900 rounded-lg overflow-hidden border border-purple-600">
               <div className="h-64 bg-gradient-to-br from-purple-900 to-pink-900 flex items-center justify-center">
                 <div className="text-center">
-                  <div className="text-6xl mb-4">🏆</div>
-                  <p className="text-gray-300">Competition Image</p>
+                  <img src={CompetitionsImage} alt="Competition Image"/>
+                  {/* <div className="text-6xl mb-4">🏆</div>
+                  <p className="text-gray-300">Competition Image</p> */}
                 </div>
               </div>
               <div className="p-6 text-left">
@@ -168,8 +173,9 @@ const LandingPage = () => {
             <div className="bg-gradient-to-b from-gray-800 to-gray-900 rounded-lg overflow-hidden border border-purple-600">
               <div className="h-64 bg-gradient-to-br from-blue-800 to-purple-800 flex items-center justify-center">
                 <div className="text-center">
-                  <div className="text-6xl mb-4">✨</div>
-                  <p className="text-gray-300">Performance Image</p>
+                  <img src={HireDancersImage} alt="Hire Dancers Image"/>
+                  {/* <div className="text-6xl mb-4">✨</div>
+                  <p className="text-gray-300">Performance Image</p> */}
                 </div>
               </div>
               <div className="p-6 text-left">

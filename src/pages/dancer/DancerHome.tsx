@@ -2,8 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { Search, X, ChevronLeft, ChevronRight } from "lucide-react";
-import Sidebar from "../../components/shared/Sidebar";
-import UserNavbar from "../../components/shared/Navbar";
 import WorkshopCard from "../../components/ui/WorkshopCard";
 import CompetitionCard from "../../components/ui/CompetitionCard";
 import { getAllWorkshops } from "../../services/workshop/workshop.service";
@@ -96,23 +94,15 @@ const Dashboard = ({ userData }: { userData: any }) => {
     const [currentPage, setCurrentPage] = useState(1);
     const [totalWorkshops, setTotalWorkshops] = useState(0);
     const pageSize = 8; // 8 workshops per page (2 rows of 4)
-    console.log("userdata in dancerhome", userData)
+
     const fetchWorkshops = async () => {
         setLoading(true);
         try {
             const params = new URLSearchParams();
-
-            // Add search query
             if (searchQuery) params.append('search', searchQuery);
-
-            // Add filters
             if (styleFilter) params.append('style', styleFilter);
             if (modeFilter) params.append('mode', modeFilter);
-
-            // Add sorting
             if (sortBy) params.append('sortBy', sortBy);
-
-            // Add pagination
             params.append('page', currentPage.toString());
             params.append('limit', pageSize.toString());
 
@@ -138,19 +128,17 @@ const Dashboard = ({ userData }: { userData: any }) => {
     }, [searchQuery, styleFilter, modeFilter, sortBy, currentPage]);
 
     return (
-        <main className="flex-grow p-8 bg-deep-purple text-white overflow-y-auto">
-            <UserNavbar />
-
-            <div className="mt-8 ml-8">
-                <h1 className="text-5xl font-light leading-tight">LEARN, PERFORM, COMPETE,<br />TEACH – ALL IN ONE PLATFORM</h1>
+        <div className="text-white">
+            <div className="mb-12">
+                <h1 className="text-4xl md:text-5xl font-light leading-tight">LEARN, PERFORM, COMPETE,<br />TEACH – ALL IN ONE PLATFORM</h1>
                 <p className="text-gray-400 mt-4 max-w-lg">Your ultimate destination for dance education, competitive showcases, and community engagement.</p>
                 {/* <button className="mt-8 px-10 py-4 font-bold text-white rounded-full bg-gradient-to-r from-pink-500 to-orange-400 hover:opacity-90">Explore Opportunities</button> */}
             </div>
 
             {/* Workshops Feed Section */}
-            <div className="min-h-screen mt-12 p-6 rounded-xl">
+            <div className="bg-purple-800/10 backdrop-blur-sm p-6 rounded-2xl border border-white/5 mb-12">
                 <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-3xl font-semibold text-purple-500">
+                    <h1 className="text-2xl font-bold text-purple-400">
                         Upcoming Workshops
                     </h1>
                 </div>
@@ -168,7 +156,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
                                 setSearchQuery(e.target.value);
                                 setCurrentPage(1); // Reset to first page on search
                             }}
-                            className="w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            className="w-full bg-purple-700/50 text-white placeholder-purple-300 rounded-lg py-2 pl-10 pr-10 focus:outline-none focus:ring-2 focus:ring-purple-500 border border-white/10"
                         />
                         {searchQuery && (
                             <X
@@ -220,7 +208,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
 
                 {loading ? (
                     <div className="flex justify-center items-center h-64">
-                        <p className="text-white text-xl">Loading workshops...</p>
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
                     </div>
                 ) : (
                     <>
@@ -241,36 +229,37 @@ const Dashboard = ({ userData }: { userData: any }) => {
                                     />
                                 ))
                             ) : (
-                                <p className="text-center col-span-full text-gray-500 text-2xl">
+                                <p className="text-center col-span-full text-gray-500 text-xl py-12">
                                     No upcoming workshops found 🎭
                                 </p>
                             )}
                         </div>
+
                         {/* Pagination */}
                         {workshops.length > 0 && (
-                            <div className="flex justify-between items-center mt-8 pt-6 border-t border-purple-700">
-                                <div className="text-gray-300">
+                            <div className="flex flex-col sm:flex-row justify-between items-center mt-12 pt-6 border-t border-white/10 gap-4">
+                                <div className="text-gray-400 text-sm">
                                     Showing {workshops.length} of {totalWorkshops} workshops
                                 </div>
                                 <div className="flex items-center gap-4">
                                     <button
                                         onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
                                         disabled={currentPage === 1}
-                                        className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-700 transition-colors flex items-center gap-2"
+                                        className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
                                     >
-                                        <ChevronLeft size={20} />
-                                        Previous
+                                        <ChevronLeft size={18} />
+                                        <span>Prev</span>
                                     </button>
-                                    <span className="text-white">
-                                        Page {currentPage} of {Math.ceil(totalWorkshops / pageSize)}
+                                    <span className="text-sm font-medium text-white">
+                                        {currentPage} / {Math.ceil(totalWorkshops / pageSize)}
                                     </span>
                                     <button
                                         onClick={() => setCurrentPage(p => p + 1)}
                                         disabled={currentPage >= Math.ceil(totalWorkshops / pageSize)}
-                                        className="bg-purple-600 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-purple-700 transition-colors flex items-center gap-2"
+                                        className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
                                     >
-                                        Next
-                                        <ChevronRight size={20} />
+                                        <span>Next</span>
+                                        <ChevronRight size={18} />
                                     </button>
                                 </div>
                             </div>
@@ -281,19 +270,15 @@ const Dashboard = ({ userData }: { userData: any }) => {
 
             {/* Competitions Feed Section */}
             <CompetitionsSection />
-                <div className="mt-8 text-center text-gray-500 text-sm">
-                    © {new Date().getFullYear()} Groovia. All rights reserved.
-                </div>
-        </main >
+
+            <div className="mt-12 text-center text-gray-600 text-xs pb-8">
+                © {new Date().getFullYear()} Groovia. All rights reserved.
+            </div>
+        </div>
     )
 };
 
 export default function Home() {
     const { userData } = useSelector((state: RootState) => state.user)
-    return (
-        <div className="flex h-screen bg-gray-900">
-            <Sidebar activeMenu="Home" />
-            <Dashboard userData={userData} />
-        </div>
-    );
+    return <Dashboard userData={userData} />;
 }

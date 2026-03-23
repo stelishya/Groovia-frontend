@@ -69,16 +69,16 @@ const VideoRoom: React.FC = () => {
     }, [isMinimized]);
 
     return (
-        <div className={`fixed transition-all duration-500 ease-in-out font-sans z-50 flex flex-col overflow-hidden ${isMinimized
+        <div className={`fixed transition-all duration-500 ease-in-out font-sans z-40 flex flex-col overflow-hidden ${isMinimized
             ? 'bottom-6 right-6 w-80 md:w-96 min-h-[480px] bg-deep-purple backdrop-blur-xl rounded-2xl shadow-3xl border border-white/20'
-            : 'inset-0 bg-deep-purple'
+            : 'top-16 inset-x-0 bottom-0 bg-deep-purple'
             }`}
             style={{
                 '--local-volume': `${Math.min(localVolume * 2, 100)}%`,
                 transform: isMinimized ? `translate(${position.x}px, ${position.y}px)` : 'none',
             } as React.CSSProperties}
         >
-            {/* Drag Handle (Visible only when minimized) */}
+            {/* Drag Handle (visible only when minimized) */}
             {isMinimized && (
                 <div
                     onMouseDown={handleMouseDown}

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, Upload, MapPin, Crop } from 'lucide-react';
 import { type CreateCompetitionData, CompetitionMode } from '../../types/competition.type';
+import { formatTime12h } from '../../utils/time';
 import VenueMap from '../ui/VenueMap';
 import ImageCropModal from '../ui/ImageCropModal';
 import toast from 'react-hot-toast';
@@ -57,6 +58,7 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
     fee: string;
     posterImage: string;
     document: string | File | null;
+    time: string;
   }>({
     title: '',
     description: '',
@@ -75,6 +77,7 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
     fee: '',
     posterImage: '',
     document: '',
+    time: '',
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -106,6 +109,7 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
         fee: initialData.fee?.toString() || '',
         posterImage: initialData.posterImage || '',
         document: initialData.document || '',
+        time: initialData.date ? new Date(initialData.date).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : '',
       });
 
       // Set image preview if posterImage exists
@@ -139,6 +143,7 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
         fee: '',
         posterImage: '',
         document: '',
+        time: '',
       });
       setImagePreview('');
       setShowCustomStyle(false);
@@ -343,7 +348,13 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
     formDataToSend.append('level', formData.level);
     formDataToSend.append('age_category', formData.age_category);
     formDataToSend.append('duration', formData.duration);
-    formDataToSend.append('date', formData.date);
+
+    // Combine date and time
+    const combinedDate = formData.time
+      ? `${formData.date}T${formData.time}`
+      : formData.date;
+    formDataToSend.append('date', combinedDate);
+
     formDataToSend.append('registrationDeadline', formData.registrationDeadline);
     formDataToSend.append('maxParticipants', formData.maxParticipants);
     formDataToSend.append('fee', formData.fee);
@@ -631,6 +642,27 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
               </div>
               <div>
                 <label className="block px-3 text-sm font-medium text-purple-200 mb-2">
+                  Time *
+                </label>
+                <div className="relative">
+                  <input
+                    type="time"
+                    name="time"
+                    value={formData.time}
+                    onChange={handleInputChange}
+                    className={`w-full bg-purple-600 border rounded-lg px-3 py-3 text-white focus:outline-none focus:border-purple-400 ${errors.time ? 'border-red-500' : 'border-purple-500/30'
+                      }`}
+                  />
+                  {/* {formData.time && (
+                    <div className="text-xs text-purple-300 mt-1 text-center">
+                      Formatted: {formatTime12h(formData.time)}
+                    </div>
+                  )} */}
+                </div>
+                {errors.time && <p className="text-red-400 text-xs mt-1">{errors.time}</p>}
+              </div>
+              <div>
+                <label className="block px-3 text-sm font-medium text-purple-200 mb-2">
                   Registration Deadline *
                 </label>
                 <input
@@ -777,9 +809,9 @@ const CreateCompetitionModal: React.FC<CreateCompetitionModalProps> = ({
                       rel="noopener noreferrer"
                       className="text-xs text-purple-300 hover:text-purple-200 underline"
                     >
-                    <p className="text-purple-200 text-xs truncate opacity-70">
-                      {decodeURIComponent(formData.document.split('/').pop()?.split('?')[0].split('-')[2] || 'Document.pdf')}
-                    </p>
+                      <p className="text-purple-200 text-xs truncate opacity-70">
+                        {decodeURIComponent(formData.document.split('/').pop()?.split('?')[0].split('-')[2] || 'Document.pdf')}
+                      </p>
                     </a>
                   </div>
                   <button

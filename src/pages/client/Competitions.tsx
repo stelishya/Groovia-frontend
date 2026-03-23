@@ -1,14 +1,14 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { Plus, Search, 
+import {
+  Plus, Search,
   // ScanLine,
-   X, ChevronLeft, ChevronRight } from "lucide-react";
+  X, ChevronLeft, ChevronRight
+} from "lucide-react";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 import type { RootState } from "../../redux/store";
 import { useNavigate } from "react-router-dom";
 
-import UserNavbar from "../../components/shared/Navbar";
-import Sidebar from "../../components/shared/Sidebar";
 import type { Competition } from "../../services/competition.service";
 import type { CreateCompetitionData } from "../../types/competition.type";
 import CreateCompetitionModal from "../../components/ui/CreateCompetitionModal";
@@ -191,8 +191,7 @@ const CompetitionsPage = () => {
   // }
 
   return (
-    <div className="flex-grow p-8 bg-deep-purple text-white overflow-y-auto">
-      <UserNavbar title="Dance Competitions" subTitle="Discover and participate in exciting dance competitions" />
+    <div className="flex-grow bg-deep-purple text-white">
 
       {isOrganizer && (
         <div className="flex justify-end gap-2">
@@ -379,10 +378,7 @@ const CompetitionsPage = () => {
 
 const CompetitionsClient: React.FC = () => {
   return (
-    <div className="flex h-screen bg-gray-900">
-      <Sidebar activeMenu="Competitions" />
-      <CompetitionsPage />
-    </div>
+    <CompetitionsPage />
   );
 };
 

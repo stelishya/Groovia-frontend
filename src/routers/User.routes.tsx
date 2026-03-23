@@ -13,17 +13,10 @@ import LandingPage from "../pages/LandingPage";
 import CheckoutPage from "../pages/authorization/Checkout";
 import PaymentHistory from "../pages/shared/PaymentHistory";
 import PublicProfile from "../pages/public/PublicProfile";
-// import ErrorPage from "../pages/shared/ErrorPage";
-// import BookingsPage from "../pages/dancer/Bookings-Dancer";
-
-// import Home from "../pages/dancer/Home";
-// import Profile from "../pages/dancer/DancerProfile";
-// import { PrivateRoute } from "../protected/PrivateRoute";
-// import HomePage from "../pages/Home";
+import UserLayout from "../components/shared/UserLayout";
 
 const UserRoutes = () => {
     return (
-        // <Routes>
         <>
             <Route path="/login" element={
                 <PublicRoute userType="dancer">
@@ -57,56 +50,23 @@ const UserRoutes = () => {
                 </PublicRoute>
             }
             />
-            <Route path="/home" element={
-                <PrivateRoute userType="user" >
-                    <HomePage />
-                </PrivateRoute>
-            }
-            />
-            <Route path="/profile" element={
-                <PrivateRoute userType="user" >
-                    <ProfilePage />
-                </PrivateRoute>
-            }
-            />
-            {/* <Route path="/dancers/:id" element={ */}
-            <Route path="/dancer-profile/:id" element={
-                <PrivateRoute userType="user">
-                    <PublicProfile />
-                </PrivateRoute>
-            } />
-            <Route path="/bookings" element={
-                <PrivateRoute userType="user" >
-                    <BookingsPage />
-                </PrivateRoute>
-            }
-            />
-            {/* <Route path="/home" element={
-                <PublicRoute userType="dancer">
-                    <Home />
-                </PublicRoute>
-            }
-            /> */}
-            {/* Checkout Routes */}
-            <Route path="/checkout" element={
-                <PrivateRoute
-                    userType="user"
-                // allowedRoles={[Role.DANCER, Role.CLIENT]}
-                >
-                    <CheckoutPage />
-                </PrivateRoute>
-            } />
 
-            <Route path="/payments" element={
-                <PrivateRoute userType="user" >
-                    <PaymentHistory />
+            {/* Protected Routes with Global Layout */}
+            <Route element={
+                <PrivateRoute userType="user">
+                    <UserLayout />
                 </PrivateRoute>
-            } />
+            }>
+                <Route path="/home" element={<HomePage />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/dancer-profile/:id" element={<PublicProfile />} />
+                <Route path="/bookings" element={<BookingsPage />} />
+                <Route path="/checkout" element={<CheckoutPage />} />
+                <Route path="/payments" element={<PaymentHistory />} />
+            </Route>
 
             <Route path='/logout' element={<Login />} />
-            {/* <Route path="*" element={<ErrorPage />} /> */}
-            </>
-        // </Routes>
+        </>
     )
 }
 export default UserRoutes;

@@ -20,11 +20,10 @@ interface Notification {
 
 interface UserNavbarProps {
     onSearch?: (query: string) => void;
-    title?: string;
-    subTitle?: string;
+    pageName?: string;
 }
 
-const UserNavbar: React.FC<UserNavbarProps> = ({ title, subTitle }) => {
+const UserNavbar: React.FC<UserNavbarProps> = ({ pageName }) => {
     const navigate = useNavigate();
     const { userData } = useSelector((state: RootState) => state.user);
     const [showNotifications, setShowNotifications] = useState(false);
@@ -65,8 +64,7 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ title, subTitle }) => {
     const handleNewNotification = (notification: Notification) => {
         // Handle upgrade approved - update user role in Redux
         if (notification.type === 'upgrade_approved' && userData) {
-            // Only add instructor role if it doesn't already exist
-            // const currentRoles = userData.role || [];
+            console.log("upgrade approved")
         }
         // Handle upgrade rejected
         else if (notification.type === 'upgrade_rejected') {
@@ -102,35 +100,6 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ title, subTitle }) => {
             console.error('Failed to mark all notifications as read:', error);
         }
     };
-    // Mock notifications - Replace with actual API call later
-    // const [notifications] = useState<Notification[]>([
-    //     {
-    //         id: '1',
-    //         type: 'upgrade_approved',
-    //         title: 'Upgrade Request Approved!',
-    //         message: 'Your instructor upgrade has been approved. Welcome to the instructor community!',
-    //         isRead: false,
-    //         createdAt: new Date().toISOString(),
-    //     },
-    //     {
-    //         id: '2',
-    //         type: 'workshop',
-    //         title: 'New Workshop Registration',
-    //         message: 'Someone registered for your Contemporary Dance workshop.',
-    //         isRead: false,
-    //         createdAt: new Date(Date.now() - 3600000).toISOString(),
-    //     },
-    //     {
-    //         id: '3',
-    //         type: 'general',
-    //         title: 'Profile Update',
-    //         message: 'Your profile has been successfully updated.',
-    //         isRead: true,
-    //         createdAt: new Date(Date.now() - 86400000).toISOString(),
-    //     },
-    // ]);
-
-
 
     const filteredNotifications = notifications.filter((notif) => {
         if (notificationTab === 'unread') return !notif.isRead;
@@ -167,134 +136,110 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ title, subTitle }) => {
     };
 
     return (
-        <>
-            <header className="flex justify-between items-center p-4 relative">
+        <header className="sticky top-0 flex justify-between items-center p-4 bg-purple-900/50 backdrop-blur-md border-b border-white/10 z-50">
+            <div className="flex items-center gap-4">
                 <div>
-                    <h1 className="text-4xl font-bold text-purple-400 mb-2">{title}</h1>
-                    <p className="text-gray-400">{subTitle}</p>
+                    <h1 className="text-xl md:text-2xl font-bold text-white leading-tight">
+                        {pageName || 'Groovia'}
+                    </h1>
                 </div>
-                {/* Search Bar */}
-                {/* <div className="relative w-80 mr-6">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-300" />
-                    <input
-                        type="text"
-    placeholder = "Search Workshops, Competitions..."
-    value = { searchQuery }
-    onChange = {(e) => setSearchQuery(e.target.value)}
-onKeyDown = {(e) => e.key === 'Enter' && handleSearchSubmit(e)}
-className = "w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-purple-500"
-    />
-                </div > */}
+            </div>
 
-                <div className="flex items-center">
-                    {/* <div className="relative w-80 mr-6">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-300" />
-                    <input
-                        type="text"
-                        placeholder="Search Workshops, Competitions..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit(e)}
-                        className="w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    />
-                </div> */}
-
-                    {/* Notification Bell */}
-                    <div className="relative mr-6 pt-2">
-                        <button
-                            onClick={() => setShowNotifications(!showNotifications)}
-                            className="relative text-white text-2xl cursor-pointer hover:text-purple-300 transition-colors"
-                        >
-                            <Bell className="w-6 h-6 text-purple-400 cursor-pointer hover:text-purple-300" />
-                            {unreadCount > 0 && (
-                                <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full text-xs text-white flex items-center justify-center font-bold">
-                                    {unreadCount}
-                                </span>
-                            )}
-                        </button>
-                    </div>
-
-                    {/* User Profile */}
-                    <div className="relative flex items-center space-x-2">
-                        <h2 className="text-white">{userData?.username}</h2>
-                        <button
-                            // onClick={() => setShowUserMenu(!showUserMenu)}
-                            className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
-                        >
-                            {userData?.profileImage ? (
-                                <img
-                                    src={userData?.profileImage}
-                                    alt="User"
-                                    className="w-10 h-10 rounded-full cursor-pointer border-2 border-purple-500"
-                                    referrerPolicy="no-referrer"
-                                    crossOrigin="anonymous"
-                                    onError={(e) => {
-                                        e.currentTarget.onerror = null;
-                                        e.currentTarget.src = 'https://img.icons8.com/?size=128&id=tZuAOUGm9AuS&format=png';
-                                    }}
-                                />
-                            ) : (
-                                <User size={34} className="text-purple-600 bg-purple-200 rounded-full p-2" />
-                            )}
-                        </button>
-
-                        {/* User Dropdown Menu */}
-                        {showUserMenu && (
-                            <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl py-2 border border-gray-200 z-50">
-                                <div className="px-4 py-3 border-b border-gray-200">
-                                    <p className="text-sm font-semibold text-gray-800">{userData?.username || 'User'}</p>
-                                    <p className="text-xs text-gray-500">{userData?.email || 'user@example.com'}</p>
-                                </div>
-                                <button
-                                    onClick={() => {
-                                        navigate('/profile');
-                                        setShowUserMenu(false);
-                                    }}
-                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                                >
-                                    <User className="w-4 h-4 mr-2" />
-                                    Profile
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        navigate('/user/settings');
-                                        setShowUserMenu(false);
-                                    }}
-                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                                >
-                                    <Settings className="w-4 h-4 mr-2" />
-                                    Settings
-                                </button>
-                                <hr className="my-1" />
-                                <button
-                                    onClick={() => {
-                                        // Handle logout
-                                        navigate('/login');
-                                    }}
-                                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
-                                >
-                                    <LogOut className="w-4 h-4 mr-2" />
-                                    Sign out
-                                </button>
-                            </div>
+            <div className="flex items-center">
+                {/* Notification Bell */}
+                <div className="relative mr-6">
+                    <button
+                        onClick={() => setShowNotifications(!showNotifications)}
+                        className="relative text-white cursor-pointer hover:text-purple-300 transition-colors"
+                    >
+                        <Bell className="w-6 h-6" />
+                        {unreadCount > 0 && (
+                            <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full text-xs text-white flex items-center justify-center font-bold">
+                                {unreadCount}
+                            </span>
                         )}
-                    </div>
+                    </button>
                 </div>
-            </header>
+
+                {/* User Profile */}
+                <div className="relative flex items-center space-x-2">
+                    <h2 className="hidden sm:block text-white text-sm font-medium">{userData?.username}</h2>
+                    <button
+                        onClick={() => setShowUserMenu(!showUserMenu)}
+                        className="flex items-center space-x-2 hover:opacity-80 transition-opacity focus:outline-none"
+                    >
+                        {userData?.profileImage ? (
+                            <img
+                                src={userData?.profileImage}
+                                alt="User"
+                                className="w-10 h-10 rounded-full cursor-pointer border-2 border-purple-500 object-cover"
+                                referrerPolicy="no-referrer"
+                                crossOrigin="anonymous"
+                                onError={(e) => {
+                                    e.currentTarget.onerror = null;
+                                    e.currentTarget.src = 'https://img.icons8.com/?size=128&id=tZuAOUGm9AuS&format=png';
+                                }}
+                            />
+                        ) : (
+                            <User size={34} className="text-purple-600 bg-purple-200 rounded-full p-2" />
+                        )}
+                    </button>
+
+                    {/* User Dropdown Menu */}
+                    {showUserMenu && (
+                        <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl py-2 border border-gray-200 z-50">
+                            <div className="px-4 py-3 border-b border-gray-200">
+                                <p className="text-sm font-semibold text-gray-800">{userData?.username || 'User'}</p>
+                                <p className="text-xs text-gray-500 truncate">{userData?.email || 'user@example.com'}</p>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    navigate('/profile');
+                                    setShowUserMenu(false);
+                                }}
+                                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                            >
+                                <User className="w-4 h-4 mr-2" />
+                                Profile
+                            </button>
+                            <button
+                                onClick={() => {
+                                    navigate('/user/settings');
+                                    setShowUserMenu(false);
+                                }}
+                                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                            >
+                                <Settings className="w-4 h-4 mr-2" />
+                                Settings
+                            </button>
+                            <hr className="my-1" />
+                            <button
+                                onClick={() => {
+                                    // Handle logout
+                                    navigate('/login');
+                                }}
+                                className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
+                            >
+                                <LogOut className="w-4 h-4 mr-2" />
+                                Sign out
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>
 
             {/* Notification Dropdown Panel */}
-
             {showNotifications && (
-                <div className="fixed top-20 right-4 w-96 bg-purple-500 border-2 border-purple-300 rounded-lg shadow-2xl border border-gray-200 z-50 max-h-96 flex flex-col">
+                <div className="fixed top-20 right-4 w-80 sm:w-96 bg-white rounded-lg shadow-2xl border border-gray-200 z-50 max-h-[80vh] flex flex-col overflow-hidden">
                     {/* Header */}
-                    <div className="p-4 border-b border-gray-200">
+                    <div className="p-4 border-b border-gray-200 bg-purple-50">
                         <div className="flex items-center justify-between mb-3">
                             <h3 className="text-lg font-bold text-gray-800">Notifications</h3>
                             <button
                                 onClick={() => setShowNotifications(false)}
-                                className="p-1 hover:bg-pink-100 rounded-lg transition-colors"
+                                className="p-1 hover:bg-gray-200 rounded-full transition-colors"
                             >
-                                <X className="h-5 w-5 text-pink-300 hover:text-purple-500" />
+                                <X className="h-5 w-5 text-gray-500" />
                             </button>
                         </div>
 
@@ -304,14 +249,14 @@ className = "w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg p
                                 <button
                                     key={tab}
                                     onClick={() => setNotificationTab(tab)}
-                                    className={`flex-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors capitalize ${notificationTab === tab
-                                        ? 'bg-purple-600 text-white border-2 border-purple-300'
-                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors capitalize ${notificationTab === tab
+                                        ? 'bg-purple-600 text-white shadow-md'
+                                        : 'bg-white text-gray-600 hover:bg-gray-100 border border-gray-200'
                                         }`}
                                 >
                                     {tab}
                                     {tab === 'unread' && unreadCount > 0 && (
-                                        <span className="ml-1 text-xs">({unreadCount})</span>
+                                        <span className="ml-1">({unreadCount})</span>
                                     )}
                                 </button>
                             ))}
@@ -321,9 +266,9 @@ className = "w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg p
                     {/* Notifications List */}
                     <div className="flex-1 overflow-y-auto">
                         {filteredNotifications.length === 0 ? (
-                            <div className="p-8 text-center">
-                                <Bell className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                                <p className="text-gray-500 text-sm">No notifications</p>
+                            <div className="p-8 text-center text-gray-400">
+                                <Bell className="h-12 w-12 mx-auto mb-3 opacity-20" />
+                                <p className="text-sm">No notifications</p>
                             </div>
                         ) : (
                             <div className="divide-y divide-gray-100">
@@ -331,23 +276,23 @@ className = "w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg p
                                     <div
                                         key={notification._id}
                                         onClick={() => !notification.isRead && markAsRead(notification._id)}
-                                        className={`p-4 bg-purple-400 hover:bg-purple-300 cursor-pointer transition-colors ${!notification.isRead ? 'bg-purple-200' : ''
+                                        className={`p-4 hover:bg-purple-50 cursor-pointer transition-colors ${!notification.isRead ? 'bg-purple-50' : ''
                                             }`}
                                     >
                                         <div className="flex items-start">
-                                            <span className="text-2xl mr-3">
+                                            <span className="text-xl mr-3">
                                                 {getNotificationIcon(notification.type)}
                                             </span>
-                                            <div className="flex-1">
-                                                <div className="flex items-start justify-between">
-                                                    <h4 className="text-sm font-semibold text-gray-800">
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <h4 className="text-sm font-semibold text-gray-800 truncate">
                                                         {notification.title}
                                                     </h4>
                                                     {!notification.isRead && (
-                                                        <span className="h-2 w-2 bg-purple-600 rounded-full ml-2 mt-1"></span>
+                                                        <span className="h-2 w-2 bg-purple-600 rounded-full flex-shrink-0"></span>
                                                     )}
                                                 </div>
-                                                <p className="text-sm text-purple-600 mt-1">
+                                                <p className="text-xs text-gray-600 mt-1 line-clamp-2">
                                                     {notification.message}
                                                 </p>
                                                 {notification.adminNote && (
@@ -356,7 +301,7 @@ className = "w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg p
                                                         {notification.adminNote}
                                                     </div>
                                                 )}
-                                                <p className="text-xs text-gray-200 mt-2">
+                                                <p className="text-[10px] text-gray-400 mt-2 font-medium">
                                                     {formatTime(notification.createdAt)}
                                                 </p>
                                             </div>
@@ -369,20 +314,18 @@ className = "w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg p
 
                     {/* Footer */}
                     {filteredNotifications.length > 0 && (
-                        <div className="p-3 border-t border-gray-200">
+                        <div className="p-3 border-t border-gray-200 bg-gray-50">
                             <button
                                 onClick={markAllAsRead}
-                                className="w-full text-center text-sm text-purple-200 hover:text-purple-700 font-medium">
+                                className="w-full text-center text-xs text-purple-600 hover:text-purple-700 font-bold uppercase tracking-wider">
                                 Mark all as read
                             </button>
                         </div>
                     )}
                 </div>
-
             )}
 
-            {/* Overla y */}
-
+            {/* Overlay */}
             {(showNotifications || showUserMenu) && (
                 <div
                     className="fixed inset-0 z-40"
@@ -391,9 +334,8 @@ className = "w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg p
                         setShowUserMenu(false);
                     }}
                 />
-
             )}
-        </>
+        </header>
     );
 };
 

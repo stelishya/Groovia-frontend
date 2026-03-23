@@ -7,8 +7,6 @@ import toast from 'react-hot-toast';
 import { loginUser } from '../../redux/slices/user.slice';
 import { validateExperienceYears } from '../../utils/validation';
 import { Role, hasRole, hasAnyRole } from '../../utils/constants/roles';
-import Sidebar from '../../components/shared/Sidebar';
-import UserNavbar from '../../components/shared/Navbar';
 import FormModal from '../../components/ui/FormModal';
 import UpgradeRoleModal, { UpgradeRoleSection } from '../../components/shared/UpgradeRoleModal';
 import ProfileImageModal from '../../components/ui/ProfileImageModal';
@@ -249,13 +247,13 @@ const Profile = () => {
             }
             if (!profileData.email) {
                 toast.error("Email is required")
-                return 
+                return
             } else if (profileData.email.length < 5) {
                 toast.error("Email must be at least 5 characters")
                 return
             } else if (profileData.email.length > 100) {
                 toast.error("Email must be less than 100 characters")
-                return 
+                return
             } else if (!validateEmail(profileData.email)) {
                 toast.error("Please enter a valid email address")
                 return
@@ -294,10 +292,6 @@ const Profile = () => {
                         // This is a new certificate that needs uploading
                         try {
                             const response = await uploadCertificate(cert.file);
-                            // response is { success: true, data: { certificate: ... } }
-                            // or sometimes just the data depending on backend/axios interceptor
-                            // Based on logs: {success: true, data: { certificate: ... }}
-                            // And dancer.service.ts returns response.data
 
                             // Check structure
                             const uploadedCert = response.data?.certificate || response.certificate;
@@ -416,271 +410,222 @@ const Profile = () => {
     };
     console.log('roles in dancer profile:', userData?.role);
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-pink-600">
-            {/* Header */}
-            {/* <div className="bg-purple-900/50 backdrop-blur-lg border-b border-purple-700">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                <button
-                onClick={() => navigate(-1)}
-                className="flex items-center text-white hover:text-purple-200 transition-colors"
-                >
-                <ArrowLeft className="mr-2" size={20} />
-                Back
-                </button>
-                </div>
-                </div> */}
-            <div className="flex h-screen bg-gray-900">
-                <Sidebar activeMenu='Profile' />
-                {/* Main Content */}
-                {/* <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8"> */}
-                <main className="flex-1 overflow-y-auto bg-deep-purple">
-                    <UserNavbar title="Profile" subTitle="View and edit your profile" />
-                    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                        {/* Profile Card */}
-                        <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl overflow-hidden border border-purple-500/30">
-                            {/* Cover Image */}
-                            <div className="h-32 bg-gradient-to-r from-pink-500 to-purple-600"></div>
+        <>
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {/* Profile Card */}
+                <div className="bg-white/10 backdrop-blur-lg rounded-2xl shadow-2xl overflow-hidden border border-purple-500/30">
+                    {/* Cover Image */}
+                    <div className="h-32 bg-gradient-to-r from-pink-500 to-purple-600"></div>
 
-                            {/* Profile Info */}
-                            <div className="px-6 pb-6">
-                                <div className="flex flex-col sm:flex-row items-center sm:items-end -mt-16 sm:-mt-12">
-                                    {/* Avatar */}
-                                    <div className="relative group">
-                                        <div
-                                            className="w-32 h-32 rounded-full border-4 border-white bg-purple-200 flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
-                                            onClick={handleImageClick}
-                                        >
-                                            {userData?.profileImage ? (
-                                                <img src={userData.profileImage} alt="Profile" className="w-full h-full object-cover" />
-                                            ) : (
-                                                <User size={64} className="text-purple-600" />
-                                            )}
-                                        </div>
-                                        <button
-                                            onClick={handleImageChange}
-                                            className="absolute bottom-0 right-0 bg-purple-600 hover:bg-purple-700 text-white rounded-full p-2 cursor-pointer transition-colors shadow-lg"
-                                        >
-                                            <Camera size={20} />
-                                        </button>
-                                    </div>
-
-
-                                    {/* User Info */}
-                                    <div className="mt-4 sm:mt-0 sm:ml-6 flex-1 text-center sm:text-left">
-                                        <h1 className="text-3xl font-bold text-white">{userData?.username || 'User'}</h1>
-                                        <p className="text-purple-200">{userData?.email}</p>
-                                        <div className="flex flex-wrap gap-2 mt-2 justify-center sm:justify-start">
-                                            {currentRoles.map((role: string) => (
-                                                <span
-                                                    key={role}
-                                                    className="px-3 py-1 bg-purple-500/50 text-white rounded-full text-sm font-medium capitalize"
-                                                >
-                                                    {role}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* Like Button */}
-                                    {isDancer && (
-                                        <button
-                                            // onClick={handleLike}
-                                            className="mt-4 sm:mt-0 px-4 py-2 text-white rounded-lg flex items-center transition-colors text-lg"
-                                        >
-                                            <Heart size={24} className="text-pink-600 fill-pink-600 mr-2" />
-                                            {likeCount}
-                                        </button>
+                    {/* Profile Info */}
+                    <div className="px-6 pb-6">
+                        <div className="flex flex-col sm:flex-row items-center sm:items-end -mt-16 sm:-mt-12">
+                            {/* Avatar */}
+                            <div className="relative group">
+                                <div
+                                    className="w-32 h-32 rounded-full border-4 border-white bg-purple-200 flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                                    onClick={handleImageClick}
+                                >
+                                    {userData?.profileImage ? (
+                                        <img src={userData.profileImage} alt="Profile" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <User size={64} className="text-purple-600" />
                                     )}
                                 </div>
+                                <button
+                                    onClick={handleImageChange}
+                                    className="absolute bottom-0 right-0 bg-purple-600 hover:bg-purple-700 text-white rounded-full p-2 cursor-pointer transition-colors shadow-lg"
+                                >
+                                    <Camera size={20} />
+                                </button>
+                            </div>
+
+
+                            {/* User Info */}
+                            <div className="mt-4 sm:mt-0 sm:ml-6 flex-1 text-center sm:text-left">
+                                <h1 className="text-3xl font-bold text-white">{userData?.username || 'User'}</h1>
+                                <p className="text-purple-200">{userData?.email}</p>
+                                <div className="flex flex-wrap gap-2 mt-2 justify-center sm:justify-start">
+                                    {currentRoles.map((role: string) => (
+                                        <span
+                                            key={role}
+                                            className="px-3 py-1 bg-purple-500/50 text-white rounded-full text-sm font-medium capitalize"
+                                        >
+                                            {role}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Like Button */}
+                            {isDancer && (
+                                <button
+                                    // onClick={handleLike}
+                                    className="mt-4 sm:mt-0 px-4 py-2 text-white rounded-lg flex items-center transition-colors text-lg"
+                                >
+                                    <Heart size={24} className="text-pink-600 fill-pink-600 mr-2" />
+                                    {likeCount}
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+                {/* User Details */}
+                <div className="mt-6 bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-purple-500/30">
+                    {/* <h2 className="text-2xl font-bold text-white mb-4">Account Details</h2> */}
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-2xl font-bold text-white">Account Details</h2>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setShowEditModal(true)}
+                                className="px-4 py-2 bg-purple-600/50 hover:bg-purple-600 text-white rounded-lg flex items-center transition-colors border border-purple-500"
+                            >
+                                <Edit2 size={18} className="mr-2" />
+                                Edit Profile
+                            </button>
+                            <button
+                                onClick={() => setShowPasswordModal(true)}
+                                className="px-4 py-2 bg-purple-600/50 hover:bg-purple-600 text-white rounded-lg flex items-center transition-colors border border-purple-500"
+                            >
+                                <Settings size={18} className="mr-2" />
+                                Change Password
+                            </button>
+                        </div>
+                    </div>
+                    {/* <div className="space-y-4"> */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="text-purple-200 text-sm">Username</label>
+                            <p className="text-white text-lg">{userData?.username}</p>
+                        </div>
+                        <div>
+                            <label className="text-purple-200 text-sm">Bio</label>
+                            <p className="text-white text-lg">{userData?.bio || 'Not provided'}</p>
+                        </div>
+                        <div>
+                            <label className="text-purple-200 text-sm">Email</label>
+                            <p className="text-white text-lg">{userData?.email}</p>
+                        </div>
+                        <div>
+                            <label className="text-purple-200 text-sm">Phone</label>
+                            <p className="text-white text-lg">{userData?.phone || 'Not provided'}</p>
+                        </div>
+                        <div>
+                            <label className="text-purple-200 text-sm">Experience Years</label>
+                            <p className="text-white text-lg">{userData?.experienceYears || 'Not provided'}</p>
+                        </div>
+                        <div>
+                            <label className="text-purple-200 text-sm">Social Media</label>
+                            {/* <p className="text-white text-lg">{userData?.portfolioLinks?.join(', ') || 'Not provided'}</p> */}
+                            <div className="flex items-center space-x-4 mt-2">
+                                {userData?.portfolioLinks && userData.portfolioLinks.length > 0 ? (
+                                    userData.portfolioLinks.map((link, index) => {
+                                        const getSocialIcon = (url: string) => {
+                                            try {
+                                                const hostname = new URL(url).hostname.toLowerCase();
+                                                if (hostname.includes('instagram.com')) return <Instagram className="text-white hover:text-pink-500 transition-colors" />;
+                                                if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) return <Youtube className="text-white hover:text-red-500 transition-colors" />;
+                                                if (hostname.includes('linkedin.com')) return <Linkedin className="text-white hover:text-blue-500 transition-colors" />;
+                                                if (hostname.includes('twitter.com') || hostname.includes('x.com')) return <Twitter className="text-white hover:text-sky-400 transition-colors" />;
+                                                if (hostname.includes('facebook.com')) return <Facebook className="text-white hover:text-blue-600 transition-colors" />;
+                                            } catch (e) {
+                                                /* Invalid URL */
+                                            }
+                                            return <LinkIcon className="text-white hover:text-purple-300 transition-colors" />;
+                                        };
+                                        return (
+                                            <a key={index} href={link} target="_blank" rel="noopener noreferrer">
+                                                {getSocialIcon(link)}
+                                            </a>
+                                        );
+                                    })
+                                ) : (
+                                    <p className="text-white text-lg">Not provided</p>
+                                )}
                             </div>
                         </div>
-                        {/* User Details */}
-                        <div className="mt-6 bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-purple-500/30">
-                            {/* <h2 className="text-2xl font-bold text-white mb-4">Account Details</h2> */}
-                            <div className="flex items-center justify-between mb-4">
-                                <h2 className="text-2xl font-bold text-white">Account Details</h2>
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => setShowEditModal(true)}
-                                        className="px-4 py-2 bg-purple-600/50 hover:bg-purple-600 text-white rounded-lg flex items-center transition-colors border border-purple-500"
-                                    >
-                                        <Edit2 size={18} className="mr-2" />
-                                        Edit Profile
-                                    </button>
-                                    <button
-                                        onClick={() => setShowPasswordModal(true)}
-                                        className="px-4 py-2 bg-purple-600/50 hover:bg-purple-600 text-white rounded-lg flex items-center transition-colors border border-purple-500"
-                                    >
-                                        <Settings size={18} className="mr-2" />
-                                        Change Password
-                                    </button>
-                                </div>
-                            </div>
-                            {/* <div className="space-y-4"> */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="text-purple-200 text-sm">Username</label>
-                                    <p className="text-white text-lg">{userData?.username}</p>
-                                </div>
-                                <div>
-                                    <label className="text-purple-200 text-sm">Bio</label>
-                                    <p className="text-white text-lg">{userData?.bio || 'Not provided'}</p>
-                                </div>
-                                <div>
-                                    <label className="text-purple-200 text-sm">Email</label>
-                                    <p className="text-white text-lg">{userData?.email}</p>
-                                </div>
-                                <div>
-                                    <label className="text-purple-200 text-sm">Phone</label>
-                                    <p className="text-white text-lg">{userData?.phone || 'Not provided'}</p>
-                                </div>
-                                <div>
-                                    <label className="text-purple-200 text-sm">Experience Years</label>
-                                    <p className="text-white text-lg">{userData?.experienceYears || 'Not provided'}</p>
-                                </div>
-                                <div>
-                                    <label className="text-purple-200 text-sm">Social Media</label>
-                                    {/* <p className="text-white text-lg">{userData?.portfolioLinks?.join(', ') || 'Not provided'}</p> */}
-                                    <div className="flex items-center space-x-4 mt-2">
-                                        {userData?.portfolioLinks && userData.portfolioLinks.length > 0 ? (
-                                            userData.portfolioLinks.map((link, index) => {
-                                                const getSocialIcon = (url: string) => {
-                                                    try {
-                                                        const hostname = new URL(url).hostname.toLowerCase();
-                                                        if (hostname.includes('instagram.com')) return <Instagram className="text-white hover:text-pink-500 transition-colors" />;
-                                                        if (hostname.includes('youtube.com') || hostname.includes('youtu.be')) return <Youtube className="text-white hover:text-red-500 transition-colors" />;
-                                                        if (hostname.includes('linkedin.com')) return <Linkedin className="text-white hover:text-blue-500 transition-colors" />;
-                                                        if (hostname.includes('twitter.com') || hostname.includes('x.com')) return <Twitter className="text-white hover:text-sky-400 transition-colors" />;
-                                                        if (hostname.includes('facebook.com')) return <Facebook className="text-white hover:text-blue-600 transition-colors" />;
-                                                    } catch (e) {
-                                                        /* Invalid URL */
-                                                    }
-                                                    return <LinkIcon className="text-white hover:text-purple-300 transition-colors" />;
-                                                };
-                                                return (
-                                                    <a key={index} href={link} target="_blank" rel="noopener noreferrer">
-                                                        {getSocialIcon(link)}
-                                                    </a>
-                                                );
-                                            })
-                                        ) : (
-                                            <p className="text-white text-lg">Not provided</p>
+                        <div>
+                            <label className="text-purple-200 text-sm">Preferred Location</label>
+                            <p className="text-white text-lg">{userData?.preferredLocation || 'Not provided'}</p>
+                        </div>
+                        <div>
+                            <label className="text-purple-200 text-sm">Gender</label>
+                            <p className="text-white text-lg">{userData?.gender || 'Not provided'}</p>
+                        </div>
+                        <div>
+                            <label className="text-purple-200 text-sm">Available for Programs</label>
+                            <p className="text-white text-lg">{userData?.availableForPrograms ? 'Yes' : 'No'}</p>
+                        </div>
+                    </div>
+
+                    {/* Dance Styles & Levels Section */}
+                    {userData?.danceStyles && userData.danceStyles.length > 0 && (
+                        <div className="mt-6">
+                            <h3 className="text-xl font-bold text-white mb-4">Dance Styles & Proficiency Levels</h3>
+                            <div className="flex flex-wrap gap-3">
+                                {userData.danceStyles.map((style, index) => (
+                                    <div key={index} className="bg-purple-900/30 px-4 py-3 rounded-lg border border-purple-500/20">
+                                        <p className="text-white font-semibold text-base">{style}</p>
+                                        {userData.danceStyleLevels?.[style] && (
+                                            <p className="text-purple-300 text-sm mt-1">{userData.danceStyleLevels[style]}</p>
                                         )}
                                     </div>
-                                </div>
-                                <div>
-                                    <label className="text-purple-200 text-sm">Preferred Location</label>
-                                    <p className="text-white text-lg">{userData?.preferredLocation || 'Not provided'}</p>
-                                </div>
-                                <div>
-                                    <label className="text-purple-200 text-sm">Gender</label>
-                                    <p className="text-white text-lg">{userData?.gender || 'Not provided'}</p>
-                                </div>
-                                <div>
-                                    <label className="text-purple-200 text-sm">Available for Programs</label>
-                                    <p className="text-white text-lg">{userData?.availableForPrograms ? 'Yes' : 'No'}</p>
-                                </div>
+                                ))}
                             </div>
-
-                            {/* Dance Styles & Levels Section */}
-                            {userData?.danceStyles && userData.danceStyles.length > 0 && (
-                                <div className="mt-6">
-                                    <h3 className="text-xl font-bold text-white mb-4">Dance Styles & Proficiency Levels</h3>
-                                    <div className="flex flex-wrap gap-3">
-                                        {userData.danceStyles.map((style, index) => (
-                                            <div key={index} className="bg-purple-900/30 px-4 py-3 rounded-lg border border-purple-500/20">
-                                                <p className="text-white font-semibold text-base">{style}</p>
-                                                {userData.danceStyleLevels?.[style] && (
-                                                    <p className="text-purple-300 text-sm mt-1">{userData.danceStyleLevels[style]}</p>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Certificates Section */}
-                            {userData?.certificates && userData.certificates.length > 0 && (
-                                <div className="mt-6 max-w-6xl">
-                                    <h3 className="text-xl font-bold text-white mb-4">Certificates</h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-                                        {userData.certificates.map((cert: any, index: number) => {
-                                            if (!cert) return null;
-                                            return (
-                                                <div key={index} className="bg-purple-900/30 p-4 rounded-lg border border-purple-500/20">
-                                                    <h4 className="text-white font-semibold text-lg">{cert.name}</h4>
-                                                    {cert.url && (
-                                                        <a href={cert.url} target="_blank" rel="noopener noreferrer" className="text-purple-300 hover:text-purple-200 text-sm mt-2 inline-block">
-                                                            View Certificate →
-                                                        </a>
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Achievements Section */}
-                            {userData?.achievements && userData.achievements.length > 0 && (
-                                <div className="mt-6 max-w-6xl">
-                                    <h3 className="text-xl font-bold text-white mb-4">Achievements</h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                        {userData.achievements.map((achievement: any, index: number) => (
-                                            <div key={index} className="bg-purple-900/30 p-4 rounded-lg border border-purple-500/20">
-                                                <h4 className="text-white font-semibold text-lg">{achievement.awardName}</h4>
-                                                <p className="text-purple-200 text-sm mt-1">{achievement.position}</p>
-                                                <p className="text-purple-300 text-sm mt-1">{achievement.year}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
                         </div>
+                    )}
 
-                        {/* Upgrade Role Section */}
-                        {/* {!hasInstructorRole && (
-                            <div className="mt-6 bg-gradient-to-r from-yellow-400/20 to-orange-500/20 backdrop-blur-lg rounded-2xl p-6 border border-yellow-500/30">
-                                <div className="flex items-start">
-                                    <div className="flex-shrink-0">
-                                        <Crown className="text-yellow-400" size={32} />
-                                    </div>
-                                    <div className="ml-4 flex-1">
-                                        <h3 className="text-xl font-bold text-white mb-2">Upgrade to Instructor Role</h3>
-                                        <p className="text-purple-100 mb-4">
-                                            Unlock additional features by upgrading to a Instructor role. As a Instructor, you can:
-                                        </p>
-                                        <ul className="list-disc list-inside text-purple-100 space-y-1 mb-4">
-                                            <li>Create and host workshops</li>
-                                            <li>Teach dance classes and courses</li>
-                                            <li>Earn from your expertise</li>
-                                            <li>Build your student community</li>
-                                            <li>Access instructor-only features</li>
-                                        </ul>
-                                        <button
-                                            onClick={() => setShowUpgradeModal(true)}
-                                            className="px-6 py-3 bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-bold rounded-lg hover:from-yellow-500 hover:to-orange-600 transition-all shadow-lg"
-                                        >
-                                            Request Upgrade
-                                        </button>
-                                    </div>
-                                </div>
+                    {/* Certificates Section */}
+                    {userData?.certificates && userData.certificates.length > 0 && (
+                        <div className="mt-6 max-w-6xl">
+                            <h3 className="text-xl font-bold text-white mb-4">Certificates</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+                                {userData.certificates.map((cert: any, index: number) => {
+                                    if (!cert) return null;
+                                    return (
+                                        <div key={index} className="bg-purple-900/30 p-4 rounded-lg border border-purple-500/20">
+                                            <h4 className="text-white font-semibold text-lg">{cert.name}</h4>
+                                            {cert.url && (
+                                                <a href={cert.url} target="_blank" rel="noopener noreferrer" className="text-purple-300 hover:text-purple-200 text-sm mt-2 inline-block">
+                                                    View Certificate →
+                                                </a>
+                                            )}
+                                        </div>
+                                    );
+                                })}
                             </div>
-                        )} */}
-                        {!loadingUpgradeStatus && (
-                            <UpgradeRoleSection
-                                upgradeRequests={upgradeRequests}
-                                onRequestUpgrade={() => setShowUpgradeModal(true)}
-                                onPaymentClick={(request) => handlePaymentClick(request)}
-                                onRefreshStatus={fetchUpgradeStatus}
-                                roleType="instructor"
-                                userType="dancer"
-                                hasRole={hasInstructorRole}
-                            />
-                        )}
-                    </div>
-                </main>
-            </div >
+                        </div>
+                    )}
+
+                    {/* Achievements Section */}
+                    {userData?.achievements && userData.achievements.length > 0 && (
+                        <div className="mt-6 max-w-6xl">
+                            <h3 className="text-xl font-bold text-white mb-4">Achievements</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                                {userData.achievements.map((achievement: any, index: number) => (
+                                    <div key={index} className="bg-purple-900/30 p-4 rounded-lg border border-purple-500/20">
+                                        <h4 className="text-white font-semibold text-lg">{achievement.awardName}</h4>
+                                        <p className="text-purple-200 text-sm mt-1">{achievement.position}</p>
+                                        <p className="text-purple-300 text-sm mt-1">{achievement.year}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {!loadingUpgradeStatus && (
+                    <UpgradeRoleSection
+                        upgradeRequests={upgradeRequests}
+                        onRequestUpgrade={() => setShowUpgradeModal(true)}
+                        onPaymentClick={(request) => handlePaymentClick(request)}
+                        onRefreshStatus={fetchUpgradeStatus}
+                        roleType="instructor"
+                        userType="dancer"
+                        hasRole={hasInstructorRole}
+                    />
+                )}
+            </div>
             <FormModal
                 isOpen={showEditModal}
                 onClose={() => setShowEditModal(false)}
@@ -1148,9 +1093,8 @@ const Profile = () => {
                 aspectRatio={1}
             />
 
-        </div >
+        </>
     );
-
 };
 
 export default Profile;

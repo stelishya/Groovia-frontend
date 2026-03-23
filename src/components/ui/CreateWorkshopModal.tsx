@@ -467,22 +467,22 @@ const CreateWorkshopModal: React.FC<CreateWorkshopModalProps> = ({ isOpen, onClo
                                     </div>
                                     <div className="w-28">
                                         <label className="block text-xs text-purple-200 mb-1">Start Time</label>
-                                        <input
-                                            type="time"
-                                            value={session.startTime}
-                                            onChange={(e) => handleSessionChange(index, 'startTime', e.target.value)}
-                                            className={`w-full bg-purple-500 border ${errors[`session_${index}_startTime`] ? 'border-red-500' : 'border-purple-700'} rounded-lg p-2 text-white text-sm`}
-                                        />
+                                            <input
+                                                type="time"
+                                                value={session.startTime}
+                                                onChange={(e) => handleSessionChange(index, 'startTime', e.target.value)}
+                                                className={`w-full bg-purple-500 border ${errors[`session_${index}_startTime`] ? 'border-red-500' : 'border-purple-700'} rounded-lg p-2 text-white text-sm`}
+                                            />
                                         {errors[`session_${index}_startTime`] && <p className="text-red-400 text-xs mt-1">{errors[`session_${index}_startTime`]}</p>}
                                     </div>
                                     <div className="w-28">
                                         <label className="block text-xs text-purple-200 mb-1">End Time</label>
-                                        <input
-                                            type="time"
-                                            value={session.endTime}
-                                            onChange={(e) => handleSessionChange(index, 'endTime', e.target.value)}
-                                            className={`w-full bg-purple-500 border ${errors[`session_${index}_endTime`] ? 'border-red-500' : 'border-purple-700'} rounded-lg p-2 text-white text-sm`}
-                                        />
+                                            <input
+                                                type="time"
+                                                value={session.endTime}
+                                                onChange={(e) => handleSessionChange(index, 'endTime', e.target.value)}
+                                                className={`w-full bg-purple-500 border ${errors[`session_${index}_endTime`] ? 'border-red-500' : 'border-purple-700'} rounded-lg p-2 text-white text-sm`}
+                                            />
                                         {errors[`session_${index}_endTime`] && <p className="text-red-400 text-xs mt-1">{errors[`session_${index}_endTime`]}</p>}
                                     </div>
                                     {formData.sessions.length > 1 && (
