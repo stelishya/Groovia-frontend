@@ -1,4 +1,4 @@
-import { House, Trophy, CreditCard, User, LogOut, Settings, GitPullRequest, PersonStanding, ChevronLeft, Menu } from "lucide-react"
+import { House, Trophy, CreditCard, User, LogOut, GitPullRequest, PersonStanding, ChevronLeft, Menu } from "lucide-react"
 import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -59,7 +59,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onToggle }) => {
     const bottomItems = [
         { icon: <User />, name: 'Profile', action: () => navigate('/profile') },
         { icon: <LogOut />, name: 'Log Out', action: () => setShowLogoutModal(true) },
-        { icon: <Settings />, name: 'Settings' },
+        // { icon: <Settings />, name: 'Settings' },
     ];
 
     return (

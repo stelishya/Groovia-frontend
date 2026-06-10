@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, Upload, MapPin, Crop } from 'lucide-react';
 import { type CreateCompetitionData, CompetitionMode } from '../../types/competition.type';
-import { formatTime12h } from '../../utils/time';
+// import { formatTime12h } from '../../utils/time';
 import VenueMap from '../ui/VenueMap';
 import ImageCropModal from '../ui/ImageCropModal';
 import toast from 'react-hot-toast';

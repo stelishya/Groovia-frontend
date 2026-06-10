@@ -105,7 +105,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
             if (sortBy) params.append('sortBy', sortBy);
             params.append('page', currentPage.toString());
             params.append('limit', pageSize.toString());
-
+            console.log("User data: ",userData)
             const response = await getAllWorkshops(params);
             if (response.success && response.data) {
                 setWorkshops(Array.isArray(response.data) ? response.data : response.data.workshops || []);

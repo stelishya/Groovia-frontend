@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, X, User, Settings, LogOut } from 'lucide-react';
+import { Bell, X, User, LogOut } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { type RootState } from '../../redux/store';
 import { NotificationAxios } from '../../api/user.axios';
 import toast from 'react-hot-toast';
+// import { useLogout } from '../../hooks/useLogout';
+// import ConfirmationModal from '../ui/ConfirmationModal';
 
 interface Notification {
     _id: string;
@@ -28,6 +30,8 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ pageName }) => {
     const { userData } = useSelector((state: RootState) => state.user);
     const [showNotifications, setShowNotifications] = useState(false);
     const [showUserMenu, setShowUserMenu] = useState(false);
+    // const [showLogoutModal, setShowLogoutModal] = useState(false);
+    // const { handleLogout } = useLogout();
     const [notificationTab, setNotificationTab] = useState<'all' | 'unread' | 'read'>('all');
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [processedNotifications, setProcessedNotifications] = useState<Set<string>>(new Set());
@@ -136,97 +140,123 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ pageName }) => {
     };
 
     return (
-        <header className="sticky top-0 flex justify-between items-center p-4 bg-purple-900/50 backdrop-blur-md border-b border-white/10 z-50">
-            <div className="flex items-center gap-4">
+        <>
+            <header className="sticky top-0 flex justify-between items-center p-4 bg-purple-900/50 backdrop-blur-md border-b border-white/10 z-50">
+                <div className="flex items-center gap-4">
                 <div>
                     <h1 className="text-xl md:text-2xl font-bold text-white leading-tight">
                         {pageName || 'Groovia'}
                     </h1>
                 </div>
-            </div>
+                {/* Search Bar */}
+                {/* <div className="relative w-80 mr-6">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-300" />
+                    <input
+                        type="text"
+    placeholder = "Search Workshops, Competitions..."
+    value = { searchQuery }
+    onChange = {(e) => setSearchQuery(e.target.value)}
+onKeyDown = {(e) => e.key === 'Enter' && handleSearchSubmit(e)}
+className = "w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-purple-500"
+    />
+                </div > */}
 
-            <div className="flex items-center">
-                {/* Notification Bell */}
-                <div className="relative mr-6">
-                    <button
-                        onClick={() => setShowNotifications(!showNotifications)}
-                        className="relative text-white cursor-pointer hover:text-purple-300 transition-colors"
-                    >
-                        <Bell className="w-6 h-6" />
-                        {unreadCount > 0 && (
-                            <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full text-xs text-white flex items-center justify-center font-bold">
-                                {unreadCount}
-                            </span>
-                        )}
-                    </button>
-                </div>
+                <div className="flex items-center">
+                    {/* <div className="relative w-80 mr-6">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-purple-300" />
+                    <input
+                        type="text"
+                        placeholder="Search Workshops, Competitions..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSearchSubmit(e)}
+                        className="w-full bg-purple-700 text-white placeholder-purple-300 rounded-lg py-2 pl-10 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                </div> */}
 
-                {/* User Profile */}
-                <div className="relative flex items-center space-x-2">
-                    <h2 className="hidden sm:block text-white text-sm font-medium">{userData?.username}</h2>
-                    <button
-                        onClick={() => setShowUserMenu(!showUserMenu)}
-                        className="flex items-center space-x-2 hover:opacity-80 transition-opacity focus:outline-none"
-                    >
-                        {userData?.profileImage ? (
-                            <img
-                                src={userData?.profileImage}
-                                alt="User"
-                                className="w-10 h-10 rounded-full cursor-pointer border-2 border-purple-500 object-cover"
-                                referrerPolicy="no-referrer"
-                                crossOrigin="anonymous"
-                                onError={(e) => {
-                                    e.currentTarget.onerror = null;
-                                    e.currentTarget.src = 'https://img.icons8.com/?size=128&id=tZuAOUGm9AuS&format=png';
-                                }}
-                            />
-                        ) : (
-                            <User size={34} className="text-purple-600 bg-purple-200 rounded-full p-2" />
-                        )}
-                    </button>
+                    {/* Notification Bell */}
+                    <div className="relative mr-6 pt-2">
+                        <button
+                            onClick={() => setShowNotifications(!showNotifications)}
+                            className="relative text-white text-2xl cursor-pointer hover:text-purple-300 transition-colors"
+                        >
+                            <Bell className="w-6 h-6 text-purple-400 cursor-pointer hover:text-purple-300" />
+                            {unreadCount > 0 && (
+                                <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full text-xs text-white flex items-center justify-center font-bold">
+                                    {unreadCount}
+                                </span>
+                            )}
+                        </button>
+                    </div>
 
-                    {/* User Dropdown Menu */}
-                    {showUserMenu && (
-                        <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl py-2 border border-gray-200 z-50">
-                            <div className="px-4 py-3 border-b border-gray-200">
-                                <p className="text-sm font-semibold text-gray-800">{userData?.username || 'User'}</p>
-                                <p className="text-xs text-gray-500 truncate">{userData?.email || 'user@example.com'}</p>
+                    {/* User Profile */}
+                    <div className="relative flex items-center space-x-2">
+                        <h2 className="text-white">{userData?.username}</h2>
+                        <button
+                            // onClick={() => setShowUserMenu(!showUserMenu)}
+                            className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
+                        >
+                            {userData?.profileImage ? (
+                                <img
+                                    src={userData?.profileImage}
+                                    alt="User"
+                                    className="w-10 h-10 rounded-full cursor-pointer border-2 border-purple-500"
+                                    referrerPolicy="no-referrer"
+                                    crossOrigin="anonymous"
+                                    onError={(e) => {
+                                        e.currentTarget.onerror = null;
+                                        e.currentTarget.src = 'https://img.icons8.com/?size=128&id=tZuAOUGm9AuS&format=png';
+                                    }}
+                                />
+                            ) : (
+                                <User size={34} className="text-purple-600 bg-purple-200 rounded-full p-2" />
+                            )}
+                        </button>
+
+                        {/* User Dropdown Menu */}
+                        {showUserMenu && (
+                            <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl py-2 border border-gray-200 z-50">
+                                <div className="px-4 py-3 border-b border-gray-200">
+                                    <p className="text-sm font-semibold text-gray-800">{userData?.username || 'User'}</p>
+                                    <p className="text-xs text-gray-500">{userData?.email || 'user@example.com'}</p>
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        navigate('/profile');
+                                        setShowUserMenu(false);
+                                    }}
+                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                                >
+                                    <User className="w-4 h-4 mr-2" />
+                                    Profile
+                                </button>
+                                {/* <button
+                                    onClick={() => {
+                                        navigate('/user/settings');
+                                        setShowUserMenu(false);
+                                    }}
+                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center"
+                                >
+                                    <Settings className="w-4 h-4 mr-2" />
+                                    Settings
+                                </button> */}
+                                <hr className="my-1" />
+                                <button
+                                    onClick={() => {
+                                        // Handle logout
+                                        navigate('/login');
+                                    }}
+                                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
+                                >
+                                    <LogOut className="w-4 h-4 mr-2" />
+                                    Sign out
+                                </button>
                             </div>
-                            <button
-                                onClick={() => {
-                                    navigate('/profile');
-                                    setShowUserMenu(false);
-                                }}
-                                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                            >
-                                <User className="w-4 h-4 mr-2" />
-                                Profile
-                            </button>
-                            <button
-                                onClick={() => {
-                                    navigate('/user/settings');
-                                    setShowUserMenu(false);
-                                }}
-                                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center"
-                            >
-                                <Settings className="w-4 h-4 mr-2" />
-                                Settings
-                            </button>
-                            <hr className="my-1" />
-                            <button
-                                onClick={() => {
-                                    // Handle logout
-                                    navigate('/login');
-                                }}
-                                className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center"
-                            >
-                                <LogOut className="w-4 h-4 mr-2" />
-                                Sign out
-                            </button>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
-            </div>
+                </div>
+            </header>
 
             {/* Notification Dropdown Panel */}
             {showNotifications && (
@@ -335,7 +365,7 @@ const UserNavbar: React.FC<UserNavbarProps> = ({ pageName }) => {
                     }}
                 />
             )}
-        </header>
+        </>
     );
 };
 

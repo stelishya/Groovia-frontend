@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, X, MapPin, Calendar, ChevronRight, ChevronLeft, IndianRupee } from 'lucide-react';
+import { Search, MapPin, Calendar, ChevronRight, ChevronLeft, IndianRupee } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { getClientEventRequests, updateEventBookingStatus } from '../../services/client/client.service';
 import ConfirmationModal from '../../components/ui/ConfirmationModal';
@@ -138,7 +138,7 @@ const BookingsPage = () => {
     const [totalRequests, setTotalRequests] = useState(0);
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState('');
-    const [sortBy, setSortBy] = useState('date');
+    const [sortBy, ] = useState('date');
     const [modalOpen, setModalOpen] = useState(false);
     const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
     const [mapModalOpen, setMapModalOpen] = useState(false);

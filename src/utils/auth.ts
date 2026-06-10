@@ -1,4 +1,3 @@
-// src/utils/auth.ts
 export type DecodedJwt = {
   userId?: string;
   role?: string[]; // backend shows ["dancer"]
