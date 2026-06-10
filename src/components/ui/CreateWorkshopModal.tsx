@@ -346,7 +346,7 @@ const CreateWorkshopModal: React.FC<CreateWorkshopModalProps> = ({ isOpen, onClo
                                 value={formData.title}
                                 onChange={handleChange}
                                 placeholder="Enter workshop title"
-                                className={`w-full bg-purple-500 border-2 ${errors.title ? 'border-red-500' : 'border-purple-800'} rounded-lg p-2 text-white`}
+                                className={`w-full placeholder-purple-200 bg-purple-500 border-2 ${errors.title ? 'border-red-500' : 'border-purple-800'} rounded-lg p-2 text-white`}
                             />
                             {errors.title && <p className="text-red-400 text-xs mt-1">{errors.title}</p>}
                         </div>
@@ -369,7 +369,7 @@ const CreateWorkshopModal: React.FC<CreateWorkshopModalProps> = ({ isOpen, onClo
                                     placeholder="Enter custom style"
                                     value={customStyle}
                                     onChange={(e) => setCustomStyle(e.target.value)}
-                                    className="w-full bg-purple-500 border-2 border-purple-800 rounded-lg p-2 text-white mt-2"
+                                    className="w-full placeholder-purple-200 bg-purple-500 border-2 border-purple-800 rounded-lg p-2 text-white mt-2"
                                 />
                             )}
                             {errors.style && <p className="text-red-400 text-xs mt-1">{errors.style}</p>}
@@ -383,7 +383,7 @@ const CreateWorkshopModal: React.FC<CreateWorkshopModalProps> = ({ isOpen, onClo
                             value={formData.description}
                             onChange={handleChange}
                             placeholder="Enter workshop description"
-                            className={`w-full bg-purple-500 border-2 ${errors.description ? 'border-red-500' : 'border-purple-800'} rounded-lg p-2 text-white`}
+                            className={`w-full placeholder-purple-200 bg-purple-500 border-2 ${errors.description ? 'border-red-500' : 'border-purple-800'} rounded-lg p-2 text-white`}
                             rows={3}
                         />
                         {errors.description && <p className="text-red-400 text-xs mt-1">{errors.description}</p>}
@@ -587,7 +587,7 @@ const CreateWorkshopModal: React.FC<CreateWorkshopModalProps> = ({ isOpen, onClo
                                     name="location"
                                     value={formData.location}
                                     onChange={handleChange}
-                                    className={`flex-1 bg-purple-500 border ${errors.location ? 'border-red-500' : 'border-purple-700'} rounded-lg p-2 text-white`}
+                                    className={`flex-1 placeholder-purple-200 bg-purple-500 border ${errors.location ? 'border-red-500' : 'border-purple-700'} rounded-lg p-2 text-white`}
                                     placeholder="Enter location address"
                                 />
                                 <button

@@ -294,22 +294,24 @@ const Profile = () => {
                 {/* User Details */}
                 <div className="mt-6 bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-purple-500/30">
                     {/* Header with Title and Edit Button */}
-                    <div className="flex justify-between items-center mb-6">
+                    <div className="flex justify-between items-center mb-4">
                         <h2 className="text-2xl font-bold text-white">Account Details</h2>
-                        <button
-                            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center transition-colors"
-                            onClick={handleOpenEditModal}
-                        >
-                            <Edit2 size={18} className="mr-2" />
-                            Edit Profile
-                        </button>
-                        <button
-                            onClick={() => setShowPasswordModal(true)}
-                            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center transition-colors ml-4"
-                        >
-                            <Settings size={18} className="mr-2" />
-                            Change Password
-                        </button>
+                        <div className='flex gap-2'>
+                            <button
+                                className="px-4 py-2 bg-purple-600/50 hover:bg-purple-600 text-white rounded-lg flex items-center transition-colors border border-purple-500"
+                                onClick={handleOpenEditModal}
+                                >
+                                <Edit2 size={18} className="mr-2" />
+                                Edit Profile
+                            </button>
+                            <button
+                                onClick={() => setShowPasswordModal(true)}
+                                className="px-4 py-2 bg-purple-600/50 hover:bg-purple-600 text-white rounded-lg flex items-center transition-colors border border-purple-500"
+                                >
+                                <Settings size={18} className="mr-2" />
+                                Change Password
+                            </button>
+                        </div>
                     </div>
 
                     {/* Two Column Layout */}

@@ -473,7 +473,7 @@ const Profile = () => {
                 {/* User Details */}
                 <div className="mt-6 bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-purple-500/30">
                     {/* <h2 className="text-2xl font-bold text-white mb-4">Account Details</h2> */}
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="flex justify-between items-center mb-4">
                         <h2 className="text-2xl font-bold text-white">Account Details</h2>
                         <div className="flex gap-2">
                             <button

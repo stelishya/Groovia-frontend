@@ -200,7 +200,7 @@ const Dashboard = ({ userData }: { userData: any }) => {
     return (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="mb-12">
-                <h1 className="text-5xl font-light leading-tight uppercase">Book, Track, Enjoy – <br /> All In One Platform</h1>
+                <h1 className="text-5xl text-white font-light leading-tight uppercase">Book, Track, Enjoy – <br /> All In One Platform</h1>
                 <p className="text-gray-400 mt-4 max-w-lg">Your ultimate destination for dance education, competitive showcases, and community engagement.</p>
             </div>
 

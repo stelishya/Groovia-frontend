@@ -9,8 +9,6 @@ import { fetchMyProfile } from '../../services/user/auth.service';
 import { loginUser } from '../../redux/slices/user.slice';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-
-
 import { createEventBookingPayment, verifyEventBookingPayment } from '../../services/client/client.service';
 import type { EventRequest } from '../../pages/client/BookingsClient';
 
